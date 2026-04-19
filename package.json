@@ -1,5 +1,5 @@
 {
-  "name": "lumina",
+  "name": "@fangxinyan/lumina",
   "version": "0.1.0",
   "description": "Lumina — Neumorphic component library for Electron & React apps",
   "type": "module",
@@ -33,7 +33,8 @@
     "build": "vite build",
     "build:lib": "tsup",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run typecheck && npm run build:lib"
   },
   "peerDependencies": {
     "react": ">=18",
@@ -60,5 +61,17 @@
     "typescript",
     "lumina"
   ],
-  "license": "MIT"
+  "author": "fangxinyan",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LHorTL/lumina.git"
+  },
+  "homepage": "https://github.com/LHorTL/lumina#readme",
+  "bugs": {
+    "url": "https://github.com/LHorTL/lumina/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }
