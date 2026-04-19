@@ -1,0 +1,162 @@
+/* ============ TitleBar (Electron) ============ */
+.titlebar {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-3);
+  padding: 0 var(--gap-3);
+  height: 40px;
+  background: var(--bg);
+  -webkit-app-region: drag;
+  user-select: none;
+  border-bottom: 1px solid var(--divider);
+  position: relative;
+  z-index: 5;
+  overflow: visible;
+}
+.titlebar.windows { padding-right: 0; }
+.titlebar-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+  font-size: 13px;
+  flex-shrink: 0;
+  min-width: 0;
+}
+.titlebar-center {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  display: inline-flex; align-items: center; gap: 8px;
+  -webkit-app-region: no-drag;
+}
+.titlebar-actions {
+  margin-left: auto;
+  display: inline-flex; align-items: center; gap: 6px;
+  -webkit-app-region: no-drag;
+  flex-shrink: 0;
+}
+
+/* macOS traffic lights */
+.win-controls { flex-shrink: 0; }
+.win-controls.mac { display: inline-flex; gap: 8px; -webkit-app-region: no-drag; }
+.win-controls.mac .win-btn {
+  width: 13px; height: 13px;
+  border: none; padding: 0;
+  border-radius: 999px;
+  background: var(--bg);
+  box-shadow: var(--neu-flat);
+  position: relative;
+  cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease);
+}
+.win-controls.mac .win-btn::after {
+  content: "";
+  position: absolute; inset: 2px;
+  border-radius: 999px;
+  background: var(--dot, var(--fg-subtle));
+  opacity: 0.85;
+}
+.win-controls.mac .win-btn.close    { --dot: #ff5f57; }
+.win-controls.mac .win-btn.minimize { --dot: #febc2e; }
+.win-controls.mac .win-btn.maximize { --dot: #28c840; }
+.win-controls.mac .win-btn:hover { transform: scale(1.08); }
+
+/* Windows controls */
+.win-controls.windows {
+  display: inline-flex;
+  -webkit-app-region: no-drag;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+.win-controls.windows .win-btn {
+  width: 38px;
+  height: 28px;
+  border: 0;
+  padding: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--fg-muted);
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease);
+  margin: 0 1px;
+  flex-shrink: 0;
+  overflow: visible;
+}
+.win-controls.windows .win-btn svg { display: block; flex-shrink: 0; }
+.win-controls.windows .win-btn:hover { background: var(--bg); box-shadow: var(--neu-in-sm); color: var(--fg); }
+.win-controls.windows .win-btn.close:hover {
+  background: var(--danger);
+  color: white;
+  box-shadow: 2px 2px 4px color-mix(in oklch, var(--danger) 30%, var(--shadow-dark));
+}
+
+/* ============ Sidebar ============ */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  width: 220px;
+  padding: 12px;
+  background: var(--bg);
+  border-right: 1px solid var(--divider);
+  flex-shrink: 0;
+  overflow-y: auto;
+  gap: 4px;
+}
+.sidebar.collapsed { width: 64px; }
+.sidebar-header { padding: 4px 8px 12px; border-bottom: 1px solid var(--divider); margin-bottom: 8px; }
+.sidebar-footer { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--divider); }
+.sidebar-nav { display: flex; flex-direction: column; gap: 2px; }
+.sidebar-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--fg-muted);
+  font-size: 13px;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  transition: all var(--dur-fast) var(--ease);
+}
+.sidebar-item:hover { color: var(--fg); background: var(--bg); box-shadow: var(--neu-flat); }
+.sidebar-item.active {
+  color: var(--accent-ink);
+  background: var(--bg);
+  box-shadow: var(--neu-in-sm);
+  font-weight: 500;
+}
+.sidebar-icon { display: inline-flex; flex-shrink: 0; }
+.sidebar-label { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-badge {
+  font-size: 11px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: white;
+  font-weight: 600;
+}
+
+/* ============ AppShell ============ */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100vh;
+  background: var(--bg);
+  color: var(--fg);
+  overflow: hidden;
+  position: relative;
+}
+.app-shell-body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+.app-shell-main {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+}

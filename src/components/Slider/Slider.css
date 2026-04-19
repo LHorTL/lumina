@@ -1,0 +1,59 @@
+/* ============ Slider ============ */
+.slider {
+  position: relative;
+  height: 36px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+.slider.disabled { opacity: 0.5; cursor: not-allowed; }
+.slider-track {
+  position: relative;
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--bg);
+  box-shadow: var(--neu-in-sm);
+  overflow: hidden;
+}
+.slider-fill {
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  background: linear-gradient(90deg, color-mix(in oklch, var(--accent) 70%, white), var(--accent));
+  box-shadow: 0 0 12px var(--accent-glow);
+  border-radius: 999px;
+  transition: width var(--dur-fast) var(--ease);
+}
+.slider-thumb {
+  position: absolute;
+  top: 50%;
+  width: 22px; height: 22px;
+  border-radius: 999px;
+  background: var(--bg-raised);
+  box-shadow: var(--neu-out-sm);
+  transform: translate(-50%, -50%);
+  transition: all var(--dur-fast) var(--ease);
+  display: grid; place-items: center;
+}
+.slider-thumb::after {
+  content: "";
+  width: 6px; height: 6px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+.slider:hover .slider-thumb { transform: translate(-50%, -50%) scale(1.08); }
+.slider input[type="range"] {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  opacity: 0;
+  cursor: inherit;
+}
+.slider-value { font-family: var(--font-mono); font-size: 12px; color: var(--accent-ink); margin-left: 10px; }
+.slider.success .slider-fill { background: linear-gradient(90deg, color-mix(in oklch, var(--success) 70%, white), var(--success)); box-shadow: 0 0 10px color-mix(in oklch, var(--success) 35%, transparent); }
+.slider.success .slider-thumb::after { background: var(--success); }
+.slider.warning .slider-fill { background: linear-gradient(90deg, color-mix(in oklch, var(--warning) 70%, white), var(--warning)); box-shadow: 0 0 10px color-mix(in oklch, var(--warning) 35%, transparent); }
+.slider.warning .slider-thumb::after { background: var(--warning); }
+.slider.danger  .slider-fill { background: linear-gradient(90deg, color-mix(in oklch, var(--danger) 70%, white), var(--danger));  box-shadow: 0 0 10px color-mix(in oklch, var(--danger) 35%, transparent); }
+.slider.danger  .slider-thumb::after { background: var(--danger); }

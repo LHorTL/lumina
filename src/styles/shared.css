@@ -1,0 +1,4 @@
+/* lumina — 跨组件共享 keyframes */
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeIn { from { opacity: 0; } }
+@keyframes menuIn { from { opacity: 0; transform: translateY(-4px); } }

@@ -1,0 +1,139 @@
+/* ============ Table ============ */
+.table-card {
+  border-radius: var(--r-lg);
+  background: var(--bg);
+  box-shadow: var(--neu-out-sm);
+  overflow: hidden;
+}
+.table-wrap {
+  border-radius: var(--r-lg);
+  background: var(--bg);
+  box-shadow: var(--neu-in-sm);
+  overflow: auto;
+}
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+}
+.table th {
+  text-align: left;
+  padding: 14px 18px;
+  background: var(--bg);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+  border-bottom: 1px solid var(--divider);
+  position: sticky; top: 0;
+  z-index: 1;
+}
+.table th.sortable { cursor: pointer; user-select: none; }
+.table th.sortable:hover { color: var(--fg); }
+.table th .sort-ind {
+  display: inline-flex;
+  width: 16px; height: 16px;
+  border-radius: 6px;
+  background: var(--bg);
+  box-shadow: var(--neu-flat);
+  align-items: center; justify-content: center;
+  margin-left: 6px;
+  color: var(--fg-subtle);
+  vertical-align: middle;
+}
+.table th.sorted .sort-ind { color: var(--accent); box-shadow: var(--neu-in-sm); }
+.table td {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--divider);
+  vertical-align: middle;
+}
+.table.hoverable tbody tr:hover td { background: color-mix(in oklch, var(--accent-soft) 40%, transparent); }
+.table tbody tr.clickable { cursor: pointer; }
+.table tbody tr.selected td { background: color-mix(in oklch, var(--accent-soft) 80%, transparent); color: var(--accent-ink); }
+.table tbody tr:last-child td { border-bottom: none; }
+.table.striped tbody tr:nth-child(even) td {
+  background: color-mix(in oklch, var(--bg-sunken) 40%, transparent);
+}
+
+/* Embossed: each row sits on the surface */
+.table.embossed { border-spacing: 0; }
+.table.embossed tbody td {
+  background: var(--bg);
+}
+
+/* Card-row variant: each row is its own raised pill */
+.table.cards {
+  border-collapse: separate;
+  border-spacing: 0 10px;
+  padding: 10px;
+  background: transparent;
+  box-shadow: none;
+}
+.table.cards thead th {
+  background: transparent;
+  border-bottom: none;
+  padding-top: 0;
+  padding-bottom: 6px;
+}
+.table.cards tbody td {
+  background: var(--bg);
+  border-bottom: none;
+  padding: 14px 18px;
+}
+.table.cards tbody td:first-child {
+  border-radius: var(--r-md) 0 0 var(--r-md);
+  box-shadow: -4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+}
+.table.cards tbody td:last-child {
+  border-radius: 0 var(--r-md) var(--r-md) 0;
+  box-shadow: 4px 4px 8px var(--shadow-dark), 4px -4px 8px var(--shadow-light);
+}
+.table.cards tbody td:not(:first-child):not(:last-child) {
+  box-shadow: 0 4px 8px var(--shadow-dark), 0 -4px 8px var(--shadow-light);
+}
+.table.cards.hoverable tbody tr:hover td { background: var(--bg); transform: translateY(-1px); }
+
+.table .row-check { width: 36px; }
+.table-empty { padding: 60px 20px; text-align: center; color: var(--fg-muted); }
+
+/* Pro: card-wrap with toolbar + table + footer */
+.table-card {
+  border-radius: var(--r-lg);
+  background: var(--bg);
+  box-shadow: var(--neu-out-sm);
+  overflow: hidden;
+}
+.table-card .table-wrap { background: transparent; box-shadow: none; border-radius: 0; }
+.table-card .table-wrap.joined { border-radius: 0; }
+.table-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-3);
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--divider);
+}
+.table-toolbar .table-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-right: 8px;
+}
+.table-toolbar-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.table-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.table-footer {
+  padding: 10px 16px;
+  border-top: 1px solid var(--divider);
+  background: color-mix(in oklch, var(--bg-sunken) 30%, transparent);
+}

@@ -1,0 +1,26 @@
+/* ============ List ============ */
+.list {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  border-radius: var(--r-lg);
+  box-shadow: var(--neu-in-sm);
+  padding: 8px;
+}
+.list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: var(--r-sm);
+  transition: all var(--dur-fast) var(--ease);
+}
+.list-item.clickable { cursor: pointer; }
+.list-item.clickable:hover { background: var(--bg); box-shadow: var(--neu-flat); }
+.list-item.selected { box-shadow: var(--neu-out-sm); background: var(--bg); }
+.list.with-dividers .list-item + .list-item { border-top: 1px solid var(--divider); border-radius: 0; }
+.list-item-meta { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.list-item-title { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.list-item-desc  { font-size: 12px; color: var(--fg-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.list-item-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+.list-item-avatar { display: inline-flex; align-items: center; justify-content: center; color: var(--fg-muted); flex-shrink: 0; }

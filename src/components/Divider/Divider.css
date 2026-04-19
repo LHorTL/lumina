@@ -1,0 +1,49 @@
+/* ============ Divider ============ */
+.divider {
+  height: 1px;
+  background: var(--divider);
+  margin: var(--gap-4) 0;
+  border-radius: 999px;
+  box-shadow: 0 1px 0 var(--shadow-light);
+}
+.divider.vertical {
+  width: 1px;
+  height: 24px;
+  margin: 0 var(--gap-3);
+  display: inline-block;
+}
+.divider.sunken {
+  background: transparent;
+  height: 2px;
+  box-shadow: var(--neu-in-sm);
+}
+.divider.sunken.vertical {
+  width: 2px;
+  height: 24px;
+}
+.divider.sunken:has(.divider-label) { background: transparent; box-shadow: none; }
+.divider.sunken:has(.divider-label)::before,
+.divider.sunken:has(.divider-label)::after { height: 2px; background: transparent; box-shadow: var(--neu-in-sm); }
+.divider-label {
+  display: flex; align-items: center; gap: 12px;
+  height: auto; background: transparent; box-shadow: none;
+  font-size: 11px; color: var(--fg-subtle);
+  text-transform: uppercase; letter-spacing: 0.1em;
+}
+.divider:has(.divider-label) {
+  background: transparent;
+  box-shadow: none;
+  height: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.divider:has(.divider-label)::before,
+.divider:has(.divider-label)::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--divider);
+  border-radius: 999px;
+  box-shadow: 0 1px 0 var(--shadow-light);
+}

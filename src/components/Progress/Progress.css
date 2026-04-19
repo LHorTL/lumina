@@ -1,0 +1,63 @@
+/* ============ Progress ============ */
+.progress {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+.progress-label .v { font-family: var(--font-mono); }
+.progress-track {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--bg);
+  box-shadow: var(--neu-in-sm);
+  overflow: hidden;
+  position: relative;
+}
+.progress.sm .progress-track { height: 6px; }
+.progress.lg .progress-track { height: 14px; }
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, color-mix(in oklch, var(--accent) 70%, white), var(--accent));
+  border-radius: 999px;
+  box-shadow: 0 0 12px var(--accent-glow);
+  transition: width var(--dur-slow) var(--ease);
+}
+.progress.success .progress-bar { background: linear-gradient(90deg, color-mix(in oklch, var(--success) 70%, white), var(--success)); box-shadow: 0 0 10px color-mix(in oklch, var(--success) 35%, transparent); }
+.progress.warning .progress-bar { background: linear-gradient(90deg, color-mix(in oklch, var(--warning) 70%, white), var(--warning)); box-shadow: 0 0 10px color-mix(in oklch, var(--warning) 35%, transparent); }
+.progress.danger  .progress-bar { background: linear-gradient(90deg, color-mix(in oklch, var(--danger) 70%, white), var(--danger));  box-shadow: 0 0 10px color-mix(in oklch, var(--danger) 35%, transparent); }
+
+.ring {
+  --size: 72px;
+  --val: 50;
+  width: var(--size); height: var(--size);
+  border-radius: 999px;
+  background: conic-gradient(var(--accent) calc(var(--val) * 1%), var(--bg-sunken) 0);
+  display: grid; place-items: center;
+  position: relative;
+  box-shadow: var(--neu-out-sm);
+}
+.ring.success { background: conic-gradient(var(--success) calc(var(--val) * 1%), var(--bg-sunken) 0); }
+.ring.warning { background: conic-gradient(var(--warning) calc(var(--val) * 1%), var(--bg-sunken) 0); }
+.ring.danger  { background: conic-gradient(var(--danger)  calc(var(--val) * 1%), var(--bg-sunken) 0); }
+.ring::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border-radius: 999px;
+  background: var(--bg);
+  box-shadow: var(--neu-in-sm);
+}
+.ring-label {
+  position: relative;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-ink);
+}

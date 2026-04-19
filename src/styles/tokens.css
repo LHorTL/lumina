@@ -1,0 +1,153 @@
+/* ============================================================================
+ * Lumina · Design Tokens
+ * Override at :root or any ancestor element (e.g. <AppShell>) via data-* attrs.
+ * ========================================================================== */
+
+:root {
+  /* ---- Surface (light) ---- */
+  --bg: #e8eef5;
+  --bg-raised: #edf2f8;
+  --bg-sunken: #dde4ed;
+  --fg: #3a4558;
+  --fg-muted: #7b8599;
+  --fg-subtle: #9ca7ba;
+  --border: rgba(130, 148, 175, 0.14);
+  --divider: rgba(130, 148, 175, 0.18);
+
+  /* ---- Shadows ---- */
+  --shadow-dark: rgba(163, 177, 198, 0.55);
+  --shadow-light: rgba(255, 255, 255, 0.95);
+  --shadow-blur: 16px;
+  --shadow-offset: 6px;
+  --shadow-inset-blur: 10px;
+  --shadow-inset-offset: 4px;
+
+  /* Distance multiplier (tweakable at runtime) */
+  --d: 1;
+
+  --neu-out:
+    var(--shadow-offset) var(--shadow-offset) var(--shadow-blur) var(--shadow-dark),
+    calc(var(--shadow-offset) * -1) calc(var(--shadow-offset) * -1) var(--shadow-blur) var(--shadow-light);
+
+  --neu-out-sm:
+    calc(var(--shadow-offset) * 0.5) calc(var(--shadow-offset) * 0.5) calc(var(--shadow-blur) * 0.6) var(--shadow-dark),
+    calc(var(--shadow-offset) * -0.5) calc(var(--shadow-offset) * -0.5) calc(var(--shadow-blur) * 0.6) var(--shadow-light);
+
+  --neu-out-lg:
+    calc(var(--shadow-offset) * 1.6) calc(var(--shadow-offset) * 1.6) calc(var(--shadow-blur) * 1.4) var(--shadow-dark),
+    calc(var(--shadow-offset) * -1.6) calc(var(--shadow-offset) * -1.6) calc(var(--shadow-blur) * 1.4) var(--shadow-light);
+
+  --neu-in:
+    inset var(--shadow-inset-offset) var(--shadow-inset-offset) var(--shadow-inset-blur) var(--shadow-dark),
+    inset calc(var(--shadow-inset-offset) * -1) calc(var(--shadow-inset-offset) * -1) var(--shadow-inset-blur) var(--shadow-light);
+
+  --neu-in-sm:
+    inset calc(var(--shadow-inset-offset) * 0.6) calc(var(--shadow-inset-offset) * 0.6) calc(var(--shadow-inset-blur) * 0.6) var(--shadow-dark),
+    inset calc(var(--shadow-inset-offset) * -0.6) calc(var(--shadow-inset-offset) * -0.6) calc(var(--shadow-inset-blur) * 0.6) var(--shadow-light);
+
+  --neu-flat:
+    1px 1px 2px var(--shadow-dark),
+    -1px -1px 2px var(--shadow-light);
+
+  /* ---- Accent (default sky) ---- */
+  --accent: oklch(68% 0.14 235);
+  --accent-ink: oklch(42% 0.12 235);
+  --accent-soft: oklch(92% 0.04 235);
+  --accent-glow: oklch(68% 0.14 235 / 0.35);
+
+  /* ---- Semantic ---- */
+  --info:    oklch(68% 0.14 235);
+  --success: oklch(68% 0.14 150);
+  --warning: oklch(75% 0.14 75);
+  --danger:  oklch(64% 0.18 25);
+
+  /* ---- Radius ---- */
+  --r-xs: 8px;
+  --r-sm: 12px;
+  --r-md: 16px;
+  --r-lg: 20px;
+  --r-xl: 28px;
+  --r-pill: 999px;
+
+  /* ---- Spacing ---- */
+  --gap-1: 4px;
+  --gap-2: 8px;
+  --gap-3: 12px;
+  --gap-4: 16px;
+  --gap-5: 20px;
+  --gap-6: 24px;
+  --gap-8: 32px;
+  --gap-10: 40px;
+
+  /* ---- Control sizes (density) ---- */
+  --ctrl-h: 40px;
+  --ctrl-pad-x: 18px;
+
+  /* ---- Type ---- */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+               "Hiragino Sans GB", "Microsoft YaHei", "Source Han Sans SC",
+               "Noto Sans CJK SC", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Consolas, monospace;
+  --font-display: "SF Pro Display", var(--font-sans);
+
+  /* ---- Motion ---- */
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --dur-fast: 140ms;
+  --dur: 220ms;
+  --dur-slow: 360ms;
+}
+
+/* ---- Dark theme ----
+   深色模式的拟态不能照搬浅色思路:白色高光会变成刺眼的白圈。
+   这里做法:保留深色阴影给"下沉"深度,把"上凸高光"压到很低 alpha,
+   让整体更接近 flat-with-depth 而不是强烈的 3D 凸起。 */
+:root[data-theme="dark"],
+[data-theme="dark"] {
+  --bg: #1b2030;
+  --bg-raised: #242a3c;
+  --bg-sunken: #151a27;
+  --fg: #d8deeb;
+  --fg-muted: #8b94ab;
+  --fg-subtle: #5f6a82;
+  --border: rgba(0, 0, 0, 0.35);
+  --divider: rgba(255, 255, 255, 0.06);
+  /* 强 dark shadow 提供深度;light 高光几乎不可见,去掉白圈效果 */
+  --shadow-dark: rgba(0, 0, 0, 0.55);
+  --shadow-light: rgba(130, 145, 180, 0.06);
+  /* 同时收紧阴影尺寸,深色模式下拟态更内敛 */
+  --shadow-offset: 4px;
+  --shadow-blur: 10px;
+  --shadow-inset-offset: 3px;
+  --shadow-inset-blur: 7px;
+  --accent-soft: oklch(35% 0.06 235);
+  --accent-ink: oklch(82% 0.09 235);
+  --accent-glow: oklch(68% 0.14 235 / 0.18);
+}
+
+/* 深色模式的 accent-glow 统一降低强度,避免按钮外圈过亮 */
+[data-theme="dark"][data-accent="sky"]    { --accent-soft: oklch(35% 0.08 235); --accent-ink: oklch(82% 0.10 235); --accent-glow: oklch(68% 0.14 235 / 0.18); }
+[data-theme="dark"][data-accent="coral"]  { --accent-soft: oklch(38% 0.09 35);  --accent-ink: oklch(84% 0.10 35);  --accent-glow: oklch(72% 0.16 35 / 0.18); }
+[data-theme="dark"][data-accent="mint"]   { --accent-soft: oklch(36% 0.08 165); --accent-ink: oklch(83% 0.10 165); --accent-glow: oklch(72% 0.13 165 / 0.18); }
+[data-theme="dark"][data-accent="violet"] { --accent-soft: oklch(36% 0.09 290); --accent-ink: oklch(82% 0.11 290); --accent-glow: oklch(66% 0.16 290 / 0.18); }
+[data-theme="dark"][data-accent="amber"]  { --accent-soft: oklch(38% 0.08 75);  --accent-ink: oklch(85% 0.10 75);  --accent-glow: oklch(76% 0.14 75 / 0.18); }
+[data-theme="dark"][data-accent="rose"]   { --accent-soft: oklch(38% 0.09 10);  --accent-ink: oklch(84% 0.11 10);  --accent-glow: oklch(68% 0.17 10 / 0.18); }
+
+/* ---- Accent palette ---- */
+[data-accent="sky"]    { --accent: oklch(68% 0.14 235); --accent-ink: oklch(42% 0.12 235); --accent-soft: oklch(92% 0.04 235); --accent-glow: oklch(68% 0.14 235 / 0.35); }
+[data-accent="coral"]  { --accent: oklch(72% 0.16 35);  --accent-ink: oklch(48% 0.14 35);  --accent-soft: oklch(94% 0.04 35);  --accent-glow: oklch(72% 0.16 35 / 0.35); }
+[data-accent="mint"]   { --accent: oklch(72% 0.13 165); --accent-ink: oklch(46% 0.11 165); --accent-soft: oklch(93% 0.04 165); --accent-glow: oklch(72% 0.13 165 / 0.35); }
+[data-accent="violet"] { --accent: oklch(66% 0.16 290); --accent-ink: oklch(44% 0.14 290); --accent-soft: oklch(93% 0.04 290); --accent-glow: oklch(66% 0.16 290 / 0.35); }
+[data-accent="amber"]  { --accent: oklch(76% 0.14 75);  --accent-ink: oklch(50% 0.12 75);  --accent-soft: oklch(94% 0.05 75);  --accent-glow: oklch(76% 0.14 75 / 0.35); }
+[data-accent="rose"]   { --accent: oklch(68% 0.17 10);  --accent-ink: oklch(46% 0.15 10);  --accent-soft: oklch(93% 0.04 10);  --accent-glow: oklch(68% 0.17 10 / 0.35); }
+
+/* (dark-mode per-accent overrides are defined above, with --accent-glow included) */
+
+/* ---- Density ---- */
+[data-density="compact"] {
+  --gap-3: 8px; --gap-4: 12px; --gap-5: 14px; --gap-6: 18px; --gap-8: 24px;
+  --ctrl-h: 34px; --ctrl-pad-x: 14px;
+}
+[data-density="spacious"] {
+  --gap-3: 16px; --gap-4: 20px; --gap-5: 26px; --gap-6: 32px; --gap-8: 44px;
+  --ctrl-h: 46px; --ctrl-pad-x: 22px;
+}

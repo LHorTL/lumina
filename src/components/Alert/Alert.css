@@ -1,0 +1,35 @@
+/* ============ Alert ============ */
+.alert {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border-radius: var(--r-md);
+  background: var(--bg);
+  box-shadow: var(--neu-in-sm);
+  position: relative;
+}
+.alert-ico {
+  width: 20px; height: 20px;
+  display: grid; place-items: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.alert.info    .alert-ico { color: var(--info); }
+.alert.success .alert-ico { color: var(--success); }
+.alert.warning .alert-ico { color: var(--warning); }
+.alert.danger  .alert-ico { color: var(--danger); }
+.alert-body  { flex: 1; min-width: 0; }
+.alert-title { font-size: 13px; font-weight: 600; margin-bottom: 3px; line-height: 1.4; }
+.alert-desc  { font-size: 12px; color: var(--fg-muted); line-height: 1.55; }
+.alert.no-title { align-items: center; }
+.alert.no-title .alert-ico { margin-top: 0; }
+.alert-close {
+  position: absolute; top: 10px; right: 10px;
+  width: 22px; height: 22px; border-radius: 7px;
+  display: grid; place-items: center;
+  color: var(--fg-subtle);
+  cursor: pointer;
+  border: none; background: transparent;
+}
+.alert-close:hover { color: var(--fg); background: var(--bg); box-shadow: var(--neu-flat); }

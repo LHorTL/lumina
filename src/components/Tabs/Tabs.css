@@ -1,0 +1,95 @@
+/* ============ Tabs ============ */
+.tabs { display: flex; flex-direction: column; gap: var(--gap-3); }
+.tabs-nav {
+  display: inline-flex;
+  padding: 5px;
+  border-radius: var(--r-md);
+  background: var(--bg);
+  box-shadow: var(--neu-in-sm);
+  gap: 2px;
+  align-self: flex-start;
+}
+.tabs-nav .tab {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  border-radius: calc(var(--r-md) - 5px);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  color: var(--fg-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all var(--dur-fast) var(--ease);
+}
+.tabs-nav .tab:hover { color: var(--fg); }
+.tabs-nav .tab.active {
+  color: var(--accent-ink);
+  background: var(--bg);
+  box-shadow: var(--neu-out-sm);
+  font-weight: 600;
+}
+.tabs-nav .tab[disabled] { opacity: 0.4; cursor: not-allowed; }
+
+.tabs.line .tabs-nav,
+.tabs.underline .tabs-nav {
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  border-bottom: 1px solid var(--divider);
+  align-self: stretch;
+}
+.tabs.line .tabs-nav .tab,
+.tabs.underline .tabs-nav .tab {
+  padding: 10px 4px;
+  margin-right: 22px;
+  border-radius: 0;
+  position: relative;
+}
+.tabs.line .tabs-nav .tab.active,
+.tabs.underline .tabs-nav .tab.active { background: transparent; box-shadow: none; }
+.tabs.line .tabs-nav .tab.active::after,
+.tabs.underline .tabs-nav .tab.active::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px;
+  background: var(--accent); border-radius: 999px;
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
+.tabs-content { padding: var(--gap-2) 0; }
+
+/* Segmented (owned by Tabs.tsx — Segmented is co-exported) */
+.segmented {
+  display: inline-flex;
+  padding: 4px;
+  border-radius: var(--r-md);
+  background: var(--bg);
+  box-shadow: var(--neu-in-sm);
+  gap: 2px;
+}
+.segmented .seg {
+  padding: 6px 14px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  border-radius: calc(var(--r-md) - 4px);
+  font-size: 12px;
+  font-family: inherit;
+  color: var(--fg-muted);
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease);
+}
+.segmented .seg:hover { color: var(--fg); }
+.segmented .seg.active {
+  color: var(--accent-ink);
+  background: var(--bg);
+  box-shadow: var(--neu-out-sm);
+  font-weight: 600;
+}
+.segmented.sm .seg { height: 26px; padding: 4px 10px; font-size: 11px; }
+.segmented.lg .seg { height: 38px; padding: 8px 18px; font-size: 13px; }

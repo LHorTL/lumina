@@ -1,0 +1,62 @@
+/* ============================================================================
+ * lumina · Base styles
+ * ========================================================================== */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "cv11", "ss01";
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4 { margin: 0; font-weight: 600; letter-spacing: -0.01em; color: var(--fg); }
+p { margin: 0; }
+
+button { font-family: inherit; color: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; color: inherit; }
+
+::selection { background: var(--accent-glow); }
+
+/* Scrollbar — slim, neumorphic, hover to highlight */
+::-webkit-scrollbar { width: 10px; height: 10px; background: transparent; }
+::-webkit-scrollbar-track { background: transparent; margin: 2px; }
+::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, var(--fg-muted) 28%, transparent);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  min-height: 40px;
+  transition: background var(--dur) var(--ease);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklch, var(--accent) 50%, var(--fg-muted));
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:active {
+  background: var(--accent);
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-corner { background: transparent; }
+
+* { scrollbar-width: thin; scrollbar-color: color-mix(in oklch, var(--fg-muted) 40%, var(--bg)) var(--bg); }
+
+*:focus { outline: none; }
+:focus-visible { box-shadow: 0 0 0 3px var(--accent-glow), var(--neu-out-sm); }
+
+/* Utility */
+.row { display: flex; align-items: center; gap: var(--gap-3); }
+.col { display: flex; flex-direction: column; gap: var(--gap-3); }
+.muted { color: var(--fg-muted); }
+.subtle { color: var(--fg-subtle); }
+.small { font-size: 12px; }
+.mono { font-family: var(--font-mono); }

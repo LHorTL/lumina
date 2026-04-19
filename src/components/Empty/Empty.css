@@ -1,0 +1,138 @@
+/* ============ Empty / Spinner / Skeleton ============ */
+/* .spinner base — legacy border-ring used internally by Select/Button.
+   The public <Spinner> component always sets a variant class (`ring`|`dots`)
+   which overrides this via the more specific rules below. */
+.spinner {
+  width: 14px; height: 14px;
+  border-radius: 999px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+.empty {
+  padding: 60px 20px;
+  display: grid; place-items: center;
+  gap: 12px;
+  color: var(--fg-muted);
+  text-align: center;
+}
+.empty.sm { padding: 28px 16px; gap: 8px; }
+.empty.sm .empty-ico { width: 40px; height: 40px; }
+.empty.sm .empty-title { font-size: 13px; }
+.empty.sm .empty-desc  { font-size: 11px; }
+.empty.lg { padding: 96px 24px; gap: 16px; }
+.empty.lg .empty-ico { width: 72px; height: 72px; }
+.empty.lg .empty-title { font-size: 16px; }
+.empty.lg .empty-desc  { font-size: 13px; }
+.empty.subtle .empty-ico { background: transparent; box-shadow: none; }
+.empty-ico {
+  width: 56px; height: 56px;
+  border-radius: var(--r-lg);
+  background: var(--bg);
+  box-shadow: var(--neu-in-sm);
+  display: grid; place-items: center;
+  color: var(--fg-subtle);
+}
+.empty-title { font-size: 14px; font-weight: 600; color: var(--fg); }
+.empty-desc  { font-size: 12px; }
+.empty-action { margin-top: 8px; }
+
+/* Spinner tones */
+.spinner.accent  { color: var(--accent); }
+.spinner.success { color: var(--success); }
+.spinner.warning { color: var(--warning); }
+.spinner.danger  { color: var(--danger); }
+
+/* --- Ring variant: neumorphic pressed track + rotating arc --- */
+.spinner.ring {
+  position: relative;
+  display: inline-block;
+  border: none;
+  border-radius: 50%;
+  background: var(--bg);
+  box-shadow: var(--neu-in-sm);
+  animation: none;
+}
+.spinner.ring::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: conic-gradient(from 0deg,
+    transparent 0deg,
+    color-mix(in oklch, currentColor 30%, transparent) 40deg,
+    color-mix(in oklch, currentColor 70%, transparent) 100deg,
+    currentColor 220deg,
+    currentColor 340deg,
+    transparent 360deg);
+  -webkit-mask: radial-gradient(circle, transparent 60%, #000 61%);
+  mask: radial-gradient(circle, transparent 60%, #000 61%);
+  animation: spin 0.9s linear infinite;
+}
+.spinner.ring.accent::before,
+.spinner.ring.success::before,
+.spinner.ring.warning::before,
+.spinner.ring.danger::before {
+  filter: drop-shadow(0 0 4px color-mix(in oklch, currentColor 50%, transparent));
+}
+
+/* --- Dots variant: raised neumorphic spheres (container is transparent) --- */
+.spinner.dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.34em;
+  border: none;
+  background: none;
+  box-shadow: none;
+  width: auto; height: auto;
+  animation: none;
+  line-height: 1;
+}
+.spinner.dots i {
+  width: 0.4em; height: 0.4em;
+  border-radius: 999px;
+  background: radial-gradient(circle at 32% 28%,
+    color-mix(in oklch, currentColor 40%, white),
+    currentColor 62%,
+    color-mix(in oklch, currentColor 82%, black) 100%);
+  box-shadow:
+    0 0.06em 0.14em color-mix(in oklch, currentColor 45%, transparent),
+    0 0 0.35em color-mix(in oklch, currentColor 50%, transparent);
+  display: inline-block;
+  animation: dot-bounce 1.2s ease-in-out infinite;
+}
+.spinner.dots i:nth-child(2) { animation-delay: 0.15s; }
+.spinner.dots i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes dot-bounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.5; }
+  40% { transform: translateY(-30%); opacity: 1; }
+}
+
+.spinner-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--fg-muted);
+}
+.spinner-label { font-size: 12px; }
+
+.skeleton {
+  display: block;
+  background: color-mix(in oklch, var(--accent-soft) 55%, var(--bg-sunken));
+  border-radius: var(--r-sm);
+}
+.skeleton.wave {
+  background: linear-gradient(90deg,
+    color-mix(in oklch, var(--accent-soft) 35%, var(--bg-sunken)),
+    color-mix(in oklch, var(--accent-soft) 75%, var(--bg-sunken)),
+    color-mix(in oklch, var(--accent-soft) 35%, var(--bg-sunken)));
+  background-size: 200% 100%;
+  animation: skel-wave 1.4s ease-in-out infinite;
+}
+.skeleton.pulse { animation: skel-pulse 1.4s ease-in-out infinite; }
+.skeleton.none  { animation: none; }
+.skeleton.circle { border-radius: 999px; }
+@keyframes skel-wave  { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+@keyframes skel-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }

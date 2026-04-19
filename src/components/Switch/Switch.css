@@ -1,0 +1,44 @@
+/* ============ Switch ============ */
+.switch {
+  --w: 46px;
+  --h: 26px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--fg);
+  cursor: pointer;
+  user-select: none;
+}
+.switch.disabled { opacity: 0.5; cursor: not-allowed; }
+.switch-track {
+  position: relative;
+  width: var(--w);
+  height: var(--h);
+  border: none;
+  padding: 0;
+  border-radius: 999px;
+  background: var(--bg);
+  box-shadow: var(--neu-in-sm);
+  cursor: inherit;
+  flex-shrink: 0;
+  transition: all var(--dur) var(--ease);
+}
+.switch.sm { --w: 36px; --h: 20px; }
+.switch.lg { --w: 58px; --h: 32px; }
+.switch-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: calc(var(--h) - 6px);
+  height: calc(var(--h) - 6px);
+  border-radius: 999px;
+  background: var(--bg-raised);
+  box-shadow: var(--neu-out-sm);
+  transition: all var(--dur) var(--ease);
+}
+.switch.on .switch-thumb {
+  transform: translateX(calc(var(--w) - var(--h)));
+  background: var(--accent);
+  box-shadow: 0 2px 8px var(--accent-glow), 0 0 0 1px color-mix(in oklch, var(--accent) 40%, transparent);
+}

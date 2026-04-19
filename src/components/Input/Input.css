@@ -1,0 +1,66 @@
+/* ============ Input / Textarea ============ */
+.input-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+}
+.input-wrap .lead,
+.input-wrap .trail {
+  position: absolute;
+  color: var(--fg-subtle);
+  pointer-events: none;
+}
+.input-wrap .lead { left: 14px; }
+.input-wrap .trail { right: 14px; pointer-events: auto; cursor: pointer; }
+.input-wrap .trail:hover { color: var(--fg); }
+
+.input,
+.input-wrap > input {
+  width: 100%;
+  height: var(--ctrl-h);
+  padding: 0 var(--ctrl-pad-x);
+  border: none;
+  border-radius: var(--r-md);
+  background: var(--bg);
+  box-shadow: var(--neu-in-sm);
+  color: var(--fg);
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: box-shadow var(--dur) var(--ease);
+}
+.input-wrap:has(.lead) > input,
+.input-wrap.with-leading > input { padding-left: 40px; }
+.input-wrap:has(.trail) > input,
+.input-wrap.with-trailing > input { padding-right: 40px; }
+.input:focus,
+.input-wrap > input:focus { box-shadow: var(--neu-in-sm), 0 0 0 2px var(--accent-glow); }
+.input::placeholder,
+.input-wrap > input::placeholder { color: var(--fg-subtle); }
+.input[disabled],
+.input-wrap.disabled > input { opacity: 0.6; cursor: not-allowed; }
+.input-wrap.invalid > input,
+.input.invalid { box-shadow: var(--neu-in-sm), 0 0 0 2px color-mix(in oklch, var(--danger) 30%, transparent); }
+.input-wrap.sm > input { height: 32px; padding-left: 12px; padding-right: 12px; font-size: 12px; border-radius: var(--r-sm); }
+.input-wrap.lg > input { height: 48px; padding-left: 18px; padding-right: 18px; font-size: 14px; border-radius: var(--r-lg); }
+
+.textarea {
+  width: 100%;
+  min-height: 96px;
+  padding: 12px 14px;
+  border: none;
+  border-radius: var(--r-md);
+  background: var(--bg);
+  box-shadow: var(--neu-in-sm);
+  color: var(--fg);
+  font-size: 13px;
+  font-family: inherit;
+  line-height: 1.55;
+  resize: vertical;
+  outline: none;
+  transition: box-shadow var(--dur) var(--ease);
+}
+.textarea:focus { box-shadow: var(--neu-in-sm), 0 0 0 2px var(--accent-glow); }
+.textarea.invalid { box-shadow: var(--neu-in-sm), 0 0 0 2px color-mix(in oklch, var(--danger) 30%, transparent); }
+.textarea::placeholder { color: var(--fg-subtle); }
