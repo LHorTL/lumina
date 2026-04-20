@@ -457,6 +457,7 @@ body {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--gap-4);
+  align-items: start;
 }
 @media (max-width: 1100px) {
   .doc-demo-grid { grid-template-columns: 1fr; }
@@ -512,6 +513,14 @@ body {
   align-items: center;
   flex-shrink: 0;
 }
+.doc-demo-code-toggle.active {
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+}
+.doc-demo-code-collapse {
+  overflow: hidden;
+  transition: height 0.25s var(--ease);
+}
 .doc-demo-code {
   margin: 0;
   padding: 14px 16px;
@@ -531,6 +540,21 @@ body {
   font-size: inherit;
   padding: 0;
   white-space: pre;
+}
+
+/* Syntax highlighting */
+.hl-kw { color: #8b5cf6; }
+.hl-st { color: #16a34a; }
+.hl-tg { color: #0891b2; }
+.hl-at { color: #d97706; }
+.hl-nm { color: #2563eb; }
+.hl-cm { color: #9ca3af; font-style: italic; }
+[data-theme="dark"] .hl-kw { color: #a78bfa; }
+[data-theme="dark"] .hl-st { color: #4ade80; }
+[data-theme="dark"] .hl-tg { color: #22d3ee; }
+[data-theme="dark"] .hl-at { color: #fbbf24; }
+[data-theme="dark"] .hl-nm { color: #60a5fa; }
+[data-theme="dark"] .hl-cm { color: #6b7280;
 }
 
 /* When-to-use list of bullet points */

@@ -18,7 +18,7 @@
   box-shadow: var(--neu-float);
   padding: 12px 16px;
   min-width: 240px;
-  display: flex; align-items: flex-start; gap: 10px;
+  display: flex; align-items: center; gap: 10px;
   font-size: 13px;
   pointer-events: auto;
   animation: toastIn var(--dur-slow) var(--ease);
@@ -27,7 +27,7 @@
 .toast.success { border-color: var(--success); }
 .toast.warning { border-color: var(--warning); }
 .toast.danger  { border-color: var(--danger); }
-.toast .toast-icon { color: var(--accent); margin-top: 2px; }
+.toast .toast-icon { color: var(--accent); flex-shrink: 0; }
 .toast.success .toast-icon { color: var(--success); }
 .toast.warning .toast-icon { color: var(--warning); }
 .toast.danger  .toast-icon { color: var(--danger); }

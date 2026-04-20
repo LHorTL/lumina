@@ -19,8 +19,20 @@ type ListenerState = ToastItem[];
 const listeners = new Set<(s: ListenerState) => void>();
 let items: ListenerState = [];
 let uid = 0;
+let autoMounted = false;
 
 function emit() {
+  if (listeners.size === 0 && !autoMounted && typeof document !== "undefined") {
+    autoMounted = true;
+    const div = document.createElement("div");
+    document.body.appendChild(div);
+    const root = (ReactDOM as any).createRoot
+      ? (ReactDOM as any).createRoot(div)
+      : null;
+    if (root) {
+      root.render(React.createElement(ToastContainer));
+    }
+  }
   listeners.forEach((l) => l(items));
 }
 

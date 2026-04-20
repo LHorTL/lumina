@@ -1,6 +1,61 @@
 import * as React from "react";
 import { Icon, IconButton, Tooltip, toast } from "lumina";
 
+/* ============ JSX syntax highlighter ============ */
+
+const KEYWORDS = new Set([
+  "import","from","export","default","const","let","var","function","return",
+  "if","else","new","typeof","null","undefined","true","false","async","await",
+  "type","interface","extends","switch","case","break","this","class","of","in",
+]);
+
+const TOKEN_RE =
+  /\/\/[^\n]*|\/\*[\s\S]*?\*\/|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`|<\/?[A-Za-z][\w.]*|\/>|\b[A-Za-z_$][\w$]*\b|\b\d+\.?\d*\b|=>|[{}()[\]=;,.:!?<>+\-*/&|]/gm;
+
+function classifyToken(t: string): string | null {
+  if (t.startsWith("//") || t.startsWith("/*")) return "cm";
+  if (t[0] === '"' || t[0] === "'" || t[0] === "`") return "st";
+  if (t[0] === "<" && t.length > 1) return "tg";
+  if (t === "/>") return "tg";
+  if (/^\d/.test(t)) return "nm";
+  if (KEYWORDS.has(t)) return "kw";
+  return null;
+}
+
+function highlightCode(code: string): React.ReactNode[] {
+  const src = code.trim();
+  const out: React.ReactNode[] = [];
+  let last = 0;
+  let key = 0;
+
+  const re = new RegExp(TOKEN_RE.source, "gm");
+  let m: RegExpExecArray | null;
+
+  while ((m = re.exec(src)) !== null) {
+    if (m.index > last) out.push(src.slice(last, m.index));
+
+    const text = m[0];
+    const cls = classifyToken(text);
+
+    if (cls) {
+      out.push(<span key={key++} className={`hl-${cls}`}>{text}</span>);
+    } else {
+      const nextChar = src[m.index + text.length];
+      if (nextChar === "=" && src[m.index + text.length + 1] !== "=") {
+        out.push(<span key={key++} className="hl-at">{text}</span>);
+      } else if (text[0] >= "A" && text[0] <= "Z") {
+        out.push(<span key={key++} className="hl-tg">{text}</span>);
+      } else {
+        out.push(text);
+      }
+    }
+    last = m.index + text.length;
+  }
+
+  if (last < src.length) out.push(src.slice(last));
+  return out;
+}
+
 /* ============ Demo card ============ */
 
 export interface DemoProps {
@@ -21,6 +76,15 @@ export interface DemoProps {
 export const Demo: React.FC<DemoProps> = ({ id, title, description, code, span = 1, children }) => {
   const hasPreview = children != null && children !== false;
   const [open, setOpen] = React.useState(!hasPreview);
+  const codeRef = React.useRef<HTMLPreElement>(null);
+  const [codeHeight, setCodeHeight] = React.useState(0);
+
+  React.useEffect(() => {
+    if (open && codeRef.current) {
+      setCodeHeight(codeRef.current.scrollHeight);
+    }
+  }, [open, code]);
+
   return (
     <section
       id={id}
@@ -55,19 +119,25 @@ export const Demo: React.FC<DemoProps> = ({ id, title, description, code, span =
           {code && hasPreview && (
             <Tooltip content={open ? "收起代码" : "展开代码"}>
               <IconButton
-                icon={open ? "chevUp" : "chevDown"}
+                icon="code"
                 size="sm"
                 variant="ghost"
+                className={`doc-demo-code-toggle ${open ? "active" : ""}`}
                 onClick={() => setOpen((o) => !o)}
               />
             </Tooltip>
           )}
         </div>
       </div>
-      {open && code && (
-        <pre className="doc-demo-code">
-          <code>{code.trim()}</code>
-        </pre>
+      {code && (
+        <div
+          className="doc-demo-code-collapse"
+          style={{ height: open ? codeHeight : 0 }}
+        >
+          <pre ref={codeRef} className="doc-demo-code">
+            <code>{highlightCode(code)}</code>
+          </pre>
+        </div>
       )}
     </section>
   );
