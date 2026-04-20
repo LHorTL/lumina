@@ -6,7 +6,7 @@ import { defineSection, type SectionCtx } from "./_types";
 
 const SectionDrawer: React.FC<SectionCtx> = () => {
   const [d, setD] = React.useState(false);
-  const [noMask, setNoMask] = React.useState(false);
+  const [placementOpen, setPlacementOpen] = React.useState(false);
   const [placement, setPlacement] = React.useState<"left" | "right" | "top" | "bottom">("right");
   return (
     <DocPage
@@ -104,16 +104,15 @@ const SectionDrawer: React.FC<SectionCtx> = () => {
                   key={p}
                   onClick={() => {
                     setPlacement(p);
-                    setNoMask(false);
-                    setD(true);
+                    setPlacementOpen(true);
                   }}
                 >
                   {p}
                 </Button>
               ))}
               <Drawer
-                open={d && !noMask}
-                onClose={() => setD(false)}
+                open={placementOpen}
+                onClose={() => setPlacementOpen(false)}
                 placement={placement}
                 title={`placement="${placement}"`}
               >
