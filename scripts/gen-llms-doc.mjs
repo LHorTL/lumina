@@ -22,7 +22,8 @@ import ts from "typescript";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 const SECTIONS_DIR = path.join(ROOT, "playground", "sections");
-const OUT_PATH = path.join(ROOT, "docs", "llms.md");
+const OUT_INDEX = path.join(ROOT, "docs", "llms.md");
+const OUT_DIR = path.join(ROOT, "docs", "llms");
 
 const GROUP_ORDER = ["起步", "通用", "表单", "数据展示", "反馈", "Electron"];
 
@@ -255,14 +256,14 @@ function renderDemo(demo) {
 
 function renderSection(meta) {
   const lines = [];
-  lines.push(`## ${asPlain(meta.title) || meta.id}`);
+  lines.push(`# ${asPlain(meta.title) || meta.id}`);
   lines.push("");
   lines.push(`> ${asPlain(meta.desc)}`);
   lines.push("");
 
   const imports = COMPONENT_ALIAS[meta.id];
   if (imports && imports.length) {
-    lines.push("**导入**");
+    lines.push("## 导入");
     lines.push("");
     lines.push("```tsx");
     lines.push(`import { ${imports.join(", ")} } from "@fangxinyan/lumina";`);
@@ -272,17 +273,17 @@ function renderSection(meta) {
 
   const demos = (meta.demos ?? []).filter((d) => d && d.code);
   if (demos.length) {
-    lines.push("### 示例");
+    lines.push("## 示例");
     lines.push("");
     for (const demo of demos) {
-      lines.push(renderDemo(demo));
+      lines.push(renderDemoAsH3(demo));
       lines.push("");
     }
   }
 
   const api = meta.api ?? [];
   if (api.length) {
-    lines.push("### API");
+    lines.push("## API");
     lines.push("");
     for (const group of api) {
       lines.push(renderApiTable(group));
@@ -290,6 +291,22 @@ function renderSection(meta) {
     }
   }
 
+  lines.push("---");
+  lines.push(`[← 回到索引](../llms.md)`);
+  lines.push("");
+
+  return lines.join("\n");
+}
+
+function renderDemoAsH3(demo) {
+  const lines = [];
+  lines.push(`### ${asPlain(demo.title) || demo.id}`);
+  const desc = asPlain(demo.description);
+  if (desc) lines.push("", desc);
+  if (demo.code) {
+    const code = String(demo.code).trim();
+    lines.push("", "```tsx", code, "```");
+  }
   return lines.join("\n");
 }
 
@@ -320,52 +337,87 @@ function main() {
     return (a.order ?? 999) - (b.order ?? 999);
   });
 
-  /* -------- Preamble ----------------------------------------------------- */
+  /* -------- Per-component files ----------------------------------------- */
+  fs.mkdirSync(OUT_DIR, { recursive: true });
+  // Clean previous generated component files (keep only current ones).
+  for (const existing of fs.readdirSync(OUT_DIR)) {
+    if (existing.endsWith(".md")) fs.unlinkSync(path.join(OUT_DIR, existing));
+  }
+
+  let totalBytes = 0;
+  for (const meta of sections) {
+    const id = String(meta.id ?? "unknown");
+    const body = renderSection(meta);
+    const outfile = path.join(OUT_DIR, `${id}.md`);
+    fs.writeFileSync(outfile, body, "utf-8");
+    totalBytes += body.length;
+  }
+
+  /* -------- Index file --------------------------------------------------- */
   const pkg = JSON.parse(
     fs.readFileSync(path.join(ROOT, "package.json"), "utf-8")
   );
 
-  const preamble = [
+  // Group sections for the index.
+  const grouped = new Map();
+  for (const s of sections) {
+    const g = s.group ?? "其他";
+    if (!grouped.has(g)) grouped.set(g, []);
+    grouped.get(g).push(s);
+  }
+
+  const indexLines = [
     `# @fangxinyan/lumina · LLM Reference`,
     ``,
-    `> 拟态风格的 React 18 组件库,目标是 Electron 桌面应用。这份文档是**写给 AI 编程助手**读的单文件参考(也适合人工检索) —— 每个组件包含:导入、常见示例、完整 Props 表。示例源自 playground 的 demo,代码可直接复制运行。`,
+    `> 拟态风格的 React 18 组件库,目标是 Electron 桌面应用。**写给 AI 编程助手**的按需文档 —— 每个组件单独一个 \`.md\`,避免一次性读取全部。示例源自 playground 的 demo,可直接复制运行。`,
     ``,
     `- **包名**: \`${pkg.name}\``,
     `- **版本**: \`${pkg.version}\``,
     `- **React 最低版本**: 18`,
     `- **环境**: 带打包器的 React 工程(Vite / Next.js / Webpack / Remix / Electron + Vite 等)`,
     `- **零运行时依赖**: 只依赖 \`react\` / \`react-dom\` (peer deps)`,
-    `- **发布仓库**: ${pkg.repository?.url ?? "-"}`,
+    `- **仓库**: ${pkg.repository?.url ?? "-"}`,
+    ``,
+    `## 用法建议(给 AI)`,
+    ``,
+    `- **只需要某个组件时**: 直接读 \`./llms/<id>.md\`(例如 \`./llms/button.md\`)。每份 50-300 行,覆盖导入 / 示例 / 完整 Props 表。`,
+    `- **需要全局概念时**(安装、主题、图标、浮层): 读本文件底部的「必读 · 全局约定」一节。`,
+    `- **通过 npm 包内置路径**:`,
+    `  - 索引: \`node_modules/@fangxinyan/lumina/docs/llms.md\` 或子路径导出 \`@fangxinyan/lumina/llms.md\``,
+    `  - 单组件: \`node_modules/@fangxinyan/lumina/docs/llms/<id>.md\``,
     ``,
     `## 必读 · 全局约定`,
     ``,
     `1. **安装**  \n   \`npm install @fangxinyan/lumina\``,
     `2. **引入样式**(任一即可):  \n   \`\`\`tsx\n   import "@fangxinyan/lumina/styles"; // 一次性引入全部组件样式\n   \`\`\`\n   或按组件单独引入(适合 tree-shake 到极限):  \n   \`\`\`tsx\n   import "@fangxinyan/lumina/tokens";         // 设计令牌 + 全局 reset\n   import { Button } from "@fangxinyan/lumina"; // 会自动带上 Button.css\n   \`\`\``,
     `3. **TypeScript**: 所有 \`XxxProps\` 接口都是 \`export\`,可直接 \`import { Button, type ButtonProps } from "@fangxinyan/lumina";\``,
-    `4. **主题**: 用 \`<ThemeProvider>\` 包根;运行时可通过 \`useTheme()\` 改。六种强调色 (\`rose / sky / coral / mint / violet / amber\`) × 两种模式 (\`light / dark\` + \`system\`) × 三档密度 (\`compact / comfortable / spacious\`)。详见下方 Theme 小节。`,
-    `5. **图标**: 所有接受 \`icon / leadingIcon / trailingIcon\` 的 prop 用字符串 \`IconName\`。完整列表见下方 Icon 小节。`,
+    `4. **主题**: 用 \`<ThemeProvider>\` 包根;运行时可通过 \`useTheme()\` 改。六种强调色 (\`rose / sky / coral / mint / violet / amber\`) × 两种模式 (\`light / dark\` + \`system\`) × 三档密度 (\`compact / comfortable / spacious\`)。详见 [\`llms/theme.md\`](./llms/theme.md)。`,
+    `5. **图标**: 所有接受 \`icon / leadingIcon / trailingIcon\` 的 prop 用字符串 \`IconName\`。完整列表见 [\`llms/icon.md\`](./llms/icon.md)。`,
     `6. **浮层组件**(Tooltip / Popover / Select / Cascader / ColorPicker / Modal / Drawer): 内部已 \`createPortal\` 到 \`document.body\` + 视口边界翻转,放在 \`overflow: hidden\` 的容器里也不会被裁。`,
     `7. **Electron 专属组件**: \`TitleBar\` / \`WindowControls\` / \`Sidebar\` / \`AppShell\` 提供 macOS / Windows 原生风格的标题栏与导航。`,
     ``,
-    `## 目录`,
-    ``,
-    sections
-      .map((s) => `- [${asPlain(s.title)}](#${slug(asPlain(s.title))}) — ${asPlain(s.desc)}`)
-      .join("\n"),
-    ``,
-    `---`,
+    `## 组件索引`,
     ``,
   ];
 
-  const body = sections.map(renderSection).join("\n\n---\n\n");
-  const out = preamble.join("\n") + "\n" + body + "\n";
+  for (const [g, list] of grouped) {
+    indexLines.push(`### ${g}`);
+    indexLines.push("");
+    for (const s of list) {
+      const title = asPlain(s.title) || s.id;
+      const desc = asPlain(s.desc);
+      indexLines.push(`- [${title}](./llms/${s.id}.md) — ${desc}`);
+    }
+    indexLines.push("");
+  }
 
-  fs.mkdirSync(path.dirname(OUT_PATH), { recursive: true });
-  fs.writeFileSync(OUT_PATH, out, "utf-8");
+  const out = indexLines.join("\n") + "\n";
+  fs.mkdirSync(path.dirname(OUT_INDEX), { recursive: true });
+  fs.writeFileSync(OUT_INDEX, out, "utf-8");
+
   console.log(
-    `[gen-llms-doc] wrote ${path.relative(ROOT, OUT_PATH)} (${
-      sections.length
-    } sections, ${out.length} chars)`
+    `[gen-llms-doc] wrote ${sections.length} component files to ${path.relative(ROOT, OUT_DIR)}/ ` +
+      `(${totalBytes} chars) + index at ${path.relative(ROOT, OUT_INDEX)}`
   );
 }
 

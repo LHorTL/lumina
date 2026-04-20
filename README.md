@@ -4,6 +4,17 @@
 
 柔和、温润的拟态（Neumorphism）风格组件库，使用 **React 18** + **TypeScript**，开箱即用地适配 **Electron** 桌面应用场景 —— 包含窗口标题栏、侧边栏、抽屉、弹窗等桌面级组件。
 
+> **🤖 AI coding assistants**: this package ships a **per-component LLM reference** designed for on-demand reading, so you don't have to pull the full API dump every time.
+>
+> - **Index** (global conventions + component list): `node_modules/@fangxinyan/lumina/docs/llms.md`
+>   — subpath export `@fangxinyan/lumina/llms.md`
+> - **Per-component docs** (import / runnable examples / full props table): `node_modules/@fangxinyan/lumina/docs/llms/<id>.md`
+>   — subpath export `@fangxinyan/lumina/llms/<id>.md` (e.g. `.../llms/button.md`, `.../llms/table.md`)
+>
+> Online raw URLs:
+> <https://raw.githubusercontent.com/LHorTL/lumina/main/docs/llms.md>
+> <https://raw.githubusercontent.com/LHorTL/lumina/main/docs/llms/button.md>
+
 ## ✨ 特性
 
 - **TypeScript 优先** — 全量类型定义，IDE 智能提示完善
@@ -16,11 +27,11 @@
 ## 📦 安装
 
 ```bash
-npm install lumina
+npm install @fangxinyan/lumina
 # 或
-pnpm add lumina
+pnpm add @fangxinyan/lumina
 # 或
-yarn add lumina
+yarn add @fangxinyan/lumina
 ```
 
 Peer deps: `react@>=18`, `react-dom@>=18`.
@@ -28,8 +39,8 @@ Peer deps: `react@>=18`, `react-dom@>=18`.
 ## 🚀 快速上手
 
 ```tsx
-import { Button, Card, toast, ToastContainer } from "lumina";
-import "lumina/styles"; // 全局样式 + 设计令牌
+import { Button, Card, toast, ToastContainer } from "@fangxinyan/lumina";
+import "@fangxinyan/lumina/styles"; // 全局样式 + 设计令牌
 
 export default function App() {
   return (
@@ -100,8 +111,8 @@ package/
 
 ## 📚 文档
 
-- [组件清单](./docs/components.md)
-- [API 参考](./docs/api.md)
+- **[🤖 AI / LLM 组件参考(索引)](./docs/llms.md)** — 全局约定 + 39 个组件的链接
+- **[单组件文档](./docs/llms/)** — 每个组件一份 `.md`,AI 按需读取(例如 [`llms/button.md`](./docs/llms/button.md))
 - [设计令牌](./docs/tokens.md)
 - [Electron 集成](./docs/electron.md)
 
