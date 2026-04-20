@@ -114,15 +114,15 @@
   width: 22px; height: 22px;
   border: none;
   border-radius: var(--r-sm);
-  background: var(--bg);
-  box-shadow: var(--neu-flat);
+  background: transparent;
+  box-shadow: none;
   color: var(--fg-subtle);
   display: inline-flex; align-items: center; justify-content: center;
   cursor: pointer;
-  transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+  transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
 }
-.expand-btn:hover { color: var(--accent-ink); box-shadow: var(--neu-out-sm); }
-.expand-btn.open { transform: rotate(90deg); color: var(--accent-ink); box-shadow: var(--neu-in-sm); }
+.expand-btn:hover { color: var(--accent-ink); background: var(--bg); box-shadow: var(--neu-out-sm); }
+.expand-btn.open { transform: rotate(90deg); color: var(--accent-ink); background: var(--bg); box-shadow: var(--neu-in-sm); }
 
 /* Expanded row panel */
 .table tbody tr.expanded-row td {
