@@ -38,8 +38,8 @@ export const Slider: React.FC<SliderProps> = ({
     <div className={`slider ${tone} ${disabled ? "disabled" : ""} ${className}`}>
       <div className="slider-track">
         <div className="slider-fill" style={{ width: `${pct}%` }} />
-        <div className="slider-thumb" style={{ left: `${pct}%` }} />
       </div>
+      <div className="slider-thumb" style={{ left: `${pct}%` }} />
       <input
         type="range"
         min={min}
