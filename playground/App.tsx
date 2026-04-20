@@ -13,7 +13,8 @@ import {
   type FontKey,
   type ThemeMode,
 } from "lumina";
-import { SECTIONS, NAV, type SectionKey } from "./sections";
+import { SECTIONS, NAV, DEFAULT_SECTION_ID } from "./sections/_registry";
+import { useHashRoute } from "./router";
 import { AnchorNav, type AnchorItem } from "./docs";
 import "./playground.css";
 
@@ -42,16 +43,12 @@ export const App: React.FC = () => (
 const AppInner: React.FC = () => {
   const theme = useTheme();
 
-  const [active, setActive] = React.useState<SectionKey>(() => {
-    const v = (typeof localStorage !== "undefined" && localStorage.getItem("lumina:active")) as SectionKey | null;
-    return v && SECTIONS[v] ? v : "intro";
-  });
+  const [active, go] = useHashRoute(DEFAULT_SECTION_ID, (id) => id in SECTIONS);
   const [search, setSearch] = React.useState("");
   const [tweaksOpen, setTweaksOpen] = React.useState(false);
   const previewRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
-    localStorage.setItem("lumina:active", active);
     if (previewRef.current) previewRef.current.scrollTop = 0;
   }, [active]);
 
@@ -118,7 +115,7 @@ const AppInner: React.FC = () => {
       })).filter((g) => g.items.length)
     : NAV;
 
-  const section = SECTIONS[active];
+  const section = SECTIONS[active] ?? SECTIONS[DEFAULT_SECTION_ID];
   const Component = section.Component;
 
   return (
@@ -186,7 +183,7 @@ const AppInner: React.FC = () => {
                 <button
                   key={it.id}
                   className={`nav-item ${active === it.id ? "active" : ""}`}
-                  onClick={() => setActive(it.id)}
+                  onClick={() => go(it.id)}
                 >
                   <span className="dot" />
                   <span>{it.label}</span>
@@ -215,7 +212,7 @@ const AppInner: React.FC = () => {
           <div className={anchors.length > 1 ? "doc-with-anchor" : ""}>
             <div>
               <Component
-                go={setActive}
+                go={go}
                 setTweak={setTweak}
                 openTweaks={() => setTweaksOpen(true)}
                 scrollRoot={previewRef}

@@ -78,6 +78,17 @@ npm run build        # Vite 构建 playground（一般用不上）
 
 tsup 会自动扫描 `src/components/*` 目录作为独立入口，**无需手动改** `tsup.config.ts`。
 
+### Playground 同步规则（强约束）
+
+**任何影响组件对外行为的改动都要同步到 `playground/sections.tsx`**，以便肉眼回归、并作为使用者的即时文档：
+
+- **新增组件** → 加一个独立 demo section（`AnchorNav` 里对应的锚点条目也要加）。
+- **新增 prop / 新增 variant / 新增子组件** → 在对应 section 里加一个最小可见的演示。
+- **改 API 形状（prop 重命名、类型变更、默认值调整）** → 更新现有 section 的用法，删掉失效示例。
+- **只改 CSS / 视觉调优** → 不必改 section，但要自己 `npm run dev` 目视确认效果。
+
+缺失 demo 的改动不算完成，即便类型检查和构建都过。
+
 ### TypeScript 约定
 
 - 所有导出的 props 接口必须 `export`，用户需要能 import。
