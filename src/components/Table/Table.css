@@ -11,6 +11,10 @@
   box-shadow: var(--neu-in-sm);
   overflow: auto;
 }
+/* When scroll=y is on, the wrap itself becomes the scroll region. */
+.table-wrap.scroll-y { overflow-y: auto; }
+.table-wrap.scroll-x { overflow-x: auto; }
+
 .table {
   width: 100%;
   border-collapse: separate;
@@ -30,8 +34,13 @@
   position: sticky; top: 0;
   z-index: 1;
 }
+/* When the wrap is the scroll container (scroll.y), position:sticky on th needs
+   top:0 relative to the wrap — browsers already handle that. Adding a stronger
+   bg so content under the header doesn't bleed through. */
+.table.sticky-head th { background: var(--bg); }
 .table th.sortable { cursor: pointer; user-select: none; }
 .table th.sortable:hover { color: var(--fg); }
+.table th .th-label { vertical-align: middle; }
 .table th .sort-ind {
   display: inline-flex;
   width: 16px; height: 16px;
@@ -95,8 +104,148 @@
 }
 .table.cards.hoverable tbody tr:hover td { background: var(--bg); transform: translateY(-1px); }
 
-.table .row-check { width: 36px; }
+.table .row-check { width: 44px; }
+.table .row-check .checkbox { display: inline-flex; }
+.table .row-expand { width: 40px; text-align: center; }
 .table-empty { padding: 60px 20px; text-align: center; color: var(--fg-muted); }
+
+/* Expand button */
+.expand-btn {
+  width: 22px; height: 22px;
+  border: none;
+  border-radius: var(--r-sm);
+  background: var(--bg);
+  box-shadow: var(--neu-flat);
+  color: var(--fg-subtle);
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.expand-btn:hover { color: var(--accent-ink); box-shadow: var(--neu-out-sm); }
+.expand-btn.open { transform: rotate(90deg); color: var(--accent-ink); box-shadow: var(--neu-in-sm); }
+
+/* Expanded row panel */
+.table tbody tr.expanded-row td {
+  padding: 0 18px 14px 18px;
+  border-bottom: 1px solid var(--divider);
+  background: color-mix(in oklch, var(--bg-sunken) 25%, transparent);
+}
+.expanded-panel {
+  padding: 14px 16px;
+  border-radius: var(--r-md);
+  background: var(--bg);
+  box-shadow: var(--neu-in-sm);
+  color: var(--fg);
+  font-size: 13px;
+}
+
+/* Radio-style row selector */
+.table .row-check .radio-dot {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  background: var(--bg);
+  box-shadow: var(--neu-in-sm);
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: box-shadow var(--dur-fast) var(--ease);
+}
+.table .row-check .radio-dot:disabled { opacity: 0.5; cursor: not-allowed; }
+.table .row-check .radio-dot.checked {
+  box-shadow: var(--neu-out-sm);
+}
+.table .row-check .radio-dot.checked::after {
+  content: "";
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* Filter button on header */
+.table th.filterable .filter-ind {
+  display: inline-flex;
+  width: 18px; height: 18px;
+  border-radius: 5px;
+  background: var(--bg);
+  box-shadow: var(--neu-flat);
+  color: var(--fg-subtle);
+  align-items: center; justify-content: center;
+  margin-left: 6px;
+  cursor: pointer;
+  border: none;
+  vertical-align: middle;
+  padding: 0;
+  transition: color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+.table th.filterable .filter-ind:hover { color: var(--fg); }
+.table th.filterable .filter-ind.active {
+  color: var(--accent-ink);
+  box-shadow: var(--neu-in-sm);
+}
+
+/* Filter popover panel (portaled to body) */
+.table-filter-panel {
+  z-index: 1001;
+  min-width: 200px;
+  max-width: 260px;
+  background: var(--bg);
+  border-radius: var(--r-md);
+  box-shadow: var(--neu-out-lg);
+  padding: 10px;
+  animation: menuIn var(--dur) var(--ease);
+}
+.table-filter-options {
+  display: flex;
+  flex-direction: column;
+  max-height: 220px;
+  overflow-y: auto;
+  gap: 4px;
+  padding: 4px;
+}
+.table-filter-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  color: var(--fg);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease);
+}
+.table-filter-item:hover {
+  background: color-mix(in oklch, var(--accent-soft) 40%, transparent);
+}
+.table-filter-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid var(--divider);
+}
+.table-filter-actions .tf-btn {
+  border: none;
+  padding: 6px 12px;
+  border-radius: var(--r-sm);
+  background: var(--bg);
+  box-shadow: var(--neu-out-sm);
+  font-size: 12px;
+  font-family: inherit;
+  color: var(--fg);
+  cursor: pointer;
+  transition: box-shadow var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.table-filter-actions .tf-btn:hover { box-shadow: var(--neu-in-sm); }
+.table-filter-actions .tf-btn.primary { color: var(--accent-ink); font-weight: 600; }
+.table-filter-actions .tf-btn.ghost { color: var(--fg-muted); box-shadow: var(--neu-flat); }
+.table-filter-actions .tf-btn.ghost:hover { box-shadow: var(--neu-in-sm); }
+
+/* Built-in pagination bar */
+.table-pagination {
+  margin-top: 12px;
+}
 
 /* Pro: card-wrap with toolbar + table + footer */
 .table-card {
@@ -107,6 +256,13 @@
 }
 .table-card .table-wrap { background: transparent; box-shadow: none; border-radius: 0; }
 .table-card .table-wrap.joined { border-radius: 0; }
+/* When TablePro hosts the built-in pagination, seat it inside the card. */
+.table-card .table-pagination {
+  margin-top: 0;
+  padding: 6px 16px;
+  border-top: 1px solid var(--divider);
+  background: color-mix(in oklch, var(--bg-sunken) 30%, transparent);
+}
 .table-toolbar {
   display: flex;
   align-items: center;

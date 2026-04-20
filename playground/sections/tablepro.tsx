@@ -4,7 +4,6 @@ import {
   Button,
   Divider,
   Input,
-  Pagination,
   Progress,
   Select,
   TablePro,
@@ -30,12 +29,11 @@ const SectionTablePro: React.FC<SectionCtx> = () => {
   );
   const [search, setSearch] = React.useState("");
   const [roleFilter, setRoleFilter] = React.useState("all");
-  const [selected, setSelected] = React.useState<(string | number)[]>([]);
+  const [selectedKeys, setSelectedKeys] = React.useState<(string | number)[]>([]);
   const [sortKey, setSortKey] = React.useState("id");
   const [sortDir, setSortDir] = React.useState<"asc" | "desc">("asc");
-  const [page, setPage] = React.useState(1);
-  const pageSize = 4;
 
+  // Filter / sort once — pagination happens inside Table now.
   const filtered = React.useMemo(() => {
     let d = raw;
     if (search) d = d.filter((r) => r.name.includes(search));
@@ -47,31 +45,32 @@ const SectionTablePro: React.FC<SectionCtx> = () => {
       return sortDir === "asc" ? cmp : -cmp;
     });
   }, [raw, search, roleFilter, sortKey, sortDir]);
-  const paged = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   return (
     <DocPage
-      whenToUse={<p>带工具栏、搜索、筛选、排序、多选、分页的全功能表格。</p>}
+      whenToUse={<p>带工具栏、搜索、筛选、排序、多选、分页的全功能表格。TablePro 继承 Table 的全部能力 (分页、滚动、行选择、可展开行、列筛选)。</p>}
       demos={[
         {
           id: "full",
           title: "全功能",
           span: 2,
+          description: "工具栏 + 排序 + 新版 rowSelection + 内置分页。相比旧版,Table 自己切片 data,不必外部 slice。",
           code: `<TablePro
-  rowKey="id" data={paged} columns={...}
-  selectable selected={selected} onSelect={setSelected}
+  rowKey="id" data={filtered} columns={...}
+  rowSelection={{ selectedRowKeys, onChange }}
   sortKey={sortKey} sortDir={sortDir} onSort={...}
+  pagination={{ pageSize: 4 }}
   toolbar={<Input ... /> <Select ... />}
   actions={<Button>新增</Button>}
-  footer={<Pagination ... />}
 />`,
           render: () => (
             <TablePro
               rowKey="id"
-              data={paged}
-              selectable
-              selected={selected}
-              onSelect={setSelected}
+              data={filtered}
+              rowSelection={{
+                selectedRowKeys: selectedKeys,
+                onChange: (keys) => setSelectedKeys(keys),
+              }}
               sortKey={sortKey}
               sortDir={sortDir}
               onSort={(k) => {
@@ -81,6 +80,7 @@ const SectionTablePro: React.FC<SectionCtx> = () => {
                   setSortDir("asc");
                 }
               }}
+              pagination={{ pageSize: 4 }}
               columns={[
                 {
                   key: "name",
@@ -99,6 +99,11 @@ const SectionTablePro: React.FC<SectionCtx> = () => {
                   key: "status",
                   title: "状态",
                   dataIndex: "status",
+                  filters: [
+                    { text: "在线", value: "在线" },
+                    { text: "忙碌", value: "忙碌" },
+                    { text: "离线", value: "离线" },
+                  ],
                   render: (v) => (
                     <Tag tone={v === "在线" ? "success" : v === "忙碌" ? "warning" : "neutral"} dot>
                       {v}
@@ -144,16 +149,16 @@ const SectionTablePro: React.FC<SectionCtx> = () => {
               }
               actions={
                 <>
-                  {selected.length > 0 && (
+                  {selectedKeys.length > 0 && (
                     <>
-                      <span style={{ fontSize: 12, color: "var(--fg-muted)" }}>已选 {selected.length}</span>
+                      <span style={{ fontSize: 12, color: "var(--fg-muted)" }}>已选 {selectedKeys.length}</span>
                       <Button
                         size="sm"
                         variant="danger"
                         icon="trash"
                         onClick={() => {
-                          toast.error(`已删除 ${selected.length} 条`);
-                          setSelected([]);
+                          toast.error(`已删除 ${selectedKeys.length} 条`);
+                          setSelectedKeys([]);
                         }}
                       >
                         批量删除
@@ -166,9 +171,59 @@ const SectionTablePro: React.FC<SectionCtx> = () => {
                   </Button>
                 </>
               }
-              footer={
-                <Pagination total={filtered.length} pageSize={pageSize} page={page} onChange={setPage} />
-              }
+            />
+          ),
+        },
+        {
+          id: "withExpand",
+          title: "带可展开行",
+          span: 2,
+          description: "TablePro 直接透传 expandable 到 Table。",
+          code: `<TablePro
+  title="成员详情"
+  expandable={{
+    expandedRowRender: (row) => <div>...展开内容...</div>,
+  }}
+  ...
+/>`,
+          render: () => (
+            <TablePro
+              rowKey="id"
+              title="成员详情"
+              data={raw}
+              expandable={{
+                expandedRowRender: (row) => (
+                  <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+                    <div>
+                      <div style={{ fontSize: 11, color: "var(--fg-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                        级别
+                      </div>
+                      <div style={{ fontSize: 13 }}>{row.level}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 11, color: "var(--fg-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                        完成度
+                      </div>
+                      <div style={{ fontSize: 13 }}>{row.progress}%</div>
+                    </div>
+                  </div>
+                ),
+              }}
+              columns={[
+                { key: "name", title: "姓名", dataIndex: "name" },
+                { key: "role", title: "部门", dataIndex: "role", render: (v) => <Tag tone="accent">{v}</Tag> },
+                {
+                  key: "status",
+                  title: "状态",
+                  dataIndex: "status",
+                  render: (v) => (
+                    <Tag tone={v === "在线" ? "success" : v === "忙碌" ? "warning" : "neutral"} dot>
+                      {v}
+                    </Tag>
+                  ),
+                },
+              ]}
+              pagination={{ pageSize: 5 }}
             />
           ),
         },
@@ -177,10 +232,10 @@ const SectionTablePro: React.FC<SectionCtx> = () => {
         {
           title: "TablePro",
           rows: [
-            { prop: "...", description: "继承自 Table 全部 props", type: "TableProps" },
+            { prop: "...", description: "继承自 Table 全部 props (包括新的 pagination / scroll / rowSelection / expandable / filters)", type: "TableProps" },
             { prop: "toolbar", description: "工具栏内容", type: "ReactNode" },
             { prop: "actions", description: "工具栏右侧操作", type: "ReactNode" },
-            { prop: "footer", description: "底部 (一般放 Pagination)", type: "ReactNode" },
+            { prop: "footer", description: "底部 (可选,传了会渲染在分页下方)", type: "ReactNode" },
             { prop: "title", description: "工具栏标题", type: "ReactNode" },
           ],
         },
