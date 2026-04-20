@@ -32,4 +32,4 @@ export * from "./components/ColorPicker";
 export * from "./components/Theme";
 
 /** Package version — bumped by release scripts. */
-export const VERSION = "0.1.3";
+export const VERSION = "0.1.4";
