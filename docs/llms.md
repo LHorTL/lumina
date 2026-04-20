@@ -3,7 +3,7 @@
 > 拟态风格的 React 18 组件库,目标是 Electron 桌面应用。**写给 AI 编程助手**的按需文档 —— 每个组件单独一个 `.md`,避免一次性读取全部。示例源自 playground 的 demo,可直接复制运行。
 
 - **包名**: `@fangxinyan/lumina`
-- **版本**: `0.2.1`
+- **版本**: `0.3.0`
 - **React 最低版本**: 18
 - **环境**: 带打包器的 React 工程(Vite / Next.js / Webpack / Remix / Electron + Vite 等)
 - **零运行时依赖**: 只依赖 `react` / `react-dom` (peer deps)
@@ -52,13 +52,16 @@
 ### 表单
 
 - [Input 输入框](./llms/input.md) — 凹陷凹槽式输入域,支持前后置图标、错误态、禁用态。
+- [InputNumber 数字输入](./llms/inputnumber.md) — 带步进按钮的数字输入框。
 - [Switch 开关](./llms/switch.md) — 二元状态切换器。
 - [Checkbox 复选框](./llms/checkbox.md) — 在一组选项中进行多项选择,或独立切换某个开关项。
 - [Radio 单选](./llms/radio.md) — 在多个互斥选项中进行单项选择。
 - [Slider 滑块](./llms/slider.md) — 在连续数值区间内取值。
 - [Select 下拉选择](./llms/select.md) — 下拉选择,支持单/多选、搜索、分组、加载态。
+- [AutoComplete 自动补全](./llms/autocomplete.md) — 输入时展示建议下拉,不限定必须从候选中选。
 - [Cascader 级联选择](./llms/cascader.md) — 层级关联数据集合中的多级选择。
 - [ColorPicker 颜色选择](./llms/colorpicker.md) — 拟态风格的颜色选择器:HSV 色域、色相、hex 输入、预设调色板。
+- [Form 表单](./llms/form.md) — 受控表单,字段绑定 + 校验,API 对齐 antd。
 
 ### 数据展示
 

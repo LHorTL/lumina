@@ -52,7 +52,11 @@ export type IconName =
   | "clock"
   | "menu"
   | "more"
-  | "sliders";
+  | "sliders"
+  | "aim"
+  | "swap"
+  | "camera"
+  | "qq";
 
 export interface IconProps extends Omit<React.SVGAttributes<SVGSVGElement>, "stroke"> {
   name: IconName;
@@ -110,6 +114,10 @@ search:    <><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></>,
     menu:      <><path d="M3 6h18M3 12h18M3 18h18"/></>,
     more:      <><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></>,
     sliders:   <><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></>,
+    aim:       <><circle cx="12" cy="12" r="10"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><circle cx="12" cy="12" r="2"/></>,
+    swap:      <><path d="M3 8h18M17 4l4 4-4 4M21 16H3M7 20l-4-4 4-4"/></>,
+    camera:    <><path d="M3 7h4l2-3h6l2 3h4a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="4"/></>,
+    qq:        <><path d="M12 2c-3 0-5 2.1-5 5 0 1.3.4 2.6.9 3.6-1.8 1-3.4 3-3.4 5.9 0 .8.7 1.5 1.5 1.5 0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2 .8 0 1.5-.7 1.5-1.5 0-2.9-1.6-4.9-3.4-5.9.5-1 .9-2.3.9-3.6 0-2.9-2-5-5-5z"/><circle cx="10" cy="9" r="0.8" fill="currentColor" stroke="none"/><circle cx="14" cy="9" r="0.8" fill="currentColor" stroke="none"/></>,
 };
 
 /**
@@ -136,4 +144,4 @@ export const Icon: React.FC<IconProps> = ({ name, size = 16, stroke = 2, style, 
   </svg>
 );
 
-export const ICON_NAMES: IconName[] = ["search", "plus", "minus", "check", "x", "chevDown", "chevRight", "chevLeft", "chevUp", "arrowRight", "settings", "user", "bell", "mail", "heart", "star", "home", "folder", "file", "image", "play", "pause", "volume", "trash", "edit", "copy", "download", "upload", "info", "alert", "check2", "eye", "eyeOff", "sparkle", "moon", "sun", "palette", "layers", "grid", "list", "zap", "filter", "mic", "send", "calendar", "clock", "menu", "more", "sliders"];
+export const ICON_NAMES: IconName[] = ["search", "plus", "minus", "check", "x", "chevDown", "chevRight", "chevLeft", "chevUp", "arrowRight", "settings", "user", "bell", "mail", "heart", "star", "home", "folder", "file", "image", "play", "pause", "volume", "trash", "edit", "copy", "download", "upload", "info", "alert", "check2", "eye", "eyeOff", "sparkle", "moon", "sun", "palette", "layers", "grid", "list", "zap", "filter", "mic", "send", "calendar", "clock", "menu", "more", "sliders", "aim", "swap", "camera", "qq"];

@@ -1,0 +1,40 @@
+/* ============ InputNumber ============ */
+.ipn-steppers {
+  display: inline-flex;
+  flex-direction: column;
+  align-self: stretch;
+  margin: 4px -6px 4px 6px;
+  width: 16px;
+  border-left: 1px solid var(--divider);
+  overflow: hidden;
+  border-top-right-radius: calc(var(--r-md) - 4px);
+  border-bottom-right-radius: calc(var(--r-md) - 4px);
+}
+.input-wrap.sm .ipn-steppers { margin: 3px -4px 3px 6px; width: 14px; }
+.input-wrap.lg .ipn-steppers { margin: 5px -6px 5px 8px; width: 18px; }
+
+.ipn-step {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--fg-subtle);
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.ipn-step.up:not(.down) { border-bottom: 1px solid var(--divider); }
+.ipn-step.up            { border-bottom: 1px solid var(--divider); }
+.ipn-step:hover:not(:disabled) {
+  color: var(--accent-ink);
+  background: var(--bg-sunken);
+}
+.ipn-step:active:not(:disabled) {
+  color: var(--accent);
+}
+.ipn-step:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}

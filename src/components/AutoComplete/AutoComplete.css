@@ -1,0 +1,54 @@
+/* ============ AutoComplete ============ */
+.autocomplete {
+  display: inline-block;
+  width: 100%;
+  position: relative;
+}
+
+.autocomplete-panel {
+  z-index: 1500;
+  background: var(--bg);
+  border-radius: var(--r-md);
+  box-shadow: var(--neu-float);
+  padding: 6px;
+  max-height: 280px;
+  overflow-y: auto;
+  animation: menuIn var(--dur) var(--ease);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.autocomplete-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  color: var(--fg);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease),
+    box-shadow var(--dur-fast) var(--ease);
+}
+.autocomplete-item:disabled {
+  color: var(--fg-subtle);
+  cursor: not-allowed;
+}
+.autocomplete-item.active:not(:disabled) {
+  background: var(--bg);
+  color: var(--accent-ink);
+  box-shadow: var(--neu-in-sm);
+}
+
+.autocomplete-empty {
+  padding: 16px 12px;
+  text-align: center;
+  color: var(--fg-subtle);
+  font-size: 13px;
+}
