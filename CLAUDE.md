@@ -23,27 +23,41 @@
 ## 目录结构
 
 ```
-softkit/
+lumina/
 ├── src/
-│   ├── components/<Name>/     # 每个组件独占一个目录
-│   │   ├── <Name>.tsx         # 组件代码（必须 forwardRef）
-│   │   ├── <Name>.css         # 组件独立样式
-│   │   └── index.ts           # `export * from "./<Name>";`
+│   ├── components/<Name>/       # 每个组件独占一个目录
+│   │   ├── <Name>.tsx           # 组件代码（必须 forwardRef）
+│   │   ├── <Name>.css           # 组件独立样式
+│   │   └── index.ts             # `export * from "./<Name>";`
 │   ├── styles/
-│   │   ├── tokens.css         # 设计令牌（色/阴影/间距/圆角），:root + [data-theme="dark"]
-│   │   ├── base.css           # 全局 reset / 滚动条 / focus-visible
-│   │   ├── shared.css         # 跨组件共享 keyframes
-│   │   └── index.css          # 汇总入口，@import 上述三个
-│   └── index.ts               # 公共出口 barrel
-├── playground/                # Vite 演示站（`npm run dev`）
-│   ├── App.tsx                # 外壳 + TweaksPanel + 主题调试
-│   ├── sections.tsx           # 所有组件的 demo 分区
-│   ├── docs.tsx               # 文档展示组件（AnchorNav、DemoCard 等）
+│   │   ├── tokens.css           # 设计令牌（色/阴影/间距/圆角），:root + [data-theme="dark"]
+│   │   ├── base.css             # 全局 reset / 滚动条 / focus-visible
+│   │   ├── shared.css           # 跨组件共享 keyframes
+│   │   └── index.css            # 汇总入口，@import 上述三个
+│   ├── utils/
+│   │   └── useFloating.ts       # 所有浮层组件共用的定位 hook（Portal + flip + shift）
+│   └── index.ts                 # 公共出口 barrel（含 `VERSION` 常量）
+├── playground/                  # Vite 演示站（`npm run dev`）
+│   ├── App.tsx                  # 外壳 + TweaksPanel + 主题调试
+│   ├── router.ts                # Hash 路由（URL 形如 `#/button`）
+│   ├── docs.tsx                 # 文档展示组件（DocPage / AnchorNav / ApiTable）
+│   ├── sections/                # 每个组件一个 <name>.tsx，用 defineSection(...) 注册
+│   │   ├── _types.ts            # SectionMeta 类型 + defineSection helper
+│   │   ├── _registry.ts         # import.meta.glob 自动扫描 *.tsx，产出 SECTIONS + NAV
+│   │   ├── _shared.tsx          # Row / Field 等 demo 辅助组件
+│   │   └── <name>.tsx           # 单组件 demo section（default export defineSection 对象）
 │   └── main.tsx, index.html
-├── docs/                      # 用户文档（api.md / components.md / tokens.md / electron.md）
-├── scripts/                   # 构建/迁移辅助脚本（.mjs）
-├── tsup.config.ts             # 库构建配置
-└── vite.config.ts             # Playground 配置（含 `lumina` / `lumina/styles` 别名）
+├── docs/
+│   ├── llms.md                  # AI 文档索引（自动生成，不手改）
+│   ├── llms/<id>.md             # AI 单组件文档（自动生成，不手改）
+│   ├── api.md / components.md / tokens.md / electron.md  # 人工手写的用户文档（逐步被 llms 替代）
+├── scripts/
+│   ├── gen-llms-doc.mjs         # 从 playground/sections/*.tsx 生成 docs/llms/*
+│   └── *.mjs                    # 其他一次性迁移脚本
+├── llms.txt                     # llmstxt.org 规范索引（给 crawler）
+├── tsup.config.ts               # 库构建配置
+├── vite.config.ts               # Playground 配置（alias `lumina` → src/index.ts 和 `lumina/styles` → src/styles/index.css）
+└── CLAUDE.md                    # ← 你正在读的这份
 ```
 
 ## 开发命令
@@ -51,11 +65,12 @@ softkit/
 ```bash
 npm run dev          # 启动 playground 热更新（http://localhost:5173）
 npm run typecheck    # tsc --noEmit 全量类型检查
-npm run build:lib    # tsup 构建库 → dist/
+npm run build:lib    # tsup 构建库 → dist/（自动生成 ESM + CJS + .d.ts + .d.cts + styles.css）
+npm run gen:docs     # 从 playground/sections 生成 docs/llms.md 和 docs/llms/<id>.md
 npm run build        # Vite 构建 playground（一般用不上）
 ```
 
-发布流程内置在 `prepublishOnly`：执行 `npm publish` 会自动先跑 `typecheck` + `build:lib`。
+`prepublishOnly` 串联发布前必过的三步：`typecheck && gen:docs && build:lib`。执行 `npm publish` 会自动先跑这三步，**不要用 `--ignore-scripts` 跳过**。
 
 ## 组件开发规范
 
