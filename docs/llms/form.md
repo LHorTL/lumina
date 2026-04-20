@@ -52,6 +52,32 @@ Checkbox / Switch 的绑定属性不是 value,需要用 valuePropName 指定;对
 </Form.Item>
 ```
 
+### 实时值预览
+
+onValuesChange 可以监听任何字段变化。下方面板会实时展示 form.getFieldsValue() 的结果。
+
+```tsx
+<Form onValuesChange={(changed, all) => setSnapshot(all)}>
+  ...
+</Form>
+<pre>{JSON.stringify(snapshot, null, 2)}</pre>
+```
+
+### 横排复选 (嵌套 Form.Item)
+
+外层 Form.Item 只做布局(无 name),内层若干 Form.Item 各自绑定字段并加 noStyle。my-assistant 里 "新建角色" 弹窗用的就是这个模式。
+
+```tsx
+<Form.Item className="checkbox-row">
+  <Form.Item name="addToHistory" valuePropName="checked" initialValue={true} noStyle>
+    <Checkbox label="添加到登录列表" />
+  </Form.Item>
+  <Form.Item name="setAsLast" valuePropName="checked" initialValue={false} noStyle>
+    <Checkbox label="设为最近登录" />
+  </Form.Item>
+</Form.Item>
+```
+
 ### 命令式 API
 
 通过 Form.useForm() 拿到实例,外部可主动 setFieldsValue / validateFields / resetFields。
