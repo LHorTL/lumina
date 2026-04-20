@@ -1,0 +1,101 @@
+/* ============ Drawer ============ */
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in oklch, var(--bg-sunken) 50%, transparent);
+  backdrop-filter: blur(4px);
+  z-index: 150;
+  animation: fadeIn var(--dur) var(--ease);
+}
+.drawer-overlay.hidden {
+  display: none;
+}
+
+.drawer {
+  position: fixed;
+  background: var(--bg);
+  padding: var(--gap-5);
+  z-index: 151;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.drawer.hidden {
+  display: none;
+}
+
+.drawer.right {
+  top: 0; right: 0; bottom: 0;
+  width: min(420px, 92vw);
+  animation: drawerInRight var(--dur-slow) var(--ease);
+  box-shadow: -24px 0 60px -20px rgba(40, 55, 80, 0.25);
+}
+.drawer.left {
+  top: 0; left: 0; bottom: 0;
+  width: min(420px, 92vw);
+  animation: drawerInLeft var(--dur-slow) var(--ease);
+  box-shadow: 24px 0 60px -20px rgba(40, 55, 80, 0.25);
+}
+.drawer.top {
+  top: 0; left: 0; right: 0;
+  height: min(320px, 80vh);
+  animation: drawerInTop var(--dur-slow) var(--ease);
+  box-shadow: 0 24px 60px -20px rgba(40, 55, 80, 0.25);
+}
+.drawer.bottom {
+  bottom: 0; left: 0; right: 0;
+  height: min(320px, 80vh);
+  animation: drawerInBottom var(--dur-slow) var(--ease);
+  box-shadow: 0 -24px 60px -20px rgba(40, 55, 80, 0.25);
+}
+
+@keyframes drawerInRight  { from { transform: translateX( 20px); opacity: 0; } }
+@keyframes drawerInLeft   { from { transform: translateX(-20px); opacity: 0; } }
+@keyframes drawerInTop    { from { transform: translateY(-20px); opacity: 0; } }
+@keyframes drawerInBottom { from { transform: translateY( 20px); opacity: 0; } }
+
+.drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-3);
+  margin-bottom: var(--gap-4);
+  padding-bottom: var(--gap-4);
+  border-bottom: 1px solid var(--divider);
+}
+.drawer-head-right {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-3);
+}
+.drawer-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+.drawer-close {
+  width: 28px; height: 28px;
+  border: none;
+  background: transparent;
+  border-radius: var(--r-sm);
+  display: grid;
+  place-items: center;
+  color: var(--fg-subtle);
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease);
+}
+.drawer-close:hover {
+  color: var(--fg);
+  background: var(--bg);
+  box-shadow: var(--neu-flat);
+}
+.drawer-body {
+  flex: 1;
+}
+.drawer-foot {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: var(--gap-4);
+  padding-top: var(--gap-4);
+  border-top: 1px solid var(--divider);
+}

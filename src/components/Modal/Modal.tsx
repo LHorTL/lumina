@@ -4,108 +4,176 @@ import "./Modal.css";
 import * as React from "react";
 import ReactDOM from "react-dom";
 import { Icon } from "../Icon";
-import { Button } from "../Button";
+import { Button, type ButtonProps } from "../Button";
 
 export interface ModalProps {
+  /** Whether the modal is visible. */
   open: boolean;
+  /** Fired by mask click / close button / Esc. Also the fallback for cancel. */
   onClose?: () => void;
+  /** Dedicated Cancel callback. Falls back to `onClose` when omitted. */
+  onCancel?: () => void;
+  /** Fired when the default OK button is clicked. */
+  onOk?: () => void;
   title?: React.ReactNode;
   description?: React.ReactNode;
+  /**
+   * Footer content. Pass `null` to hide the footer, or a custom node to
+   * replace the default OK / Cancel buttons.
+   */
   footer?: React.ReactNode;
   children?: React.ReactNode;
   width?: number | string;
+  /** Show the close (×) button. Default true. */
+  closable?: boolean;
+  /** Override the close icon node. */
+  closeIcon?: React.ReactNode;
   /** Close when clicking the mask. Default true. */
   maskClosable?: boolean;
   /** Close on Escape key. Default true. */
   escClosable?: boolean;
+  /** Label for the default OK button. */
+  okText?: React.ReactNode;
+  /** Label for the default Cancel button. */
+  cancelText?: React.ReactNode;
+  /** Extra props forwarded to the default OK button. */
+  okButtonProps?: Partial<ButtonProps>;
+  /** Extra props forwarded to the default Cancel button. */
+  cancelButtonProps?: Partial<ButtonProps>;
+  /** Show a spinner on the OK button (e.g. while an async submit is running). */
+  confirmLoading?: boolean;
+  /**
+   * When true the modal's children are unmounted every time it closes.
+   * Default `false` — children stay mounted so internal state survives
+   * reopens, matching antd's default.
+   */
+  destroyOnClose?: boolean;
+  /** Fires after the open/close animation finishes. */
+  afterOpenChange?: (open: boolean) => void;
+  /** Override the z-index of the overlay. */
+  zIndex?: number;
   className?: string;
 }
+
+const ANIM_MS = 280;
 
 /** `Modal` — centered dialog with mask. Renders into `document.body`. */
 export const Modal: React.FC<ModalProps> = ({
   open,
   onClose,
+  onCancel,
+  onOk,
   title,
   description,
   footer,
   children,
   width = 440,
+  closable = true,
+  closeIcon,
   maskClosable = true,
   escClosable = true,
+  okText = "确定",
+  cancelText = "取消",
+  okButtonProps,
+  cancelButtonProps,
+  confirmLoading,
+  destroyOnClose = false,
+  afterOpenChange,
+  zIndex,
   className = "",
 }) => {
+  const [hasOpenedOnce, setHasOpenedOnce] = React.useState(open);
+  React.useEffect(() => {
+    if (open) setHasOpenedOnce(true);
+  }, [open]);
+
+  const handleCancel = React.useCallback(() => {
+    if (onCancel) onCancel();
+    else onClose?.();
+  }, [onCancel, onClose]);
+
   React.useEffect(() => {
     if (!open || !escClosable) return;
-    const h = (e: KeyboardEvent) => e.key === "Escape" && onClose?.();
+    const h = (e: KeyboardEvent) => {
+      if (e.key === "Escape") handleCancel();
+    };
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
-  }, [open, escClosable, onClose]);
+  }, [open, escClosable, handleCancel]);
 
-  if (!open || typeof document === "undefined") return null;
+  const prevOpen = React.useRef(open);
+  React.useEffect(() => {
+    if (prevOpen.current !== open) {
+      prevOpen.current = open;
+      if (afterOpenChange) {
+        const id = window.setTimeout(() => afterOpenChange(open), ANIM_MS);
+        return () => window.clearTimeout(id);
+      }
+    }
+  }, [open, afterOpenChange]);
+
+  if (typeof document === "undefined") return null;
+  if (!hasOpenedOnce) return null;
+  if (!open && destroyOnClose) return null;
+
+  const overlayStyle: React.CSSProperties | undefined =
+    zIndex != null ? { zIndex } : undefined;
+
+  const defaultFooter = (
+    <>
+      <Button variant="ghost" onClick={handleCancel} {...cancelButtonProps}>
+        {cancelText}
+      </Button>
+      <Button
+        variant="primary"
+        loading={confirmLoading}
+        onClick={() => onOk?.()}
+        {...okButtonProps}
+      >
+        {okText}
+      </Button>
+    </>
+  );
+
   return ReactDOM.createPortal(
-    <div className={`modal-overlay ${className}`} onClick={() => maskClosable && onClose?.()}>
-      <div className="modal" style={{ width }} onClick={(e) => e.stopPropagation()}>
-        <div className="modal-head">
-          <div className="modal-titles">
-            {title && <div className="modal-title">{title}</div>}
-            {description && <div className="modal-desc">{description}</div>}
+    <div
+      className={`modal-overlay ${open ? "" : "hidden"} ${className}`}
+      style={overlayStyle}
+      onClick={() => maskClosable && handleCancel()}
+      role="presentation"
+    >
+      <div
+        className="modal"
+        style={{ width }}
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal
+        aria-hidden={!open}
+      >
+        {(title || description || closable) && (
+          <div className="modal-head">
+            <div className="modal-titles">
+              {title && <div className="modal-title">{title}</div>}
+              {description && <div className="modal-desc">{description}</div>}
+            </div>
+            {closable && (
+              <button
+                type="button"
+                className="modal-close"
+                onClick={handleCancel}
+                aria-label="Close"
+              >
+                {closeIcon ?? <Icon name="x" size={16} />}
+              </button>
+            )}
           </div>
-          <button type="button" className="modal-close" onClick={onClose} aria-label="Close">
-            <Icon name="x" size={16} />
-          </button>
-        </div>
+        )}
         <div className="modal-body">{children}</div>
-        {footer !== undefined ? (
-          <div className="modal-foot">{footer}</div>
-        ) : (
-          <div className="modal-foot">
-            <Button variant="ghost" onClick={onClose}>取消</Button>
-            <Button variant="primary" onClick={onClose}>确定</Button>
-          </div>
+        {footer === null ? null : (
+          <div className="modal-foot">{footer ?? defaultFooter}</div>
         )}
       </div>
     </div>,
-    document.body
-  );
-};
-
-export interface DrawerProps extends Omit<ModalProps, "width"> {
-  /** Edge the drawer slides from. */
-  placement?: "left" | "right" | "top" | "bottom";
-  size?: number | string;
-}
-
-/** `Drawer` — slide-in panel from an edge. */
-export const Drawer: React.FC<DrawerProps> = ({
-  open,
-  onClose,
-  placement = "right",
-  size = 380,
-  title,
-  footer,
-  children,
-  maskClosable = true,
-  className = "",
-}) => {
-  if (!open || typeof document === "undefined") return null;
-  const isV = placement === "left" || placement === "right";
-  const style: React.CSSProperties = isV ? { width: size } : { height: size };
-  return ReactDOM.createPortal(
-    <>
-      <div className="drawer-overlay" onClick={() => maskClosable && onClose?.()} />
-      <div className={`drawer ${placement} ${className}`} style={style} onClick={(e) => e.stopPropagation()}>
-        {title && (
-          <div className="drawer-head">
-            <div className="drawer-title">{title}</div>
-            <button type="button" className="modal-close" onClick={onClose} aria-label="Close">
-              <Icon name="x" size={16} />
-            </button>
-          </div>
-        )}
-        <div className="drawer-body">{children}</div>
-        {footer && <div className="modal-foot">{footer}</div>}
-      </div>
-    </>,
     document.body
   );
 };
