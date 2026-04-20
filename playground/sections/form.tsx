@@ -186,6 +186,123 @@ const SectionForm: React.FC<SectionCtx> = () => (
         },
       },
       {
+        id: "live",
+        title: "实时值预览",
+        span: 2,
+        description: "onValuesChange 可以监听任何字段变化。下方面板会实时展示 form.getFieldsValue() 的结果。",
+        code: `<Form onValuesChange={(changed, all) => setSnapshot(all)}>
+  ...
+</Form>
+<pre>{JSON.stringify(snapshot, null, 2)}</pre>`,
+        render: () => {
+          const Live = () => {
+            const [form] = Form.useForm<{ name: string; age: number; role: string; active: boolean }>();
+            const [snapshot, setSnapshot] = React.useState<Record<string, unknown>>({
+              name: "Alice",
+              age: 28,
+              role: "editor",
+              active: true,
+            });
+            return (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, alignItems: "start" }}>
+                <Form
+                  form={form}
+                  layout="vertical"
+                  initialValues={{ name: "Alice", age: 28, role: "editor", active: true }}
+                  onValuesChange={(_, all) => setSnapshot(all)}
+                >
+                  <Form.Item name="name" label="姓名" rules={[{ required: true, message: "必填" }]}>
+                    <Input />
+                  </Form.Item>
+                  <Form.Item name="age" label="年龄" rules={[{ required: true }, { type: "number", min: 0, max: 120 }]}>
+                    <InputNumber min={0} max={120} />
+                  </Form.Item>
+                  <Form.Item name="role" label="角色">
+                    <Select
+                      options={[
+                        { value: "viewer", label: "Viewer" },
+                        { value: "editor", label: "Editor" },
+                        { value: "admin", label: "Admin" },
+                      ]}
+                    />
+                  </Form.Item>
+                  <Form.Item name="active" label="启用" valuePropName="checked">
+                    <Switch />
+                  </Form.Item>
+                </Form>
+                <pre
+                  style={{
+                    margin: 0,
+                    padding: 14,
+                    background: "var(--bg)",
+                    boxShadow: "var(--neu-in-sm)",
+                    borderRadius: "var(--r-md)",
+                    fontSize: 12,
+                    fontFamily: "var(--font-mono)",
+                    color: "var(--fg-muted)",
+                    lineHeight: 1.6,
+                    overflow: "auto",
+                  }}
+                >
+                  {JSON.stringify(snapshot, null, 2)}
+                </pre>
+              </div>
+            );
+          };
+          return <Live />;
+        },
+      },
+      {
+        id: "nested",
+        title: "横排复选 (嵌套 Form.Item)",
+        span: 2,
+        description: "外层 Form.Item 只做布局(无 name),内层若干 Form.Item 各自绑定字段并加 noStyle。my-assistant 里 \"新建角色\" 弹窗用的就是这个模式。",
+        code: `<Form.Item className="checkbox-row">
+  <Form.Item name="addToHistory" valuePropName="checked" initialValue={true} noStyle>
+    <Checkbox label="添加到登录列表" />
+  </Form.Item>
+  <Form.Item name="setAsLast" valuePropName="checked" initialValue={false} noStyle>
+    <Checkbox label="设为最近登录" />
+  </Form.Item>
+</Form.Item>`,
+        render: () => {
+          const Live = () => {
+            const [form] = Form.useForm<{ addToHistory: boolean; setAsLast: boolean }>();
+            const [last, setLast] = React.useState<Record<string, unknown> | null>(null);
+            return (
+              <Form
+                form={form}
+                layout="vertical"
+                onFinish={(v) => setLast(v)}
+              >
+                <Form.Item name="account" label="账号" rules={[{ required: true, message: "必填" }]}>
+                  <Input placeholder="输入账号" />
+                </Form.Item>
+                <Form.Item>
+                  <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+                    <Form.Item name="addToHistory" valuePropName="checked" initialValue={true} noStyle>
+                      <Checkbox label="添加到登录列表" />
+                    </Form.Item>
+                    <Form.Item name="setAsLast" valuePropName="checked" initialValue={false} noStyle>
+                      <Checkbox label="设为最近登录" />
+                    </Form.Item>
+                  </div>
+                </Form.Item>
+                <Form.Item>
+                  <Button type="submit" variant="primary">提交</Button>
+                </Form.Item>
+                {last && (
+                  <div style={{ fontSize: 12, color: "var(--fg-muted)", fontFamily: "var(--font-mono)" }}>
+                    最近提交:{JSON.stringify(last)}
+                  </div>
+                )}
+              </Form>
+            );
+          };
+          return <Live />;
+        },
+      },
+      {
         id: "imperative",
         title: "命令式 API",
         span: 2,
