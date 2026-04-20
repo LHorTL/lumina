@@ -2,6 +2,8 @@ import "../../styles/tokens.css";
 import "../../styles/shared.css";
 import "./Popover.css";
 import * as React from "react";
+import { createPortal } from "react-dom";
+import { useFloating } from "../../utils/useFloating";
 
 export interface PopoverProps {
   content: React.ReactNode;
@@ -28,7 +30,15 @@ export const Popover: React.FC<PopoverProps> = ({
   const [inner, setInner] = React.useState(defaultOpen);
   const isControlled = open !== undefined;
   const show = isControlled ? open! : inner;
-  const ref = React.useRef<HTMLSpanElement>(null);
+  const panelRef = React.useRef<HTMLSpanElement>(null);
+
+  const { triggerRef, floatingStyle, placement: resolved } = useFloating<HTMLSpanElement>({
+    open: show,
+    placement,
+    panelWidth: 240,
+    panelHeight: 160,
+    alignCross: "center",
+  });
 
   const set = (v: boolean) => {
     if (!isControlled) setInner(v);
@@ -38,10 +48,14 @@ export const Popover: React.FC<PopoverProps> = ({
   React.useEffect(() => {
     if (trigger !== "click" || !show) return;
     const h = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) set(false);
+      const t = e.target as Node;
+      if (triggerRef.current?.contains(t)) return;
+      if (panelRef.current?.contains(t)) return;
+      set(false);
     };
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [show, trigger]);
 
   const interact =
@@ -50,14 +64,22 @@ export const Popover: React.FC<PopoverProps> = ({
       : { onClick: () => set(!show) };
 
   return (
-    <span
-      ref={ref}
-      className={`popover-anchor ${className}`}
-      style={{ position: "relative", display: "inline-flex" }}
-      {...interact}
-    >
-      {children}
-      {show && <span className={`popover ${placement}`}>{content}</span>}
-    </span>
+    <>
+      <span
+        ref={triggerRef}
+        className={`popover-anchor ${className}`}
+        style={{ display: "inline-flex" }}
+        {...interact}
+      >
+        {children}
+      </span>
+      {show && typeof document !== "undefined" &&
+        createPortal(
+          <span ref={panelRef} className={`popover ${resolved}`} style={floatingStyle}>
+            {content}
+          </span>,
+          document.body
+        )}
+    </>
   );
 };

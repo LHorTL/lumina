@@ -218,15 +218,12 @@
 }
 
 .menu {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0; right: 0;
   background: var(--bg);
   border-radius: var(--r-md);
   box-shadow: var(--neu-out-lg);
   padding: 6px;
   min-width: 180px;
-  z-index: 50;
+  z-index: 1000;
   animation: menuIn var(--dur) var(--ease);
   max-height: 260px;
   overflow-y: auto;

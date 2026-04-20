@@ -4,7 +4,6 @@
   display: inline-flex;
 }
 .tip {
-  position: absolute;
   background: var(--bg-sunken);
   color: var(--fg);
   padding: 6px 10px;
@@ -15,9 +14,5 @@
   box-shadow: var(--neu-out-sm);
   pointer-events: none;
   animation: fadeIn var(--dur) var(--ease);
-  z-index: 100;
+  z-index: 1000;
 }
-.tip.top    { bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); }
-.tip.bottom { top:    calc(100% + 8px); left: 50%; transform: translateX(-50%); }
-.tip.left   { right: calc(100% + 8px); top: 50%; transform: translateY(-50%); }
-.tip.right  { left:  calc(100% + 8px); top: 50%; transform: translateY(-50%); }

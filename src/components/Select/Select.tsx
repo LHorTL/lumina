@@ -2,8 +2,10 @@ import "../../styles/tokens.css";
 import "../../styles/shared.css";
 import "./Select.css";
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { Icon, type IconName } from "../Icon";
 import { Tag } from "../Tag";
+import { useFloating } from "../../utils/useFloating";
 
 export interface SelectOption<T extends string | number = string> {
   value: T;
@@ -123,7 +125,6 @@ export function Select<T extends string | number = string>(props: SelectProps<T>
   const [query, setQuery] = React.useState("");
   const [activeIdx, setActiveIdx] = React.useState(-1);
 
-  const ref = React.useRef<HTMLDivElement>(null);
   const searchRef = React.useRef<HTMLInputElement>(null);
   const menuRef = React.useRef<HTMLDivElement>(null);
 
@@ -135,6 +136,13 @@ export function Select<T extends string | number = string>(props: SelectProps<T>
     if (!v) setQuery("");
   };
 
+  const { triggerRef: ref, floatingStyle } = useFloating<HTMLDivElement>({
+    open,
+    placement: "bottom",
+    matchTriggerWidth: true,
+    panelHeight: 320,
+  });
+
   const singleControlled = !isMulti && (props as SingleSelectProps<T>).value !== undefined;
   const multiControlled = isMulti && (props as MultiSelectProps<T>).value !== undefined;
 
@@ -144,10 +152,14 @@ export function Select<T extends string | number = string>(props: SelectProps<T>
   React.useEffect(() => {
     if (!open) return;
     const h = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      const t = e.target as Node;
+      if (ref.current?.contains(t)) return;
+      if (menuRef.current?.contains(t)) return;
+      setOpen(false);
     };
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   // Auto-focus search input when opened
@@ -351,9 +363,16 @@ export function Select<T extends string | number = string>(props: SelectProps<T>
         )}
         <Icon name="chevDown" size={14} className="select-caret" />
       </button>
-      {open && (
-        <div ref={menuRef} className={`menu ${menuClassName}`} role="listbox" aria-multiselectable={isMulti || undefined}>
-          {searchable && (
+      {open && typeof document !== "undefined" &&
+        createPortal(
+          <div
+            ref={menuRef}
+            className={`menu ${menuClassName}`}
+            role="listbox"
+            aria-multiselectable={isMulti || undefined}
+            style={floatingStyle}
+          >
+            {searchable && (
             <div className="menu-search">
               <Icon name="search" size={13} />
               <input
@@ -397,8 +416,9 @@ export function Select<T extends string | number = string>(props: SelectProps<T>
               )
             )
           )}
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

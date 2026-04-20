@@ -25,10 +25,7 @@
 .cascader-trigger.placeholder { color: var(--fg-subtle); }
 .cascader.open .cascader-trigger { box-shadow: var(--neu-in-sm); color: var(--accent-ink); }
 .cascader-panel {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  z-index: 50;
+  z-index: 1000;
   display: flex;
   background: var(--bg);
   border-radius: var(--r-md);

@@ -2,7 +2,9 @@ import "../../styles/tokens.css";
 import "../../styles/shared.css";
 import "./Cascader.css";
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { Icon, type IconName } from "../Icon";
+import { useFloating } from "../../utils/useFloating";
 
 export interface CascaderOption {
   value: string;
@@ -37,14 +39,25 @@ export const Cascader: React.FC<CascaderProps> = ({
   const cur = isControlled ? value! : inner;
   const [open, setOpen] = React.useState(false);
   const [path, setPath] = React.useState<string[]>(cur);
-  const ref = React.useRef<HTMLDivElement>(null);
+  const panelRef = React.useRef<HTMLDivElement>(null);
+
+  const { triggerRef: ref, floatingStyle } = useFloating<HTMLDivElement>({
+    open,
+    placement: "bottom",
+    panelWidth: 520,
+    panelHeight: 260,
+  });
 
   React.useEffect(() => {
     const h = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      const t = e.target as Node;
+      if (ref.current?.contains(t)) return;
+      if (panelRef.current?.contains(t)) return;
+      setOpen(false);
     };
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   React.useEffect(() => {
@@ -96,35 +109,37 @@ export const Cascader: React.FC<CascaderProps> = ({
           <Icon name="chevDown" size={14} />
         </span>
       </button>
-      {open && (
-        <div className="cascader-panel">
-          {columns.map((col, depth) => (
-            <div key={depth} className="cascader-col">
-              {col.map((o) => {
-                const isActive = path[depth] === o.value;
-                const hasChildren = !!(o.children && o.children.length);
-                return (
-                  <button
-                    key={o.value}
-                    type="button"
-                    className={`cascader-item ${isActive ? "active" : ""}`}
-                    disabled={o.disabled}
-                    onClick={() => pick(depth, o.value, hasChildren)}
-                  >
-                    {o.icon && <Icon name={o.icon} size={13} />}
-                    <span>{o.label}</span>
-                    {hasChildren && (
-                      <span className="chev">
-                        <Icon name="chevRight" size={12} />
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          ))}
-        </div>
-      )}
+      {open && typeof document !== "undefined" &&
+        createPortal(
+          <div ref={panelRef} className="cascader-panel" style={floatingStyle}>
+            {columns.map((col, depth) => (
+              <div key={depth} className="cascader-col">
+                {col.map((o) => {
+                  const isActive = path[depth] === o.value;
+                  const hasChildren = !!(o.children && o.children.length);
+                  return (
+                    <button
+                      key={o.value}
+                      type="button"
+                      className={`cascader-item ${isActive ? "active" : ""}`}
+                      disabled={o.disabled}
+                      onClick={() => pick(depth, o.value, hasChildren)}
+                    >
+                      {o.icon && <Icon name={o.icon} size={13} />}
+                      <span>{o.label}</span>
+                      {hasChildren && (
+                        <span className="chev">
+                          <Icon name="chevRight" size={12} />
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
+          </div>,
+          document.body
+        )}
     </div>
   );
 };

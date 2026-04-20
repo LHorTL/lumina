@@ -2,6 +2,8 @@ import "../../styles/tokens.css";
 import "../../styles/shared.css";
 import "./Tooltip.css";
 import * as React from "react";
+import { createPortal } from "react-dom";
+import { useFloating } from "../../utils/useFloating";
 
 export interface TooltipProps {
   content: React.ReactNode;
@@ -32,10 +34,33 @@ export const Tooltip: React.FC<TooltipProps> = ({
     setShow(false);
   };
 
+  const { triggerRef, floatingStyle, placement: resolved } = useFloating<HTMLSpanElement>({
+    open: show,
+    placement,
+    panelWidth: 160,
+    panelHeight: 32,
+    alignCross: "center",
+  });
+
   return (
-    <span className="tip-anchor" onMouseEnter={open} onMouseLeave={close} onFocus={open} onBlur={close}>
-      {children}
-      {show && <span className={`tip ${placement}`}>{content}</span>}
-    </span>
+    <>
+      <span
+        ref={triggerRef}
+        className="tip-anchor"
+        onMouseEnter={open}
+        onMouseLeave={close}
+        onFocus={open}
+        onBlur={close}
+      >
+        {children}
+      </span>
+      {show && typeof document !== "undefined" &&
+        createPortal(
+          <span className={`tip ${resolved}`} style={floatingStyle}>
+            {content}
+          </span>,
+          document.body
+        )}
+    </>
   );
 };

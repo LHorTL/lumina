@@ -5,6 +5,7 @@ import {
   Icon,
   Slider,
   Tooltip,
+  ColorPicker,
   ThemeProvider,
   useTheme,
   ACCENT_PRESETS,
@@ -243,6 +244,7 @@ const AppInner: React.FC = () => {
 
 const TweaksPanel: React.FC = () => {
   const t = useTheme();
+  const [customAccent, setCustomAccent] = React.useState("#845ef7");
 
   return (
     <div className="tweaks-panel">
@@ -279,6 +281,11 @@ const TweaksPanel: React.FC = () => {
       <div className="tweak-row">
         <div className="label">
           <span>强调色</span>
+          {t.accent === "custom" && (
+            <span className="value" style={{ fontFamily: "var(--font-mono)" }}>
+              {customAccent}
+            </span>
+          )}
         </div>
         <div className="swatch-row">
           {(Object.keys(ACCENT_PRESETS) as AccentKey[]).map((k) => (
@@ -290,6 +297,14 @@ const TweaksPanel: React.FC = () => {
               aria-label={k}
             />
           ))}
+          <ColorPicker
+            size="sm"
+            value={customAccent}
+            onChange={(hex) => {
+              setCustomAccent(hex);
+              t.setAccent(hex);
+            }}
+          />
         </div>
       </div>
 
