@@ -94,6 +94,37 @@ const SectionTag: React.FC<SectionCtx> = () => (
         ),
       },
       {
+        id: "icon",
+        title: "前置图标",
+        description: "icon 使用内置 Icon 组件,颜色随语气自动适配。",
+        code: `<Tag tone="success" icon="check2">已完成</Tag>
+<Tag tone="info" icon="star">推荐</Tag>`,
+        render: () => (
+          <Row>
+            <Tag tone="success" icon="check2">已完成</Tag>
+            <Tag tone="info" icon="star">推荐</Tag>
+            <Tag tone="warning" icon="alert">警告</Tag>
+            <Tag tone="danger" icon="bell">提醒</Tag>
+            <Tag tone="accent" icon="sparkle" solid>AI</Tag>
+          </Row>
+        ),
+      },
+      {
+        id: "borderless",
+        title: "无边框",
+        description: "bordered={false} 去除 flat 阴影,只保留文本色。",
+        code: `<Tag bordered={false}>Default</Tag>
+<Tag tone="accent" bordered={false}>Accent</Tag>`,
+        render: () => (
+          <Row>
+            <Tag bordered={false}>Default</Tag>
+            <Tag tone="accent" bordered={false}>Accent</Tag>
+            <Tag tone="success" bordered={false} icon="check2">Success</Tag>
+            <Tag tone="danger" bordered={false} dot>Danger</Tag>
+          </Row>
+        ),
+      },
+      {
         id: "removable",
         title: "可移除",
         description: "removable + onRemove 实现关闭按钮。",
@@ -108,6 +139,8 @@ const SectionTag: React.FC<SectionCtx> = () => (
           { prop: "tone", description: "色调", type: `"neutral" | "accent" | "info" | "success" | "warning" | "danger"`, default: `"neutral"` },
           { prop: "solid", description: "实心填充", type: "boolean", default: "false" },
           { prop: "dot", description: "前置圆点", type: "boolean", default: "false" },
+          { prop: "icon", description: "前置图标", type: "IconName" },
+          { prop: "bordered", description: "是否显示外框 flat 阴影", type: "boolean", default: "true" },
           { prop: "removable", description: "显示 ×", type: "boolean", default: "false" },
           { prop: "onRemove", description: "关闭回调", type: "() => void" },
         ],

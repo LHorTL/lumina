@@ -24,6 +24,17 @@
 .alert-desc  { font-size: 12px; color: var(--fg-muted); line-height: 1.55; }
 .alert.no-title { align-items: center; }
 .alert.no-title .alert-ico { margin-top: 0; }
+.alert.no-icon { gap: 0; }
+
+.alert-action {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+.alert:has(.alert-close) .alert-action { margin-right: 26px; }
+
 .alert-close {
   position: absolute; top: 10px; right: 10px;
   width: 22px; height: 22px; border-radius: 7px;

@@ -77,6 +77,8 @@
 .btn.lg { height: 52px; padding: 0 24px; font-size: 15px; border-radius: var(--r-lg); }
 .btn.lg.icon { width: 52px; padding: 0; }
 
+.btn.block { width: 100%; flex-shrink: 1; }
+
 .btn[disabled], .btn.disabled, .btn:disabled {
   color: var(--fg-subtle);
   cursor: not-allowed;

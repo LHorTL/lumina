@@ -26,6 +26,11 @@
 }
 .switch.sm { --w: 36px; --h: 20px; }
 .switch.lg { --w: 58px; --h: 32px; }
+/* When checkedChildren / unCheckedChildren are present, widen the track to fit. */
+.switch.with-children { --w: 60px; }
+.switch.with-children.sm { --w: 46px; }
+.switch.with-children.lg { --w: 74px; }
+
 .switch-thumb {
   position: absolute;
   top: 3px;
@@ -36,9 +41,52 @@
   background: var(--bg-raised);
   box-shadow: var(--neu-out-sm);
   transition: all var(--dur) var(--ease);
+  z-index: 1;
 }
 .switch.on .switch-thumb {
   transform: translateX(calc(var(--w) - var(--h)));
   background: var(--accent);
   box-shadow: 0 2px 8px var(--accent-glow), 0 0 0 1px color-mix(in oklch, var(--accent) 40%, transparent);
 }
+
+/* Inline content (checkedChildren / unCheckedChildren) */
+.switch-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: inherit;
+  line-height: 1;
+  pointer-events: none;
+}
+.switch.sm .switch-inner { font-size: 10px; }
+.switch-inner-on,
+.switch-inner-off {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+/* Checked label sits on the left side of the track (thumb pushes right). */
+.switch-inner-on {
+  left: 8px;
+  right: calc(var(--h) - 2px);
+  color: white;
+  opacity: 0;
+  transform: translateX(-4px);
+}
+/* Unchecked label sits on the right side (thumb is at left). */
+.switch-inner-off {
+  right: 8px;
+  left: calc(var(--h) - 2px);
+  color: var(--fg-muted);
+  opacity: 1;
+  transform: translateX(0);
+}
+.switch.sm .switch-inner-on { left: 5px; right: calc(var(--h) - 2px); }
+.switch.sm .switch-inner-off { right: 5px; left: calc(var(--h) - 2px); }
+.switch.on .switch-inner-on { opacity: 1; transform: translateX(0); }
+.switch.on .switch-inner-off { opacity: 0; transform: translateX(4px); }

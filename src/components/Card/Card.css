@@ -11,6 +11,17 @@
 .card.pad-sm   { padding: var(--gap-3); }
 .card.pad-lg   { padding: var(--gap-6); }
 
+.card.hoverable {
+  cursor: pointer;
+  transition: box-shadow var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.card.hoverable:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--neu-out-lg);
+}
+.card.hoverable.flat:hover { box-shadow: var(--neu-out-sm); }
+.card.hoverable.sunken:hover { box-shadow: var(--neu-out); }
+
 .panel {
   background: var(--bg);
   border-radius: var(--r-lg);

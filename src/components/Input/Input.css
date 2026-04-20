@@ -1,49 +1,117 @@
 /* ============ Input / Textarea ============ */
+.input-shell {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+.input-count {
+  font-size: 11px;
+  color: var(--fg-subtle);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
 .input-wrap {
   position: relative;
   display: inline-flex;
   align-items: center;
   width: 100%;
-}
-.input-wrap .lead,
-.input-wrap .trail {
-  position: absolute;
-  color: var(--fg-subtle);
-  pointer-events: none;
-}
-.input-wrap .lead { left: 14px; }
-.input-wrap .trail { right: 14px; pointer-events: auto; cursor: pointer; }
-.input-wrap .trail:hover { color: var(--fg); }
-
-.input,
-.input-wrap > input {
-  width: 100%;
   height: var(--ctrl-h);
   padding: 0 var(--ctrl-pad-x);
-  border: none;
   border-radius: var(--r-md);
   background: var(--bg);
   box-shadow: var(--neu-in-sm);
+  transition: box-shadow var(--dur) var(--ease);
+  gap: 8px;
+}
+.input-wrap.sm { height: 32px; padding: 0 12px; border-radius: var(--r-sm); gap: 6px; }
+.input-wrap.lg { height: 48px; padding: 0 18px; border-radius: var(--r-lg); gap: 10px; }
+.input-wrap:focus-within { box-shadow: var(--neu-in-sm), 0 0 0 2px var(--accent-glow); }
+.input-wrap.invalid { box-shadow: var(--neu-in-sm), 0 0 0 2px color-mix(in oklch, var(--danger) 30%, transparent); }
+.input-wrap.disabled { opacity: 0.6; cursor: not-allowed; }
+
+.input-wrap .lead,
+.input-wrap .trail {
+  color: var(--fg-subtle);
+  flex-shrink: 0;
+  display: inline-flex;
+}
+.input-wrap .lead.interactive,
+.input-wrap .trail.interactive { cursor: pointer; pointer-events: auto; }
+.input-wrap .trail:hover { color: var(--fg); }
+.input-wrap .lead:not(.interactive),
+.input-wrap .trail:not(.interactive) { pointer-events: none; }
+
+.input-wrap .input-affix {
+  display: inline-flex;
+  align-items: center;
+  color: var(--fg-muted);
+  font-size: 13px;
+  white-space: nowrap;
+  user-select: none;
+  flex-shrink: 0;
+}
+.input-wrap.sm .input-affix { font-size: 12px; }
+.input-wrap.lg .input-affix { font-size: 14px; }
+
+.input-wrap .input-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  color: var(--fg-subtle);
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.input-wrap .input-clear:hover {
+  color: var(--fg);
+  background: var(--bg-sunken);
+}
+
+.input-wrap > .input {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
   color: var(--fg);
   font-size: 13px;
   font-family: inherit;
   outline: none;
-  transition: box-shadow var(--dur) var(--ease);
 }
-.input-wrap:has(.lead) > input,
-.input-wrap.with-leading > input { padding-left: 40px; }
-.input-wrap:has(.trail) > input,
-.input-wrap.with-trailing > input { padding-right: 40px; }
-.input:focus,
-.input-wrap > input:focus { box-shadow: var(--neu-in-sm), 0 0 0 2px var(--accent-glow); }
-.input::placeholder,
-.input-wrap > input::placeholder { color: var(--fg-subtle); }
-.input[disabled],
-.input-wrap.disabled > input { opacity: 0.6; cursor: not-allowed; }
-.input-wrap.invalid > input,
-.input.invalid { box-shadow: var(--neu-in-sm), 0 0 0 2px color-mix(in oklch, var(--danger) 30%, transparent); }
-.input-wrap.sm > input { height: 32px; padding-left: 12px; padding-right: 12px; font-size: 12px; border-radius: var(--r-sm); }
-.input-wrap.lg > input { height: 48px; padding-left: 18px; padding-right: 18px; font-size: 14px; border-radius: var(--r-lg); }
+.input-wrap.sm > .input { font-size: 12px; }
+.input-wrap.lg > .input { font-size: 14px; }
+.input-wrap > .input::placeholder { color: var(--fg-subtle); }
+.input-wrap.disabled > .input { cursor: not-allowed; }
+
+.textarea-wrap { position: relative; width: 100%; }
+.textarea-wrap .textarea-clear {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  color: var(--fg-subtle);
+  background: transparent;
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.textarea-wrap .textarea-clear:hover {
+  color: var(--fg);
+  background: var(--bg-sunken);
+}
 
 .textarea {
   width: 100%;

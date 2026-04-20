@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Alert } from "lumina";
+import { Alert, Button } from "lumina";
 import { DocPage } from "../docs";
 import { defineSection, type SectionCtx } from "./_types";
 
@@ -40,6 +40,68 @@ const SectionAlert: React.FC<SectionCtx> = () => (
           </Alert>
         ),
       },
+      {
+        id: "no-icon",
+        title: "隐藏图标",
+        span: 2,
+        description: "showIcon={false} 可隐藏左侧语义图标,文本更紧凑。",
+        code: `<Alert tone="info" showIcon={false}>纯文本提示</Alert>`,
+        render: () => (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <Alert tone="info" showIcon={false}>
+              这是一条没有图标的纯文本提示信息。
+            </Alert>
+            <Alert tone="success" showIcon={false} title="保存成功">
+              你的修改已生效。
+            </Alert>
+          </div>
+        ),
+      },
+      {
+        id: "action",
+        title: "自定义操作区",
+        span: 2,
+        description: "action 插槽可以放置按钮等操作元素,位于内容与关闭按钮之间。",
+        code: `<Alert
+  tone="warning"
+  title="新版本可用"
+  action={<Button size="sm" variant="primary">立即更新</Button>}
+  closable
+>
+  v1.2.0 已发布。
+</Alert>`,
+        render: () => (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <Alert
+              tone="warning"
+              title="新版本可用"
+              action={
+                <Button size="sm" variant="primary">
+                  立即更新
+                </Button>
+              }
+              closable
+            >
+              v1.2.0 已发布,建议立即更新以获得安全修复。
+            </Alert>
+            <Alert
+              tone="info"
+              action={
+                <>
+                  <Button size="sm" variant="ghost">
+                    详情
+                  </Button>
+                  <Button size="sm" variant="primary">
+                    查看
+                  </Button>
+                </>
+              }
+            >
+              你有 3 条未读消息。
+            </Alert>
+          </div>
+        ),
+      },
     ]}
     api={[
       {
@@ -48,6 +110,8 @@ const SectionAlert: React.FC<SectionCtx> = () => (
           { prop: "tone", description: "语气", type: `"info" | "success" | "warning" | "danger"`, default: `"info"` },
           { prop: "title", description: "标题", type: "ReactNode" },
           { prop: "icon", description: "自定义图标", type: "IconName" },
+          { prop: "showIcon", description: "是否显示语义图标", type: "boolean", default: "true" },
+          { prop: "action", description: "右侧操作区(如按钮)", type: "ReactNode" },
           { prop: "closable", description: "可关闭", type: "boolean", default: "false" },
           { prop: "onClose", description: "关闭回调", type: "() => void" },
         ],

@@ -58,6 +58,13 @@
   box-shadow: 0 0 8px var(--accent-glow);
 }
 
+/* Centered nav — works for pill / segmented (self-align) and line (flex-center) */
+.tabs.centered .tabs-nav { align-self: center; }
+.tabs.centered.line .tabs-nav,
+.tabs.centered.underline .tabs-nav { align-self: stretch; justify-content: center; }
+.tabs.centered.line .tabs-nav .tab,
+.tabs.centered.underline .tabs-nav .tab { margin-right: 11px; margin-left: 11px; }
+
 .tabs-content { padding: var(--gap-2) 0; }
 
 /* Segmented (owned by Tabs.tsx — Segmented is co-exported) */

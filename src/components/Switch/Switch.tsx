@@ -10,6 +10,10 @@ export interface SwitchProps {
   disabled?: boolean;
   label?: React.ReactNode;
   size?: "sm" | "md";
+  /** Content rendered inside the track when checked (short text or icon). */
+  checkedChildren?: React.ReactNode;
+  /** Content rendered inside the track when unchecked. */
+  unCheckedChildren?: React.ReactNode;
   className?: string;
   id?: string;
 }
@@ -24,6 +28,8 @@ export const Switch: React.FC<SwitchProps> = ({
   disabled,
   label,
   size = "md",
+  checkedChildren,
+  unCheckedChildren,
   className = "",
   id,
 }) => {
@@ -38,7 +44,15 @@ export const Switch: React.FC<SwitchProps> = ({
     onChange?.(next);
   };
 
-  const cls = ["switch", value && "on", size !== "md" && size, disabled && "disabled", className]
+  const hasChildren = checkedChildren != null || unCheckedChildren != null;
+  const cls = [
+    "switch",
+    value && "on",
+    size !== "md" && size,
+    disabled && "disabled",
+    hasChildren && "with-children",
+    className,
+  ]
     .filter(Boolean)
     .join(" ");
 
@@ -53,6 +67,12 @@ export const Switch: React.FC<SwitchProps> = ({
         id={id}
         className="switch-track"
       >
+        {hasChildren && (
+          <span className="switch-inner">
+            <span className="switch-inner-on">{checkedChildren}</span>
+            <span className="switch-inner-off">{unCheckedChildren}</span>
+          </span>
+        )}
         <span className="switch-thumb" />
       </button>
       {label && <span className="switch-label">{label}</span>}

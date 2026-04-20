@@ -2,7 +2,7 @@ import "../../styles/tokens.css";
 import "../../styles/shared.css";
 import "./Tag.css";
 import * as React from "react";
-import { Icon } from "../Icon";
+import { Icon, type IconName } from "../Icon";
 
 export type TagTone = "neutral" | "accent" | "info" | "success" | "warning" | "danger";
 
@@ -11,9 +11,13 @@ export interface TagProps extends React.HTMLAttributes<HTMLSpanElement> {
   solid?: boolean;
   /** Render a leading colored dot. */
   dot?: boolean;
+  /** Leading icon (uses the built-in `Icon` component). */
+  icon?: IconName;
   /** Show a close button. */
   removable?: boolean;
   onRemove?: () => void;
+  /** Whether to render the tag outline/flat shadow. Defaults to `true`. */
+  bordered?: boolean;
   children?: React.ReactNode;
 }
 
@@ -22,16 +26,27 @@ export const Tag: React.FC<TagProps> = ({
   tone = "neutral",
   solid,
   dot,
+  icon,
   removable,
   onRemove,
+  bordered = true,
   className = "",
   children,
   ...rest
 }) => {
-  const cls = ["tag", tone, solid && "solid", className].filter(Boolean).join(" ");
+  const cls = [
+    "tag",
+    tone,
+    solid && "solid",
+    !bordered && !solid && "borderless",
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
   return (
     <span className={cls} {...rest}>
       {dot && <span className="dot" />}
+      {icon && <Icon name={icon} size={11} className="tag-ico" />}
       {children}
       {removable && (
         <span

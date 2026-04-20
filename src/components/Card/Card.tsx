@@ -8,6 +8,8 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: "raised" | "sunken" | "flat";
   /** Inner padding. */
   padding?: "none" | "sm" | "md" | "lg";
+  /** When true, the card raises and lifts on hover. */
+  hoverable?: boolean;
   children?: React.ReactNode;
 }
 
@@ -15,8 +17,14 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
  * `Card` — neumorphic surface container. Use to group related content.
  */
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ variant = "raised", padding = "md", className = "", children, ...rest }, ref) => {
-    const cls = ["card", variant, padding !== "md" && `pad-${padding}`, className]
+  ({ variant = "raised", padding = "md", hoverable, className = "", children, ...rest }, ref) => {
+    const cls = [
+      "card",
+      variant,
+      padding !== "md" && `pad-${padding}`,
+      hoverable && "hoverable",
+      className,
+    ]
       .filter(Boolean)
       .join(" ");
     return (

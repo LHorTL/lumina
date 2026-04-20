@@ -10,6 +10,7 @@ const buttonApi: ApiRow[] = [
   { prop: "icon", description: "前置图标", type: "IconName" },
   { prop: "trailingIcon", description: "后置图标", type: "IconName" },
   { prop: "loading", description: "加载态", type: "boolean", default: "false" },
+  { prop: "block", description: "撑满父容器宽度", type: "boolean", default: "false" },
   { prop: "disabled", description: "禁用", type: "boolean", default: "false" },
   { prop: "onClick", description: "点击回调", type: "(e: MouseEvent) => void" },
 ];
@@ -99,6 +100,22 @@ const SectionButton: React.FC<SectionCtx> = () => {
           <Button variant="primary">Medium</Button>
           <Button size="lg" variant="primary">Large</Button>
         </Row>
+      ),
+    },
+    {
+      id: "block",
+      title: "块级按钮",
+      description: "block 让按钮撑满容器宽度,常用于底部主操作或表单提交。",
+      span: 2,
+      code: `<Button block variant="primary" icon="send">提交表单</Button>
+<Button block>取消</Button>`,
+      render: () => (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <Button block variant="primary" icon="send">
+            提交表单
+          </Button>
+          <Button block>取消</Button>
+        </div>
       ),
     },
     {

@@ -16,6 +16,8 @@ export interface TabsProps {
   defaultActiveKey?: string;
   onChange?: (key: string) => void;
   variant?: "line" | "pill" | "segmented";
+  /** Center-align the tab bar horizontally. */
+  centered?: boolean;
   className?: string;
 }
 
@@ -26,6 +28,7 @@ export const Tabs: React.FC<TabsProps> = ({
   defaultActiveKey,
   onChange,
   variant = "line",
+  centered,
   className = "",
 }) => {
   const [inner, setInner] = React.useState(defaultActiveKey ?? items[0]?.key);
@@ -40,7 +43,7 @@ export const Tabs: React.FC<TabsProps> = ({
   const active = items.find((i) => i.key === current);
 
   return (
-    <div className={`tabs ${variant} ${className}`}>
+    <div className={`tabs ${variant} ${centered ? "centered" : ""} ${className}`}>
       <div className="tabs-nav" role="tablist">
         {items.map((it) => (
           <button

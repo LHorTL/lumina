@@ -7,6 +7,7 @@
   align-items: center;
   cursor: pointer;
 }
+.slider.has-marks { padding-bottom: 26px; }
 .slider.disabled { opacity: 0.5; cursor: not-allowed; }
 .slider-track {
   position: relative;
@@ -19,11 +20,11 @@
 }
 .slider-fill {
   position: absolute;
-  top: 0; left: 0; bottom: 0;
+  top: 0; bottom: 0;
   background: linear-gradient(90deg, color-mix(in oklch, var(--accent) 70%, white), var(--accent));
   box-shadow: 0 0 12px var(--accent-glow);
   border-radius: 999px;
-  transition: width var(--dur-fast) var(--ease);
+  transition: left var(--dur-fast) var(--ease), right var(--dur-fast) var(--ease);
 }
 .slider-thumb {
   position: absolute;
@@ -35,7 +36,10 @@
   transform: translate(-50%, -50%);
   transition: all var(--dur-fast) var(--ease);
   display: grid; place-items: center;
+  pointer-events: none;
 }
+.slider.has-marks .slider-thumb { top: calc(50% - 13px); }
+.slider.has-marks .slider-track { margin-top: -26px; }
 .slider-thumb::after {
   content: "";
   width: 6px; height: 6px;
@@ -49,7 +53,13 @@
   width: 100%; height: 100%;
   opacity: 0;
   cursor: inherit;
+  margin: 0;
+  pointer-events: auto;
 }
+/* In range mode (two stacked inputs), split the hit zones by half so the user can drag either thumb */
+.slider input[type="range"]:nth-of-type(1):not(:only-of-type) { right: 50%; }
+.slider input[type="range"]:nth-of-type(2) { left: 50%; }
+.slider.has-marks input[type="range"] { height: calc(100% - 26px); }
 .slider-value { font-family: var(--font-mono); font-size: 12px; color: var(--accent-ink); margin-left: 10px; }
 .slider.success .slider-fill { background: linear-gradient(90deg, color-mix(in oklch, var(--success) 70%, white), var(--success)); box-shadow: 0 0 10px color-mix(in oklch, var(--success) 35%, transparent); }
 .slider.success .slider-thumb::after { background: var(--success); }
@@ -57,3 +67,42 @@
 .slider.warning .slider-thumb::after { background: var(--warning); }
 .slider.danger  .slider-fill { background: linear-gradient(90deg, color-mix(in oklch, var(--danger) 70%, white), var(--danger));  box-shadow: 0 0 10px color-mix(in oklch, var(--danger) 35%, transparent); }
 .slider.danger  .slider-thumb::after { background: var(--danger); }
+
+/* Marks */
+.slider-marks {
+  position: absolute;
+  left: 0; right: 0;
+  bottom: 0;
+  height: 22px;
+  pointer-events: none;
+}
+.slider-mark {
+  position: absolute;
+  transform: translateX(-50%);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  pointer-events: auto;
+  cursor: pointer;
+  color: var(--fg-subtle);
+  font-size: 11px;
+  user-select: none;
+}
+.slider-mark-dot {
+  width: 6px; height: 6px;
+  border-radius: 999px;
+  background: var(--bg);
+  box-shadow: var(--neu-in-sm);
+  margin-top: -18px;
+  position: relative;
+  z-index: 1;
+}
+.slider-mark.active .slider-mark-dot { background: var(--accent); box-shadow: 0 0 6px var(--accent-glow); }
+.slider.success .slider-mark.active .slider-mark-dot { background: var(--success); box-shadow: 0 0 6px color-mix(in oklch, var(--success) 35%, transparent); }
+.slider.warning .slider-mark.active .slider-mark-dot { background: var(--warning); box-shadow: 0 0 6px color-mix(in oklch, var(--warning) 35%, transparent); }
+.slider.danger  .slider-mark.active .slider-mark-dot { background: var(--danger);  box-shadow: 0 0 6px color-mix(in oklch, var(--danger) 35%, transparent); }
+.slider-mark-label { white-space: nowrap; }
+.slider-mark.active .slider-mark-label { color: var(--accent-ink); font-weight: 500; }
+.slider-mark:hover .slider-mark-label { color: var(--fg); }
+.slider.disabled .slider-mark { pointer-events: none; }

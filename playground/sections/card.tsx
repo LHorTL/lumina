@@ -33,6 +33,29 @@ const SectionCard: React.FC<SectionCtx> = () => (
         ),
       },
       {
+        id: "hoverable",
+        title: "悬浮抬起",
+        description: "hoverable 在鼠标悬浮时轻微上移并加强阴影,适合可点击的卡片列表。",
+        span: 2,
+        code: `<Card hoverable>可点击卡片</Card>`,
+        render: () => (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+            <Card hoverable>
+              <div style={{ fontWeight: 600, marginBottom: 4 }}>悬浮 Raised</div>
+              <div style={{ fontSize: 12, color: "var(--fg-muted)" }}>把鼠标移上来试试</div>
+            </Card>
+            <Card hoverable variant="flat">
+              <div style={{ fontWeight: 600, marginBottom: 4 }}>悬浮 Flat</div>
+              <div style={{ fontSize: 12, color: "var(--fg-muted)" }}>轻量悬浮反馈</div>
+            </Card>
+            <Card hoverable variant="sunken">
+              <div style={{ fontWeight: 600, marginBottom: 4 }}>悬浮 Sunken</div>
+              <div style={{ fontSize: 12, color: "var(--fg-muted)" }}>从下陷抬出</div>
+            </Card>
+          </div>
+        ),
+      },
+      {
         id: "panel",
         title: "Panel",
         description: "带标题、描述、操作区。",
@@ -77,6 +100,7 @@ const SectionCard: React.FC<SectionCtx> = () => (
         rows: [
           { prop: "variant", description: "视觉变体", type: `"raised" | "flat" | "sunken"`, default: `"raised"` },
           { prop: "padding", description: "内边距", type: `"none" | "sm" | "md" | "lg"`, default: `"md"` },
+          { prop: "hoverable", description: "悬浮时抬起", type: "boolean", default: "false" },
         ],
       },
       {

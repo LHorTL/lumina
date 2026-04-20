@@ -24,6 +24,30 @@
 .divider.sunken:has(.divider-label) { background: transparent; box-shadow: none; }
 .divider.sunken:has(.divider-label)::before,
 .divider.sunken:has(.divider-label)::after { height: 2px; background: transparent; box-shadow: var(--neu-in-sm); }
+
+/* ---- Dashed variant ---- */
+.divider.dashed {
+  background: transparent;
+  box-shadow: none;
+  border-top: 1px dashed var(--divider);
+  border-radius: 0;
+  height: 0;
+}
+.divider.dashed.vertical {
+  width: 0;
+  border-top: none;
+  border-left: 1px dashed var(--divider);
+}
+.divider.dashed:has(.divider-label) { border-top: none; }
+.divider.dashed:has(.divider-label)::before,
+.divider.dashed:has(.divider-label)::after {
+  background: transparent;
+  box-shadow: none;
+  border-top: 1px dashed var(--divider);
+  height: 0;
+  border-radius: 0;
+}
+
 .divider-label {
   display: flex; align-items: center; gap: 12px;
   height: auto; background: transparent; box-shadow: none;
@@ -47,3 +71,10 @@
   border-radius: 999px;
   box-shadow: 0 1px 0 var(--shadow-light);
 }
+
+/* ---- Label orientation ---- */
+.divider.orient-left::before { flex: 0 0 var(--gap-4); }
+.divider.orient-left::after { flex: 1; }
+.divider.orient-right::before { flex: 1; }
+.divider.orient-right::after { flex: 0 0 var(--gap-4); }
+/* center is default (both flex: 1) */

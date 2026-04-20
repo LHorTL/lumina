@@ -45,6 +45,20 @@ const SectionSwitch: React.FC<SectionCtx> = () => {
             </Row>
           ),
         },
+        {
+          id: "children",
+          title: "轨道内文本",
+          description: "checkedChildren / unCheckedChildren 在轨道内显示简短文字(如 ON/OFF)。",
+          code: `<Switch defaultChecked checkedChildren="ON" unCheckedChildren="OFF" />
+<Switch defaultChecked checkedChildren="1" unCheckedChildren="0" />`,
+          render: () => (
+            <Row>
+              <Switch defaultChecked checkedChildren="ON" unCheckedChildren="OFF" />
+              <Switch checkedChildren="1" unCheckedChildren="0" />
+              <Switch size="sm" defaultChecked checkedChildren="是" unCheckedChildren="否" />
+            </Row>
+          ),
+        },
       ]}
       api={[
         {
@@ -53,6 +67,8 @@ const SectionSwitch: React.FC<SectionCtx> = () => {
             { prop: "checked / defaultChecked", description: "受控/初始", type: "boolean" },
             { prop: "onChange", description: "状态变更", type: "(checked: boolean) => void" },
             { prop: "label", description: "右侧文案", type: "ReactNode" },
+            { prop: "checkedChildren", description: "轨道内选中状态文本/图标", type: "ReactNode" },
+            { prop: "unCheckedChildren", description: "轨道内未选中状态文本/图标", type: "ReactNode" },
             { prop: "size", description: "尺寸", type: `"sm" | "md"`, default: `"md"` },
             { prop: "disabled", description: "禁用", type: "boolean", default: "false" },
           ],

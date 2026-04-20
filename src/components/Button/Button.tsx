@@ -20,6 +20,8 @@ export interface ButtonProps
   trailingIcon?: IconName;
   /** Show spinner + disable interaction. */
   loading?: boolean;
+  /** Make the button fill the container's width. */
+  block?: boolean;
   /** Button type attribute. Defaults to "button" to avoid accidental form submits. */
   type?: "button" | "submit" | "reset";
   /** Extra class names. */
@@ -43,6 +45,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       icon,
       trailingIcon,
       loading,
+      block,
       disabled,
       className = "",
       type = "button",
@@ -55,6 +58,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       variant,
       size !== "md" && size,
       loading && "loading",
+      block && "block",
       disabled && "disabled",
       className,
     ]

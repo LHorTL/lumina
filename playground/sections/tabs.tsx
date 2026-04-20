@@ -47,6 +47,34 @@ const SectionTabs: React.FC<SectionCtx> = () => (
           />
         ),
       },
+      {
+        id: "centered",
+        title: "居中对齐",
+        span: 2,
+        description: "centered 让标签条在容器中水平居中。",
+        code: `<Tabs centered items={[...]} />`,
+        render: () => (
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <Tabs
+              centered
+              items={[
+                { key: "a", label: "第一项" },
+                { key: "b", label: "第二项" },
+                { key: "c", label: "第三项" },
+              ]}
+            />
+            <Tabs
+              centered
+              variant="line"
+              items={[
+                { key: "a", label: "Overview" },
+                { key: "b", label: "Billing" },
+                { key: "c", label: "Security" },
+              ]}
+            />
+          </div>
+        ),
+      },
     ]}
     api={[
       {
@@ -56,6 +84,7 @@ const SectionTabs: React.FC<SectionCtx> = () => (
           { prop: "activeKey / defaultActiveKey", description: "受控/初始激活", type: "string" },
           { prop: "onChange", description: "切换", type: "(key: string) => void" },
           { prop: "variant", description: "样式", type: `"line" | "pill" | "segmented"`, default: `"line"` },
+          { prop: "centered", description: "标签条居中对齐", type: "boolean", default: "false" },
         ],
       },
     ]}
