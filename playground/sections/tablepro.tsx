@@ -247,7 +247,7 @@ const SectionTablePro: React.FC<SectionCtx> = () => {
 export default defineSection({
   id: "tablepro",
   group: "数据展示",
-  order: 90,
+  order: 100,
   label: "Table Pro",
   eyebrow: "DATA DISPLAY",
   title: "Table Pro",

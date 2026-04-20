@@ -103,7 +103,7 @@ const SectionDivider: React.FC<SectionCtx> = () => (
 export default defineSection({
   id: "divider",
   group: "数据展示",
-  order: 50,
+  order: 60,
   label: "Divider 分隔",
   eyebrow: "DATA DISPLAY",
   title: "Divider 分隔符",

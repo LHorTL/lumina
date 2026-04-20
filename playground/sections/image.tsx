@@ -67,7 +67,7 @@ const SectionImage: React.FC<SectionCtx> = () => {
 export default defineSection({
   id: "image",
   group: "数据展示",
-  order: 100,
+  order: 50,
   label: "Image 图片",
   eyebrow: "DATA DISPLAY",
   title: "Image 图片",

@@ -84,7 +84,7 @@ const SectionProgress: React.FC<SectionCtx> = () => {
 export default defineSection({
   id: "progress",
   group: "数据展示",
-  order: 60,
+  order: 70,
   label: "Progress 进度",
   eyebrow: "DATA DISPLAY",
   title: "Progress 进度",

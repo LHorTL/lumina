@@ -92,7 +92,7 @@ const SectionCalendar: React.FC<SectionCtx> = () => {
 export default defineSection({
   id: "calendar",
   group: "数据展示",
-  order: 110,
+  order: 140,
   label: "Calendar 日历",
   eyebrow: "DATA DISPLAY",
   title: "Calendar 日历",

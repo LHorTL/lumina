@@ -47,18 +47,35 @@ const SectionSlider: React.FC<SectionCtx> = () => {
           render: () => <Slider range value={rangeVal} onChange={setRangeVal} showValue />,
         },
         {
+          id: "gradient",
+          title: "渐变色",
+          description: "colors 传入颜色数组,填充和滑块圆点会按当前位置动态插值。",
+          span: 2,
+          code: `<Slider defaultValue={60} showValue
+  colors={["#3b82f6", "#22c55e", "#eab308", "#ef4444"]} />`,
+          render: () => (
+            <Slider
+              defaultValue={60}
+              showValue
+              colors={["#3b82f6", "#22c55e", "#eab308", "#ef4444"]}
+            />
+          ),
+        },
+        {
           id: "marks",
-          title: "刻度标记",
-          description: "marks 提供可点击刻度,点击即可跳到该值。",
+          title: "刻度标记 + 渐变",
+          description: "marks 配合 colors 可直观表达冷暖等语义。",
           span: 2,
           code: `<Slider
   defaultValue={37}
   marks={{ 0: "0°C", 26: "冷", 37: "正常", 100: "100°C" }}
+  colors={["#3b82f6", "#22c55e", "#eab308", "#ef4444"]}
 />`,
           render: () => (
             <Slider
               defaultValue={37}
               marks={{ 0: "0°C", 26: "冷", 37: "正常", 100: "100°C" }}
+              colors={["#3b82f6", "#22c55e", "#eab308", "#ef4444"]}
             />
           ),
         },
@@ -73,6 +90,7 @@ const SectionSlider: React.FC<SectionCtx> = () => {
             { prop: "range", description: "是否为双滑块区间模式", type: "boolean", default: "false" },
             { prop: "marks", description: "刻度,点击可跳到对应值", type: "Record<number, ReactNode>" },
             { prop: "tone", description: "色调", type: `"accent" | "success" | "warning" | "danger"`, default: `"accent"` },
+            { prop: "colors", description: "渐变色数组,按位置插值;覆盖 tone", type: "string[]" },
             { prop: "showValue", description: "显示数值", type: "boolean", default: "false" },
             { prop: "disabled", description: "禁用", type: "boolean", default: "false" },
           ],

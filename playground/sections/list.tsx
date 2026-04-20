@@ -68,7 +68,7 @@ const SectionList: React.FC<SectionCtx> = () => (
 export default defineSection({
   id: "list",
   group: "数据展示",
-  order: 70,
+  order: 80,
   label: "List 列表",
   eyebrow: "DATA DISPLAY",
   title: "List 列表",

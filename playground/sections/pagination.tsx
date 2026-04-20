@@ -143,7 +143,7 @@ const SectionPagination: React.FC<SectionCtx> = () => {
 export default defineSection({
   id: "pagination",
   group: "数据展示",
-  order: 115,
+  order: 110,
   label: "Pagination 分页",
   eyebrow: "DATA DISPLAY",
   title: "Pagination 分页",
