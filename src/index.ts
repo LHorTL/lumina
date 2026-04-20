@@ -30,4 +30,4 @@ export * from "./components/Cascader";
 export * from "./components/Theme";
 
 /** Package version — bumped by release scripts. */
-export const VERSION = "0.1.0";
+export const VERSION = "0.1.1";
