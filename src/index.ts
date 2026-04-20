@@ -27,6 +27,7 @@ export * from "./components/AppShell";
 export * from "./components/Empty";
 export * from "./components/Image";
 export * from "./components/Cascader";
+export * from "./components/Typography";
 export * from "./components/Theme";
 
 /** Package version — bumped by release scripts. */
