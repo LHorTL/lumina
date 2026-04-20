@@ -31,4 +31,4 @@ export * from "./components/Typography";
 export * from "./components/Theme";
 
 /** Package version — bumped by release scripts. */
-export const VERSION = "0.1.2";
+export const VERSION = "0.1.3";
