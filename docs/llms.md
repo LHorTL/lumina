@@ -3,7 +3,7 @@
 > 拟态风格的 React 18 组件库,目标是 Electron 桌面应用。**写给 AI 编程助手**的按需文档 —— 每个组件单独一个 `.md`,避免一次性读取全部。示例源自 playground 的 demo,可直接复制运行。
 
 - **包名**: `@fangxinyan/lumina`
-- **版本**: `0.2.0`
+- **版本**: `0.2.1`
 - **React 最低版本**: 18
 - **环境**: 带打包器的 React 工程(Vite / Next.js / Webpack / Remix / Electron + Vite 等)
 - **零运行时依赖**: 只依赖 `react` / `react-dom` (peer deps)
@@ -94,4 +94,8 @@
 - [TitleBar 标题栏](./llms/titlebar.md) — Electron 应用窗口顶部的跨平台标题栏。
 - [WindowControls 窗口控件](./llms/windowcontrols.md) — 独立的窗口控件按钮组。
 - [Sidebar 侧边栏](./llms/sidebar.md) — 应用主导航,沿屏幕左侧垂直排列。
+- [StatusBar 状态栏](./llms/statusbar.md) — 窗口底部状态栏,展示分支、编码、行列等应用元信息。
+- [Splitter 可拖拽分栏](./llms/splitter.md) — 两栏之间可拖拽的分隔条,支持横向、纵向与嵌套。
+- [ContextMenu 右键菜单](./llms/contextmenu.md) — 桌面应用风格的右键上下文菜单。
+- [CommandPalette ⌘K 命令面板](./llms/commandpalette.md) — 全局命令搜索与执行入口。
 

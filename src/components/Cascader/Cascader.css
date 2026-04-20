@@ -29,7 +29,7 @@
   display: flex;
   background: var(--bg);
   border-radius: var(--r-md);
-  box-shadow: var(--neu-out-lg);
+  box-shadow: var(--neu-float);
   padding: 6px;
   animation: menuIn var(--dur) var(--ease);
   gap: 4px;

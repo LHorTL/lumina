@@ -220,7 +220,7 @@
 .menu {
   background: var(--bg);
   border-radius: var(--r-md);
-  box-shadow: var(--neu-out-lg);
+  box-shadow: var(--neu-float);
   padding: 6px;
   min-width: 180px;
   z-index: 1000;

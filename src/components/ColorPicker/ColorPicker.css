@@ -77,7 +77,7 @@
   padding: 12px;
   background: var(--bg);
   border-radius: var(--r-md);
-  box-shadow: var(--neu-out);
+  box-shadow: var(--neu-float);
   display: flex;
   flex-direction: column;
   gap: 10px;

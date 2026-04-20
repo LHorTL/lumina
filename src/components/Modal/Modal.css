@@ -15,7 +15,7 @@
 .modal {
   background: var(--bg);
   border-radius: var(--r-xl);
-  box-shadow: var(--neu-out-lg), 0 24px 60px -20px rgba(40, 55, 80, 0.3);
+  box-shadow: var(--neu-float);
   padding: var(--gap-6);
   width: min(480px, 92vw);
   animation: modalIn var(--dur-slow) var(--ease);

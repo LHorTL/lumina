@@ -33,6 +33,36 @@ export interface AccordionProps {
   className?: string;
 }
 
+const AccordionPanel: React.FC<{ open: boolean; children: React.ReactNode }> = ({ open, children }) => {
+  const innerRef = React.useRef<HTMLDivElement>(null);
+  const [h, setH] = React.useState(0);
+  const [animated, setAnimated] = React.useState(false);
+
+  React.useLayoutEffect(() => {
+    const el = innerRef.current;
+    if (!el) return;
+    setH(el.scrollHeight);
+    const ro = new ResizeObserver(() => setH(el.scrollHeight));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  React.useEffect(() => {
+    const id = requestAnimationFrame(() => setAnimated(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  return (
+    <div
+      className="accordion-body"
+      style={{ maxHeight: open ? h : 0, transition: animated ? undefined : "none" }}
+      aria-hidden={!open}
+    >
+      <div ref={innerRef} className="accordion-body-inner">{children}</div>
+    </div>
+  );
+};
+
 /** `Accordion` — collapsible sections. */
 export const Accordion: React.FC<AccordionProps> = ({
   items,
@@ -93,9 +123,7 @@ export const Accordion: React.FC<AccordionProps> = ({
                 <Icon name="chevDown" size={16} />
               </span>
             </button>
-            <div className="accordion-body">
-              <div className="accordion-body-inner">{it.content}</div>
-            </div>
+            <AccordionPanel open={open}>{it.content}</AccordionPanel>
           </div>
         );
       })}

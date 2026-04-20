@@ -31,7 +31,6 @@
   color: var(--fg-muted);
   font-size: 13px;
 }
-.accordion-item.open .accordion-body { max-height: 320px; }
 .accordion-body-inner { padding: 0 18px 16px; }
 .accordion-chev {
   transition: transform var(--dur) var(--ease), color var(--dur) var(--ease);

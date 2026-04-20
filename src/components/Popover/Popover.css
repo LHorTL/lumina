@@ -5,6 +5,6 @@
   border-radius: var(--r-md);
   padding: var(--gap-3);
   min-width: 220px;
-  box-shadow: var(--neu-out-lg);
+  box-shadow: var(--neu-float);
   animation: menuIn var(--dur) var(--ease);
 }

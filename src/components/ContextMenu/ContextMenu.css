@@ -1,0 +1,76 @@
+/* ============ ContextMenu ============ */
+.context-menu {
+  z-index: 5000;
+  padding: 6px;
+  background: var(--bg);
+  border-radius: var(--r-md);
+  box-shadow: var(--neu-float);
+  border: 1px solid var(--divider);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  animation: menuIn 140ms var(--ease);
+  max-height: calc(100vh - 24px);
+  overflow-y: auto;
+}
+
+.context-menu-item {
+  display: grid;
+  grid-template-columns: 18px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  min-height: 28px;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--fg);
+  text-align: left;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease),
+    box-shadow var(--dur-fast) var(--ease);
+}
+.context-menu-item:disabled { color: var(--fg-subtle); cursor: not-allowed; }
+.context-menu-item.active:not(:disabled) {
+  background: var(--bg);
+  color: var(--accent-ink);
+  box-shadow: var(--neu-in-sm);
+}
+.context-menu-item.danger { color: var(--danger); }
+.context-menu-item.danger.active:not(:disabled) {
+  background: var(--bg);
+  color: var(--danger);
+  box-shadow: var(--neu-in-sm);
+}
+
+.context-menu-icon {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--fg-muted);
+}
+.context-menu-item.active:not(:disabled) .context-menu-icon { color: inherit; }
+.context-menu-item.danger .context-menu-icon { color: var(--danger); }
+
+.context-menu-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.context-menu-shortcut {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-subtle);
+  padding-left: 12px;
+}
+.context-menu-item.active:not(:disabled) .context-menu-shortcut { color: inherit; opacity: 0.8; }
+
+.context-menu-divider {
+  height: 1px;
+  background: var(--divider);
+  margin: 4px 4px;
+}
