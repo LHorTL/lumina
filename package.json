@@ -34,7 +34,8 @@
     "build:lib": "tsup",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "npm run typecheck && npm run build:lib"
+    "gen:docs": "node scripts/gen-llms-doc.mjs",
+    "prepublishOnly": "npm run typecheck && npm run gen:docs && npm run build:lib"
   },
   "peerDependencies": {
     "react": ">=18",

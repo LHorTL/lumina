@@ -1,0 +1,29 @@
+# @fangxinyan/lumina
+
+> 拟态风格（Neumorphism）的 React 18 + TypeScript 组件库,面向 Electron 桌面应用。零运行时依赖,所有样式由 CSS 变量驱动。30+ 组件,六种强调色,深浅色与三档密度运行时可切。
+
+## 核心参考
+
+- [LLM 组件全参考](https://raw.githubusercontent.com/LHorTL/lumina/main/docs/llms.md): 单文件总览,每个组件包含导入 / 示例(来自 playground 的 demo) / 完整 Props 表
+- [README](https://raw.githubusercontent.com/LHorTL/lumina/main/README.md): 项目简介 + 安装
+
+## 快速开始
+
+```tsx
+import "@fangxinyan/lumina/styles";
+import { ThemeProvider, Button } from "@fangxinyan/lumina";
+
+export default function App() {
+  return (
+    <ThemeProvider mode="system" accent="violet">
+      <Button variant="primary">Hello Lumina</Button>
+    </ThemeProvider>
+  );
+}
+```
+
+## Optional
+
+- [设计令牌说明](https://raw.githubusercontent.com/LHorTL/lumina/main/docs/tokens.md)
+- [Electron 专用组件指引](https://raw.githubusercontent.com/LHorTL/lumina/main/docs/electron.md)
+- [GitHub 仓库](https://github.com/LHorTL/lumina)
