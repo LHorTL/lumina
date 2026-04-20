@@ -33,4 +33,4 @@ export * from "./components/Drawer";
 export * from "./components/Theme";
 
 /** Package version — bumped by release scripts. */
-export const VERSION = "0.1.6";
+export const VERSION = "0.2.0";
