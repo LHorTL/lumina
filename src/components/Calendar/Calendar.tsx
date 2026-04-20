@@ -12,6 +12,14 @@ export interface CalendarProps {
   min?: Date;
   /** Max selectable date. */
   max?: Date;
+  /**
+   * Predicate that marks an individual cell as disabled. Disabled cells are
+   * greyed out, not clickable, and do not fire `onChange`.
+   * @example
+   * // disable weekends
+   * disabledDate={(d) => d.getDay() === 0 || d.getDay() === 6}
+   */
+  disabledDate?: (date: Date) => boolean;
   className?: string;
 }
 
@@ -24,6 +32,7 @@ export const Calendar: React.FC<CalendarProps> = ({
   onChange,
   min,
   max,
+  disabledDate,
   className = "",
 }) => {
   const [inner, setInner] = React.useState(defaultValue ?? new Date());
@@ -45,6 +54,7 @@ export const Calendar: React.FC<CalendarProps> = ({
     const next = new Date(view.getFullYear(), view.getMonth(), d);
     if (min && next < min) return;
     if (max && next > max) return;
+    if (disabledDate?.(next)) return;
     if (!isControlled) setInner(next);
     onChange?.(next);
   };
@@ -79,7 +89,10 @@ export const Calendar: React.FC<CalendarProps> = ({
         {cells.map((d, i) => {
           if (d === null) return <div key={i} className="calendar-cell out" />;
           const date = new Date(view.getFullYear(), view.getMonth(), d);
-          const disabled = (min && date < min) || (max && date > max);
+          const disabled =
+            (min && date < min) ||
+            (max && date > max) ||
+            (disabledDate?.(date) ?? false);
           return (
             <button
               key={i}
