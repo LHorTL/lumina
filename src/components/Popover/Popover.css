@@ -3,8 +3,101 @@
   z-index: 1000;
   background: var(--bg);
   border-radius: var(--r-md);
-  padding: var(--gap-3);
   min-width: 220px;
   box-shadow: var(--neu-float);
-  animation: menuIn var(--dur) var(--ease);
+  position: relative;
+}
+
+/*
+ * Direction-aware entrance.
+ * We animate `opacity` + `translate` (the standalone property, NOT `transform`)
+ * so we don't clobber the inline `transform: translateX(-50%)` that useFloating
+ * applies for cross-axis centering.
+ */
+.popover-bottom { animation: popoverInDown var(--dur) var(--ease); }
+.popover-top    { animation: popoverInUp   var(--dur) var(--ease); }
+.popover-left   { animation: popoverInLeft var(--dur) var(--ease); }
+.popover-right  { animation: popoverInRight var(--dur) var(--ease); }
+
+@keyframes popoverInDown  { from { opacity: 0; translate: 0 -6px; } }
+@keyframes popoverInUp    { from { opacity: 0; translate: 0  6px; } }
+@keyframes popoverInLeft  { from { opacity: 0; translate:  6px 0; } }
+@keyframes popoverInRight { from { opacity: 0; translate: -6px 0; } }
+
+/* ---- Header ---- */
+.popover-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--gap-3) var(--gap-3) 0;
+  gap: var(--gap-2);
+}
+
+.popover-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--fg);
+}
+
+.popover-close {
+  all: unset;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--fg-muted);
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: var(--r-xs);
+  transition: color var(--dur-fast) var(--ease);
+  margin-left: auto;
+}
+.popover-close:hover {
+  color: var(--fg);
+}
+
+/* ---- Body ---- */
+.popover-body {
+  padding: var(--gap-3);
+}
+
+.popover-header + .popover-body {
+  padding-top: var(--gap-2);
+}
+
+/* ---- Arrow ---- */
+.popover-arrow {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: var(--bg);
+  box-shadow: 2px 2px 4px rgba(163, 177, 198, 0.2);
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+
+.popover-arrow-bottom {
+  top: -5px;
+  left: 50%;
+  margin-left: -5px;
+  box-shadow: -2px -2px 4px rgba(163, 177, 198, 0.2);
+}
+
+.popover-arrow-top {
+  bottom: -5px;
+  left: 50%;
+  margin-left: -5px;
+  box-shadow: 2px 2px 4px rgba(163, 177, 198, 0.2);
+}
+
+.popover-arrow-left {
+  right: -5px;
+  top: 50%;
+  margin-top: -5px;
+  box-shadow: 2px -2px 4px rgba(163, 177, 198, 0.2);
+}
+
+.popover-arrow-right {
+  left: -5px;
+  top: 50%;
+  margin-top: -5px;
+  box-shadow: -2px 2px 4px rgba(163, 177, 198, 0.2);
 }

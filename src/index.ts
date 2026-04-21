@@ -38,6 +38,7 @@ export * from "./components/Typography";
 export * from "./components/ColorPicker";
 export * from "./components/Drawer";
 export * from "./components/Theme";
+export * from "./components/Timeline";
 
 /** Package version — bumped by release scripts. */
 export const VERSION = "0.5.0";

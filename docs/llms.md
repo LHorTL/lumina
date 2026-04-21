@@ -3,7 +3,7 @@
 > 拟态风格的 React 18 组件库,目标是 Electron 桌面应用。**写给 AI 编程助手**的按需文档 —— 每个组件单独一个 `.md`,避免一次性读取全部。示例源自 playground 的 demo,可直接复制运行。
 
 - **包名**: `@fangxinyan/lumina`
-- **版本**: `0.4.0`
+- **版本**: `0.5.0`
 - **React 最低版本**: 18
 - **环境**: 带打包器的 React 工程(Vite / Next.js / Webpack / Remix / Electron + Vite 等)
 - **零运行时依赖**: 只依赖 `react` / `react-dom` (peer deps)
@@ -69,16 +69,17 @@
 - [Tag 标签](./llms/tag.md) — 标记关键词、状态或分类。
 - [Badge 徽标数](./llms/badge.md) — 右上角的小型计数或状态指示器。
 - [Avatar 头像](./llms/avatar.md) — 用图像、首字母代表用户或事物。
+- [Image 图片](./llms/image.md) — 凹陷外框包裹的图片容器,带预览、错误占位。
 - [Divider 分隔符](./llms/divider.md) — 对内容进行分割。
 - [Progress 进度](./llms/progress.md) — 条形进度 Progress 与环形进度 Ring。
+- [Timeline 时间线](./llms/timeline.md) — 垂直时间线，支持等待状态、自定义圆点、交替布局
 - [List 列表](./llms/list.md) — 承载一组结构化的同质化数据。
 - [Table 表格](./llms/table.md) — 结构化数据展示。
 - [Table Pro](./llms/tablepro.md) — 带工具栏 / 搜索 / 筛选 / 排序 / 多选 / 分页的全功能表格。
-- [Image 图片](./llms/image.md) — 凹陷外框包裹的图片容器,带预览、错误占位。
-- [Calendar 日历](./llms/calendar.md) — 查看与选择日期。
 - [Pagination 分页](./llms/pagination.md) — 分页控件,支持快速跳转与每页条数切换。
 - [Tabs 选项卡](./llms/tabs.md) — 同一层级的内容分组,通过标签切换。
 - [Accordion 折叠面板](./llms/accordion.md) — 纵向折叠面板。
+- [Calendar 日历](./llms/calendar.md) — 查看与选择日期。
 
 ### 反馈
 
@@ -86,7 +87,7 @@
 - [Drawer 抽屉](./llms/drawer.md) — 从屏幕边缘滑出的浮层。
 - [Toast 通知](./llms/toast.md) — 全局轻量提示,4 种语义。
 - [Tooltip 文字提示](./llms/tooltip.md) — 鼠标悬浮触发的简短说明。
-- [Popover 气泡卡片](./llms/popover.md) — 比 Tooltip 更丰富,可承载交互内容。
+- [Popover 气泡卡片](./llms/popover.md) — 比 Tooltip 更丰富，可承载交互内容。
 - [Alert 警告提示](./llms/alert.md) — 页面中嵌入的警告/提示。
 - [Empty 空状态](./llms/empty.md) — 列表、页面或容器无数据时的占位。
 - [Spinner 加载](./llms/spinner.md) — 表示任务正在进行,提示用户等待。

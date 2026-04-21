@@ -31,9 +31,14 @@ export interface UseFloatingOptions {
   alignCross?: "start" | "center" | "end";
 }
 
-export interface UseFloatingResult<T extends HTMLElement> {
+export interface UseFloatingResult<
+  T extends HTMLElement,
+  F extends HTMLElement
+> {
   /** Attach this to the trigger element. */
   triggerRef: React.RefObject<T>;
+  /** Attach this to the floating element so placement can use its real size. */
+  floatingRef: React.RefObject<F>;
   /** Spread this onto the panel element. Already contains `position: fixed` + coords. */
   floatingStyle: React.CSSProperties;
   /** Resolved placement after flip logic — useful for arrow direction. */
@@ -48,10 +53,14 @@ export interface UseFloatingResult<T extends HTMLElement> {
  * Not a general-purpose `@floating-ui` replacement — it only covers flip + shift
  * relative to the viewport, which is what Lumina's overlays need.
  */
-export function useFloating<T extends HTMLElement = HTMLElement>(
+export function useFloating<
+  T extends HTMLElement = HTMLElement,
+  F extends HTMLElement = HTMLElement
+>(
   opts: UseFloatingOptions
-): UseFloatingResult<T> {
+): UseFloatingResult<T, F> {
   const triggerRef = React.useRef<T>(null);
+  const floatingRef = React.useRef<F>(null);
   const preferred = opts.placement ?? "bottom";
   const gap = opts.gap ?? 8;
   const panelW = opts.panelWidth ?? 240;
@@ -74,9 +83,13 @@ export function useFloating<T extends HTMLElement = HTMLElement>(
     const update = () => {
       const el = triggerRef.current;
       if (!el) return;
+
+      const floatingRect = floatingRef.current?.getBoundingClientRect();
       const rect = el.getBoundingClientRect();
-      const w = matchW ? rect.width : panelW;
-      const h = panelH;
+      const measuredW = floatingRect?.width && floatingRect.width > 0 ? floatingRect.width : undefined;
+      const measuredH = floatingRect?.height && floatingRect.height > 0 ? floatingRect.height : undefined;
+      const w = matchW ? rect.width : (measuredW ?? panelW);
+      const h = measuredH ?? panelH;
       const vw = window.innerWidth;
       const vh = window.innerHeight;
       const MARGIN = 8;
@@ -150,11 +163,18 @@ export function useFloating<T extends HTMLElement = HTMLElement>(
     update();
     window.addEventListener("scroll", update, true);
     window.addEventListener("resize", update);
+    const ro =
+      typeof ResizeObserver !== "undefined" ? new ResizeObserver(update) : null;
+    if (ro) {
+      if (triggerRef.current) ro.observe(triggerRef.current);
+      if (floatingRef.current) ro.observe(floatingRef.current);
+    }
     return () => {
       window.removeEventListener("scroll", update, true);
       window.removeEventListener("resize", update);
+      ro?.disconnect();
     };
-  }, [open, preferred, gap, panelW, panelH, doShift, doFlip, matchW]);
+  }, [open, preferred, gap, panelW, panelH, doShift, doFlip, matchW, align]);
 
   let transform: string | undefined;
   if (align !== "start") {
@@ -171,5 +191,10 @@ export function useFloating<T extends HTMLElement = HTMLElement>(
     ...(transform ? { transform } : {}),
   };
 
-  return { triggerRef, floatingStyle, placement: state.placement };
+  return {
+    triggerRef,
+    floatingRef,
+    floatingStyle,
+    placement: state.placement,
+  };
 }

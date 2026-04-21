@@ -2,6 +2,7 @@
 .tip-anchor {
   position: relative;
   display: inline-flex;
+  align-self: flex-start;
 }
 .tip {
   background: var(--bg-sunken);

@@ -41,14 +41,24 @@ const [v, setV] = useState<[number, number]>([20, 70]);
 <Slider range value={v} onChange={setV} showValue />
 ```
 
-### 刻度标记
+### 渐变色
 
-marks 提供可点击刻度,点击即可跳到该值。
+colors 传入颜色数组,填充和滑块圆点会按当前位置动态插值。
+
+```tsx
+<Slider defaultValue={60} showValue
+  colors={["#3b82f6", "#22c55e", "#eab308", "#ef4444"]} />
+```
+
+### 刻度标记 + 渐变
+
+marks 配合 colors 可直观表达冷暖等语义。
 
 ```tsx
 <Slider
   defaultValue={37}
   marks={{ 0: "0°C", 26: "冷", 37: "正常", 100: "100°C" }}
+  colors={["#3b82f6", "#22c55e", "#eab308", "#ef4444"]}
 />
 ```
 
@@ -64,6 +74,7 @@ marks 提供可点击刻度,点击即可跳到该值。
 | range | `boolean` | `false` | 是否为双滑块区间模式 |
 | marks | `Record<number, ReactNode>` | — | 刻度,点击可跳到对应值 |
 | tone | `"accent" | "success" | "warning" | "danger"` | `"accent"` | 色调 |
+| colors | `string[]` | — | 渐变色数组,按位置插值;覆盖 tone |
 | showValue | `boolean` | `false` | 显示数值 |
 | disabled | `boolean` | `false` | 禁用 |
 

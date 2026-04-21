@@ -1,47 +1,85 @@
 import * as React from "react";
-import { Avatar, Button, Popover, toast } from "lumina";
-import { DocPage } from "../docs";
+import { Avatar, Button, Popover, toast, Input } from "lumina";
+import { DocPage, type ApiRow } from "../docs";
 import { Row } from "./_shared";
 import { defineSection, type SectionCtx } from "./_types";
 
+const popoverApi: ApiRow[] = [
+  { prop: "content", description: "浮层内容", type: "ReactNode", required: true },
+  { prop: "title", description: "标题", type: "ReactNode" },
+  { prop: "placement", description: "弹出位置", type: `"top" | "bottom" | "left" | "right"`, default: `"bottom"` },
+  { prop: "trigger", description: "触发方式", type: `"click" | "hover"`, default: `"click"` },
+  { prop: "arrow", description: "显示箭头", type: "boolean", default: "false" },
+  { prop: "closable", description: "显示关闭按钮", type: "boolean", default: "false" },
+  { prop: "width", description: "面板宽度，\"auto\" 自适应", type: `number | "auto"` },
+  { prop: "open", description: "受控显示状态", type: "boolean" },
+  { prop: "defaultOpen", description: "非受控初始状态", type: "boolean", default: "false" },
+  { prop: "onOpenChange", description: "显示状态变化回调", type: "(open: boolean) => void" },
+];
+
 const SectionPopover: React.FC<SectionCtx> = () => (
   <DocPage
-    whenToUse={<p>比 Tooltip 更丰富的浮层,可承载交互元素如按钮、表单。</p>}
+    whenToUse={<p>比 Tooltip 更丰富的浮层，可承载交互元素如按钮、表单。</p>}
     demos={[
       {
         id: "basic",
-        title: "基础",
-        code: `<Popover content={<>...</>}>
-  <Button>触发</Button>
-</Popover>`,
+        title: "基础用法",
+        description: "点击触发，弹出气泡卡片",
+        code: `<Row gap={24}>
+  <Popover
+    title="确认删除？"
+    content={
+      <div>
+        <div style={{ color: "var(--fg-muted)", fontSize: 13, marginBottom: 12 }}>
+          删除后无法恢复。
+        </div>
+        <Row gap={6}>
+          <Button size="sm" variant="ghost">取消</Button>
+          <Button size="sm" variant="danger">删除</Button>
+        </Row>
+      </div>
+    }
+  >
+    <Button variant="danger" icon="trash">删除项目</Button>
+  </Popover>
+
+  <Popover
+    placement="right"
+    content={
+      <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 160 }}>
+        <Avatar alt="金" size="sm" />
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 600 }}>金伟</div>
+          <div style={{ fontSize: 11, color: "var(--fg-muted)" }}>设计总监</div>
+        </div>
+      </div>
+    }
+  >
+    <Avatar alt="金" />
+  </Popover>
+</Row>`,
         render: () => (
           <Row gap={24}>
             <Popover
+              title="确认删除？"
               content={
-                <div style={{ padding: 12, minWidth: 200 }}>
-                  <div style={{ fontWeight: 600, marginBottom: 6 }}>确认删除?</div>
-                  <div style={{ color: "var(--fg-muted)", fontSize: 12, marginBottom: 10 }}>
+                <div>
+                  <div style={{ color: "var(--fg-muted)", fontSize: 13, marginBottom: 12 }}>
                     删除后无法恢复。
                   </div>
                   <Row gap={6}>
-                    <Button size="sm" variant="ghost">
-                      取消
-                    </Button>
-                    <Button size="sm" variant="danger" onClick={() => toast.error("已删除")}>
-                      删除
-                    </Button>
+                    <Button size="sm" variant="ghost">取消</Button>
+                    <Button size="sm" variant="danger" onClick={() => toast.error("已删除")}>删除</Button>
                   </Row>
                 </div>
               }
             >
-              <Button variant="danger" icon="trash">
-                删除项目
-              </Button>
+              <Button variant="danger" icon="trash">删除项目</Button>
             </Popover>
             <Popover
               placement="right"
               content={
-                <div style={{ padding: 10, display: "flex", alignItems: "center", gap: 10, minWidth: 180 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 160 }}>
                   <Avatar alt="金" size="sm" />
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 600 }}>金伟</div>
@@ -55,18 +93,165 @@ const SectionPopover: React.FC<SectionCtx> = () => (
           </Row>
         ),
       },
-    ]}
-    api={[
       {
-        title: "Popover",
-        rows: [
-          { prop: "content", description: "浮层内容", type: "ReactNode", required: true },
-          { prop: "placement", description: "位置", type: `"top" | "bottom" | "left" | "right"`, default: `"bottom"` },
-          { prop: "trigger", description: "触发方式", type: `"click" | "hover"`, default: `"click"` },
-          { prop: "open / defaultOpen / onOpenChange", description: "受控显示", type: "—" },
-        ],
+        id: "placement",
+        title: "四方向",
+        description: "支持 top / bottom / left / right 四个方向",
+        code: `<div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 12 }}>
+  <Popover placement="top" arrow content={<div>上方弹出内容</div>}>
+    <Button variant="ghost">上方</Button>
+  </Popover>
+  <Popover placement="bottom" arrow content={<div>下方弹出内容</div>}>
+    <Button variant="ghost">下方</Button>
+  </Popover>
+  <Popover placement="left" arrow content={<div>左侧弹出内容</div>}>
+    <Button variant="ghost">左侧</Button>
+  </Popover>
+  <Popover placement="right" arrow content={<div>右侧弹出内容</div>}>
+    <Button variant="ghost">右侧</Button>
+  </Popover>
+</div>`,
+        render: () => (
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 12 }}>
+            <Popover placement="top" arrow content={<div>上方弹出内容</div>}>
+              <Button variant="ghost">上方</Button>
+            </Popover>
+            <Popover placement="bottom" arrow content={<div>下方弹出内容</div>}>
+              <Button variant="ghost">下方</Button>
+            </Popover>
+            <Popover placement="left" arrow content={<div>左侧弹出内容</div>}>
+              <Button variant="ghost">左侧</Button>
+            </Popover>
+            <Popover placement="right" arrow content={<div>右侧弹出内容</div>}>
+              <Button variant="ghost">右侧</Button>
+            </Popover>
+          </div>
+        ),
+      },
+      {
+        id: "arrow",
+        title: "箭头",
+        description: "arrow 属性添加指向触发元素的小箭头",
+        code: `<Popover
+  arrow
+  title="系统通知"
+  content={<div style={{ color: "var(--fg-muted)", fontSize: 13 }}>你有 3 条未读消息。</div>}
+>
+  <Button icon="bell">消息</Button>
+</Popover>`,
+        render: () => (
+          <Popover
+            arrow
+            title="系统通知"
+            content={<div style={{ color: "var(--fg-muted)", fontSize: 13 }}>你有 3 条未读消息。</div>}
+          >
+            <Button icon="bell">消息</Button>
+          </Popover>
+        ),
+      },
+      {
+        id: "closable",
+        title: "可关闭",
+        description: "closable 显示关闭按钮，适合信息提示场景",
+        code: `<Popover
+  closable
+  arrow
+  title="注意事项"
+  content={<div style={{ color: "var(--fg-muted)", fontSize: 13 }}>此操作需要管理员权限才能执行。</div>}
+>
+  <Button icon="alert">权限</Button>
+</Popover>`,
+        render: () => (
+          <Popover
+            closable
+            arrow
+            title="注意事项"
+            content={
+              <div style={{ color: "var(--fg-muted)", fontSize: 13 }}>
+                此操作需要管理员权限才能执行。
+              </div>
+            }
+          >
+            <Button icon="alert">权限</Button>
+          </Popover>
+        ),
+      },
+      {
+        id: "hover",
+        title: "Hover 触发",
+        description: "trigger=\"hover\" 鼠标悬停触发",
+        code: `<Popover
+  trigger="hover"
+  arrow
+  content={
+    <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 160 }}>
+      <Avatar alt="云" size="sm" />
+      <div>
+        <div style={{ fontSize: 13, fontWeight: 600 }}>云曦</div>
+        <div style={{ fontSize: 11, color: "var(--fg-muted)" }}>前端工程师</div>
+      </div>
+    </div>
+  }
+>
+  <Avatar alt="云" />
+</Popover>`,
+        render: () => (
+          <Popover
+            trigger="hover"
+            arrow
+            content={
+              <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 160 }}>
+                <Avatar alt="云" size="sm" />
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 600 }}>云曦</div>
+                  <div style={{ fontSize: 11, color: "var(--fg-muted)" }}>前端工程师</div>
+                </div>
+              </div>
+            }
+          >
+            <Avatar alt="云" />
+          </Popover>
+        ),
+      },
+      {
+        id: "form",
+        title: "表单内容",
+        description: "气泡内可放置表单等复杂交互",
+        code: `<Popover
+  title="快速备注"
+  closable
+  arrow
+  content={
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <Input placeholder="输入备注..." />
+      <div style={{ display: "flex", justifyContent: "flex-end", gap: 6 }}>
+        <Button size="sm">保存</Button>
+      </div>
+    </div>
+  }
+>
+  <Button icon="edit">备注</Button>
+</Popover>`,
+        render: () => (
+          <Popover
+            title="快速备注"
+            closable
+            arrow
+            content={
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <Input placeholder="输入备注..." />
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 6 }}>
+                  <Button size="sm" onClick={() => toast.success("已保存")}>保存</Button>
+                </div>
+              </div>
+            }
+          >
+            <Button icon="edit">备注</Button>
+          </Popover>
+        ),
       },
     ]}
+    api={[{ title: "Popover", rows: popoverApi }]}
   />
 );
 
@@ -77,6 +262,6 @@ export default defineSection({
   label: "Popover 气泡卡片",
   eyebrow: "FEEDBACK",
   title: "Popover 气泡卡片",
-  desc: "比 Tooltip 更丰富,可承载交互内容。",
+  desc: "比 Tooltip 更丰富，可承载交互内容。",
   Component: SectionPopover,
 });
