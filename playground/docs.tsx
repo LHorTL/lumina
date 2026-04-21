@@ -1,60 +1,56 @@
 import * as React from "react";
-import { Icon, IconButton, Tooltip, toast } from "lumina";
+import { Button, Alert, Icon, IconButton, Tooltip, toast } from "lumina";
+import { CodeEditor } from "./CodeEditor";
+import { compileLiveDemo, getCurrentSectionId, getLiveDemoSource } from "./live-demo";
 
-/* ============ JSX syntax highlighter ============ */
-
-const KEYWORDS = new Set([
-  "import","from","export","default","const","let","var","function","return",
-  "if","else","new","typeof","null","undefined","true","false","async","await",
-  "type","interface","extends","switch","case","break","this","class","of","in",
-]);
-
-const TOKEN_RE =
-  /\/\/[^\n]*|\/\*[\s\S]*?\*\/|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`|<\/?[A-Za-z][\w.]*|\/>|\b[A-Za-z_$][\w$]*\b|\b\d+\.?\d*\b|=>|[{}()[\]=;,.:!?<>+\-*/&|]/gm;
-
-function classifyToken(t: string): string | null {
-  if (t.startsWith("//") || t.startsWith("/*")) return "cm";
-  if (t[0] === '"' || t[0] === "'" || t[0] === "`") return "st";
-  if (t[0] === "<" && t.length > 1) return "tg";
-  if (t === "/>") return "tg";
-  if (/^\d/.test(t)) return "nm";
-  if (KEYWORDS.has(t)) return "kw";
-  return null;
+function formatLiveError(error: unknown) {
+  if (error instanceof Error) {
+    return error.message.split("\n").find(Boolean) ?? "代码执行失败";
+  }
+  return "代码执行失败";
 }
 
-function highlightCode(code: string): React.ReactNode[] {
-  const src = code.trim();
-  const out: React.ReactNode[] = [];
-  let last = 0;
-  let key = 0;
+class PreviewBoundary extends React.Component<
+  {
+    fallback: React.ReactNode;
+    onError: (error: Error) => void;
+    resetKey: unknown;
+    children: React.ReactNode;
+  },
+  { failed: boolean }
+> {
+  state = { failed: false };
 
-  const re = new RegExp(TOKEN_RE.source, "gm");
-  let m: RegExpExecArray | null;
-
-  while ((m = re.exec(src)) !== null) {
-    if (m.index > last) out.push(src.slice(last, m.index));
-
-    const text = m[0];
-    const cls = classifyToken(text);
-
-    if (cls) {
-      out.push(<span key={key++} className={`hl-${cls}`}>{text}</span>);
-    } else {
-      const nextChar = src[m.index + text.length];
-      if (nextChar === "=" && src[m.index + text.length + 1] !== "=") {
-        out.push(<span key={key++} className="hl-at">{text}</span>);
-      } else if (text[0] >= "A" && text[0] <= "Z") {
-        out.push(<span key={key++} className="hl-tg">{text}</span>);
-      } else {
-        out.push(text);
-      }
-    }
-    last = m.index + text.length;
+  static getDerivedStateFromError() {
+    return { failed: true };
   }
 
-  if (last < src.length) out.push(src.slice(last));
-  return out;
+  componentDidCatch(error: Error) {
+    this.props.onError(error);
+  }
+
+  componentDidUpdate(prevProps: Readonly<{ resetKey: unknown }>) {
+    if (prevProps.resetKey !== this.props.resetKey && this.state.failed) {
+      this.setState({ failed: false });
+    }
+  }
+
+  render() {
+    if (this.state.failed) return this.props.fallback;
+    return this.props.children;
+  }
 }
+
+const CandidateProbe: React.FC<{
+  Component: React.ComponentType;
+  onReady: () => void;
+}> = ({ Component, onReady }) => {
+  React.useLayoutEffect(() => {
+    onReady();
+  }, [onReady]);
+
+  return <Component />;
+};
 
 /* ============ Demo card ============ */
 
@@ -76,14 +72,105 @@ export interface DemoProps {
 export const Demo: React.FC<DemoProps> = ({ id, title, description, code, span = 1, children }) => {
   const hasPreview = children != null && children !== false;
   const [open, setOpen] = React.useState(!hasPreview);
-  const codeRef = React.useRef<HTMLPreElement>(null);
+  const codeRef = React.useRef<HTMLDivElement>(null);
   const [codeHeight, setCodeHeight] = React.useState(0);
+  const sectionId = React.useMemo(() => getCurrentSectionId(), []);
+  const liveSource = React.useMemo(() => getLiveDemoSource(sectionId, id), [id, sectionId]);
+  const source = React.useMemo(() => (liveSource ?? code ?? "").trim(), [liveSource, code]);
+  const [draft, setDraft] = React.useState(source);
+  const deferredDraft = React.useDeferredValue(draft);
+  const [committedLive, setCommittedLive] = React.useState<React.ComponentType | null>(null);
+  const [pendingLive, setPendingLive] = React.useState<{
+    key: number;
+    Component: React.ComponentType;
+  } | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
+  const [status, setStatus] = React.useState<"idle" | "compiling" | "validating" | "ready" | "error">("idle");
+  const compileTicketRef = React.useRef(0);
+
+  React.useEffect(() => {
+    setDraft(source);
+    setCommittedLive(null);
+    setPendingLive(null);
+    setError(null);
+    setStatus("idle");
+    compileTicketRef.current += 1;
+  }, [source]);
 
   React.useEffect(() => {
     if (open && codeRef.current) {
       setCodeHeight(codeRef.current.scrollHeight);
     }
-  }, [open, code]);
+  }, [draft, error, open, source, status]);
+
+  React.useEffect(() => {
+    if (!open || !hasPreview || !liveSource) return;
+    if (deferredDraft.trim() === source && committedLive == null) {
+      setError(null);
+      setStatus("idle");
+      return;
+    }
+
+    let cancelled = false;
+    const ticket = compileTicketRef.current + 1;
+    compileTicketRef.current = ticket;
+    setStatus("compiling");
+
+    void compileLiveDemo(deferredDraft)
+      .then((Component) => {
+        if (cancelled || ticket !== compileTicketRef.current) return;
+        setPendingLive({ key: ticket, Component });
+        setStatus("validating");
+      })
+      .catch((nextError) => {
+        if (cancelled || ticket !== compileTicketRef.current) return;
+        setPendingLive(null);
+        setStatus("error");
+        setError(formatLiveError(nextError));
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [deferredDraft, hasPreview, liveSource, open, source]);
+
+  const reset = React.useCallback(() => {
+    compileTicketRef.current += 1;
+    setDraft(source);
+    setCommittedLive(null);
+    setPendingLive(null);
+    setError(null);
+    setStatus("idle");
+  }, [source]);
+
+  const previewContent = committedLive ? (
+    <PreviewBoundary
+      fallback={children}
+      resetKey={committedLive}
+      onError={(nextError) => {
+        setCommittedLive(null);
+        setPendingLive(null);
+        setStatus("error");
+        setError(formatLiveError(nextError));
+      }}
+    >
+      {React.createElement(committedLive)}
+    </PreviewBoundary>
+  ) : (
+    children
+  );
+
+  const statusText = liveSource
+    ? status === "compiling"
+      ? "正在编译代码..."
+      : status === "validating"
+        ? "代码有效，正在同步预览..."
+        : status === "ready"
+          ? "预览已按最新代码同步。"
+          : status === "error"
+            ? "代码报错，已保留上一次成功预览。"
+            : "编辑下方代码后，上方预览会自动同步。"
+    : "当前示例使用静态代码片段。";
 
   return (
     <section
@@ -92,7 +179,7 @@ export const Demo: React.FC<DemoProps> = ({ id, title, description, code, span =
       data-demo-id={id}
       data-demo-title={title}
     >
-      {hasPreview && <div className="doc-demo-preview">{children}</div>}
+      {hasPreview && <div className="doc-demo-preview">{previewContent}</div>}
       <div className="doc-demo-meta">
         <div className="doc-demo-meta-text">
           <a href={`#${id}`} className="doc-demo-title">
@@ -101,22 +188,22 @@ export const Demo: React.FC<DemoProps> = ({ id, title, description, code, span =
           {description && <div className="doc-demo-desc">{description}</div>}
         </div>
         <div className="doc-demo-actions">
-          {code && (
-            <Tooltip content="复制代码">
+          {source && (
+            <Tooltip content="复制当前代码">
               <IconButton
                 icon="copy"
                 size="sm"
                 variant="ghost"
                 onClick={() => {
                   if (typeof navigator !== "undefined" && navigator.clipboard) {
-                    navigator.clipboard.writeText(code);
+                    navigator.clipboard.writeText(draft);
                     toast.success("代码已复制");
                   }
                 }}
               />
             </Tooltip>
           )}
-          {code && hasPreview && (
+          {source && hasPreview && (
             <Tooltip content={open ? "收起代码" : "展开代码"}>
               <IconButton
                 icon="code"
@@ -129,14 +216,56 @@ export const Demo: React.FC<DemoProps> = ({ id, title, description, code, span =
           )}
         </div>
       </div>
-      {code && (
+      {source && (
         <div
           className="doc-demo-code-collapse"
           style={{ height: open ? codeHeight : 0 }}
         >
-          <pre ref={codeRef} className="doc-demo-code">
-            <code>{highlightCode(code)}</code>
-          </pre>
+          <div ref={codeRef} className="doc-demo-editor-shell">
+            <div className="doc-demo-live-meta">
+              <span className={`doc-demo-live-status ${status}`}>{statusText}</span>
+              {liveSource && (
+                <Button size="sm" variant="ghost" onClick={reset}>
+                  重置
+                </Button>
+              )}
+            </div>
+            {error && (
+              <Alert tone="danger" title="代码有误">
+                {error}
+              </Alert>
+            )}
+            <CodeEditor
+              className="doc-demo-editor"
+              value={draft}
+              onChange={setDraft}
+              invalid={!!error}
+            />
+          </div>
+        </div>
+      )}
+      {pendingLive && (
+        <div className="doc-demo-probe" aria-hidden="true">
+          <PreviewBoundary
+            fallback={null}
+            resetKey={pendingLive.key}
+            onError={(nextError) => {
+              setPendingLive(null);
+              setStatus("error");
+              setError(formatLiveError(nextError));
+            }}
+          >
+            <CandidateProbe
+              Component={pendingLive.Component}
+              onReady={() => {
+                if (pendingLive.key !== compileTicketRef.current) return;
+                setCommittedLive(() => pendingLive.Component);
+                setPendingLive(null);
+                setStatus("ready");
+                setError(null);
+              }}
+            />
+          </PreviewBoundary>
         </div>
       )}
     </section>

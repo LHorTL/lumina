@@ -23,7 +23,7 @@
       "lumina": ["./src/index.ts"],
       "lumina/*": ["./src/*"]
     },
-    "types": ["vite/client"]
+    "types": ["vite/client", "node"]
   },
   "include": ["src", "playground"],
   "references": [{ "path": "./tsconfig.node.json" }]

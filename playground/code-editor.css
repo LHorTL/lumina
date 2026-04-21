@@ -1,0 +1,113 @@
+/* Overlay code editor — transparent textarea over syntax-highlighted <pre> */
+
+.code-editor {
+  position: relative;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+  tab-size: 2;
+  background: var(--bg);
+  box-shadow: var(--neu-in-sm);
+}
+.code-editor:focus-within {
+  box-shadow: var(--neu-in-sm), 0 0 0 2px var(--accent-glow);
+}
+.code-editor.invalid {
+  box-shadow: var(--neu-in-sm), 0 0 0 2px color-mix(in oklch, var(--danger) 30%, transparent);
+}
+
+/* Reset ALL leaked library styles inside the editor */
+.code-editor pre *,
+.code-editor pre *::before,
+.code-editor pre *::after {
+  all: unset;
+  display: inline;
+  font: inherit;
+  line-height: inherit;
+}
+
+/* Shared layer baseline */
+.code-editor pre,
+.code-editor textarea {
+  margin: 0;
+  padding: 12px 14px;
+  font: inherit;
+  line-height: inherit;
+  white-space: pre;
+  overflow-wrap: normal;
+  word-break: normal;
+  tab-size: inherit;
+  border: none;
+  outline: none;
+}
+
+/* Highlight layer (behind) */
+.code-editor pre {
+  pointer-events: none;
+  color: var(--fg);
+  overflow: auto;
+  min-height: 100%;
+}
+.code-editor pre code {
+  font: inherit;
+  line-height: inherit;
+}
+
+/* Input layer (in front, invisible text) */
+.code-editor textarea {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  color: transparent;
+  caret-color: var(--fg);
+  background: transparent;
+  resize: none;
+  z-index: 1;
+  -webkit-text-fill-color: transparent;
+}
+.code-editor textarea::selection {
+  background: color-mix(in oklch, var(--accent) 25%, transparent);
+}
+
+/* ---- Prism token theme (CSS-variable driven, auto light/dark) ---- */
+
+.code-editor .token.keyword,
+.code-editor .token.builtin,
+.code-editor .token.imports { color: var(--accent-ink); font-weight: 600; }
+
+.code-editor .token.string,
+.code-editor .token.template-string,
+.code-editor .token.attr-value { color: var(--success); }
+
+.code-editor .token.number,
+.code-editor .token.boolean { color: var(--warning); }
+
+.code-editor .token.comment { color: var(--fg-subtle); font-style: italic; }
+
+.code-editor .token.function { color: var(--accent); }
+
+.code-editor .token.tag { color: var(--danger); }
+
+.code-editor .token.attr-name { color: var(--accent-ink); }
+
+.code-editor .token.punctuation { color: var(--fg-muted); }
+
+.code-editor .token.operator,
+.code-editor .token.arrow { color: var(--fg); }
+
+.code-editor .token.class-name,
+.code-editor .token.maybe-class-name { color: var(--warning); }
+
+.code-editor .token.plain-text { color: var(--fg); }
+
+.code-editor .token.console { color: var(--accent); }
+
+.code-editor .token.parameter { color: var(--fg); font-style: italic; }
+
+.code-editor .token.script { color: var(--fg); }
+
+.code-editor .token.spread,
+.code-editor .token.template-punctuation { color: var(--accent-ink); }
