@@ -126,7 +126,6 @@ export function Select<T extends string | number = string>(props: SelectProps<T>
   const [activeIdx, setActiveIdx] = React.useState(-1);
 
   const searchRef = React.useRef<HTMLInputElement>(null);
-  const menuRef = React.useRef<HTMLDivElement>(null);
 
   const openControlled = openProp !== undefined;
   const open = openControlled ? openProp! : innerOpen;
@@ -136,7 +135,7 @@ export function Select<T extends string | number = string>(props: SelectProps<T>
     if (!v) setQuery("");
   };
 
-  const { triggerRef: ref, floatingStyle } = useFloating<HTMLDivElement>({
+  const { triggerRef: ref, floatingRef: menuRef, floatingStyle } = useFloating<HTMLDivElement, HTMLDivElement>({
     open,
     placement: "bottom",
     matchTriggerWidth: true,
