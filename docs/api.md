@@ -273,11 +273,10 @@ toast.clear();
 
 `<ToastContainer placement="top-right" />` 可选位置：`top-right | top-left | bottom-right | bottom-left | top-center`。
 
-## Progress / Ring
+## Progress
 
 ```tsx
 <Progress value={60} showValue label="下载中" />
-<Ring value={80} size={64}><strong>80%</strong></Ring>
 ```
 
 | Prop | 类型 | 说明 |
@@ -285,7 +284,10 @@ toast.clear();
 | `value` | `number` | 0–`max` |
 | `max` | `number` | 最大值，默认 100 |
 | `tone` | `"accent" \| "success" \| "warning" \| "danger"` | 颜色 |
-| `size` | Progress: `"sm" \| "md" \| "lg"` / Ring: `number` | 尺寸 |
+| `color` | `string` | 自定义填充色，覆盖 `tone` |
+| `size` | `"sm" \| "md" \| "lg"` | 尺寸 |
+| `label` | `ReactNode` | 顶部文案 |
+| `showValue` | `boolean` | 显示百分比 |
 
 ## Spinner / Skeleton
 

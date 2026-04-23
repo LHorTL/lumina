@@ -53,7 +53,6 @@
 | [`Alert`](./api.md#alert) | 内联警告条 |
 | [`toast`](./api.md#toast) | 消息提示（命令式 API） |
 | [`Progress`](./api.md#progress) | 横向进度条 |
-| [`Ring`](./api.md#ring) | 环形进度 |
 | [`Spinner`](./api.md#spinner) | 加载指示器 |
 | [`Skeleton`](./api.md#skeleton) | 骨架屏 |
 

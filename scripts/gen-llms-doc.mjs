@@ -202,7 +202,7 @@ const COMPONENT_ALIAS = {
   badge: ["Badge"],
   avatar: ["Avatar"],
   divider: ["Divider"],
-  progress: ["Progress", "Ring"],
+  progress: ["Progress"],
   list: ["List"],
   table: ["Table"],
   tablepro: ["TablePro"],

@@ -72,7 +72,7 @@
 - [Avatar 头像](./llms/avatar.md) — 用图像、首字母代表用户或事物。
 - [Image 图片](./llms/image.md) — 凹陷外框包裹的图片容器,带预览、错误占位。
 - [Divider 分隔符](./llms/divider.md) — 对内容进行分割。
-- [Progress 进度](./llms/progress.md) — 条形进度 Progress 与环形进度 Ring。
+- [Progress 进度](./llms/progress.md) — 条形进度 Progress。
 - [Timeline 时间线](./llms/timeline.md) — 垂直时间线，支持等待状态、自定义圆点、交替布局
 - [List 列表](./llms/list.md) — 承载一组结构化的同质化数据。
 - [Table 表格](./llms/table.md) — 结构化数据展示。

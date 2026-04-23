@@ -1,7 +1,6 @@
 import * as React from "react";
-import { Progress, Ring } from "lumina";
+import { Progress } from "lumina";
 import { DocPage } from "../docs";
-import { Row } from "./_shared";
 import { defineSection, type SectionCtx } from "./_types";
 
 const SectionProgress: React.FC<SectionCtx> = () => {
@@ -28,6 +27,18 @@ const SectionProgress: React.FC<SectionCtx> = () => {
           ),
         },
         {
+          id: "custom-color",
+          title: "自定义颜色",
+          code: `<Progress value={66} color="oklch(72% 0.18 285)" label="品牌同步" showValue />
+<Progress value={38} color="#22c1c3" label="音频缓冲" showValue />`,
+          render: () => (
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              <Progress value={66} color="oklch(72% 0.18 285)" label="品牌同步" showValue />
+              <Progress value={38} color="#22c1c3" label="音频缓冲" showValue />
+            </div>
+          ),
+        },
+        {
           id: "size",
           title: "尺寸",
           code: `<Progress size="sm" value={60} />
@@ -41,20 +52,6 @@ const SectionProgress: React.FC<SectionCtx> = () => {
             </div>
           ),
         },
-        {
-          id: "ring",
-          title: "环形进度",
-          code: `<Ring value={65} />
-<Ring value={90} tone="success" size={80}><strong>90%</strong></Ring>`,
-          render: () => (
-            <Row gap={24}>
-              <Ring value={25} />
-              <Ring value={62} />
-              <Ring value={v} />
-              <Ring value={100} size={64} tone="success" />
-            </Row>
-          ),
-        },
       ]}
       api={[
         {
@@ -63,17 +60,10 @@ const SectionProgress: React.FC<SectionCtx> = () => {
             { prop: "value", description: "0–max 之间", type: "number", required: true },
             { prop: "max", description: "最大值", type: "number", default: "100" },
             { prop: "tone", description: "色调", type: `"accent" | "success" | "warning" | "danger"`, default: `"accent"` },
+            { prop: "color", description: "自定义填充色,覆盖 tone", type: "string" },
             { prop: "size", description: "尺寸", type: `"sm" | "md" | "lg"`, default: `"md"` },
             { prop: "label", description: "顶部文案", type: "ReactNode" },
             { prop: "showValue", description: "显示百分比", type: "boolean", default: "false" },
-          ],
-        },
-        {
-          title: "Ring",
-          rows: [
-            { prop: "value", description: "0–100", type: "number", required: true },
-            { prop: "size", description: "直径 (px)", type: "number", default: "72" },
-            { prop: "tone", description: "色调", type: `"accent" | "success" | ...`, default: `"accent"` },
           ],
         },
       ]}
@@ -88,6 +78,6 @@ export default defineSection({
   label: "Progress 进度",
   eyebrow: "DATA DISPLAY",
   title: "Progress 进度",
-  desc: "条形进度 Progress 与环形进度 Ring。",
+  desc: "条形进度 Progress。",
   Component: SectionProgress,
 });

@@ -47,11 +47,6 @@
       "import": "./dist/Card.js",
       "require": "./dist/Card.cjs"
     },
-    "./Ring": {
-      "types": "./dist/Progress.d.ts",
-      "import": "./dist/Progress.js",
-      "require": "./dist/Progress.cjs"
-    },
     "./Spinner": {
       "types": "./dist/Empty.d.ts",
       "import": "./dist/Empty.js",

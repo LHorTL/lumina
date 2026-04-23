@@ -10,6 +10,8 @@ export interface ProgressProps extends React.HTMLAttributes<HTMLDivElement> {
   label?: React.ReactNode;
   showValue?: boolean;
   tone?: "accent" | "success" | "warning" | "danger";
+  /** Custom fill color. Overrides `tone`. */
+  color?: string;
   size?: "sm" | "md" | "lg";
   className?: string;
 }
@@ -21,13 +23,24 @@ export const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(({
   label,
   showValue,
   tone = "accent",
+  color,
   size = "md",
   className = "",
+  style,
   ...rest
 }, ref) => {
   const pct = Math.max(0, Math.min(100, (value / max) * 100));
+  const rootStyle: React.CSSProperties = {
+    ...(color
+      ? {
+          ["--progress-fill" as never]: color,
+          ["--progress-fill-glow" as never]: `color-mix(in oklch, ${color} 35%, transparent)`,
+        }
+      : null),
+    ...style,
+  };
   return (
-    <div ref={ref} className={`progress ${size} ${tone} ${className}`} {...rest}>
+    <div ref={ref} className={`progress ${size} ${tone} ${className}`} style={rootStyle} {...rest}>
       {(label || showValue) && (
         <div className="progress-label">
           {label ? <span>{label}</span> : <span />}
@@ -41,37 +54,3 @@ export const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(({
   );
 });
 Progress.displayName = "Progress";
-
-export interface RingProps extends React.HTMLAttributes<HTMLDivElement> {
-  value: number;
-  max?: number;
-  size?: number;
-  tone?: "accent" | "success" | "warning" | "danger";
-  children?: React.ReactNode;
-  className?: string;
-}
-
-/** `Ring` — circular progress indicator. */
-export const Ring = React.forwardRef<HTMLDivElement, RingProps>(({
-  value,
-  max = 100,
-  size = 72,
-  tone = "accent",
-  children,
-  className = "",
-  style,
-  ...rest
-}, ref) => {
-  const pct = Math.max(0, Math.min(100, (value / max) * 100));
-  return (
-    <div
-      ref={ref}
-      className={`ring ${tone} ${className}`}
-      style={{ ["--size" as never]: `${size}px`, ["--val" as never]: pct, ...style }}
-      {...rest}
-    >
-      <span className="ring-label">{children ?? `${Math.round(pct)}%`}</span>
-    </div>
-  );
-});
-Ring.displayName = "Ring";
