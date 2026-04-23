@@ -6,7 +6,8 @@ import { Icon, type IconName } from "../Icon";
 
 export type AlertTone = "info" | "success" | "warning" | "danger";
 
-export interface AlertProps {
+export interface AlertProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "title" | "children"> {
   tone?: AlertTone;
   title?: React.ReactNode;
   children?: React.ReactNode;
@@ -21,7 +22,7 @@ export interface AlertProps {
 }
 
 /** `Alert` — inline contextual message. */
-export const Alert: React.FC<AlertProps> = ({
+export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(({
   tone = "info",
   title,
   children,
@@ -31,13 +32,16 @@ export const Alert: React.FC<AlertProps> = ({
   onClose,
   action,
   className = "",
-}) => {
+  ...rest
+}, ref) => {
   const iconName: IconName =
     icon ?? (tone === "success" ? "check2" : tone === "warning" || tone === "danger" ? "alert" : "info");
   return (
     <div
+      ref={ref}
       className={`alert ${tone} ${title ? "" : "no-title"} ${showIcon ? "" : "no-icon"} ${className}`}
       role="alert"
+      {...rest}
     >
       {showIcon && (
         <span className="alert-ico">
@@ -56,4 +60,5 @@ export const Alert: React.FC<AlertProps> = ({
       )}
     </div>
   );
-};
+});
+Alert.displayName = "Alert";

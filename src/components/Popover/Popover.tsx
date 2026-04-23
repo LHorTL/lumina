@@ -5,7 +5,8 @@ import * as React from "react";
 import { createPortal } from "react-dom";
 import { useFloating } from "../../utils/useFloating";
 
-export interface PopoverProps {
+export interface PopoverProps
+  extends Omit<React.HTMLAttributes<HTMLSpanElement>, "title" | "children" | "content"> {
   /** Popover body content. */
   content: React.ReactNode;
   /** Optional title rendered above content. */
@@ -39,7 +40,7 @@ export interface PopoverProps {
  *   <Button>Delete</Button>
  * </Popover>
  */
-export const Popover: React.FC<PopoverProps> = ({
+export const Popover = React.forwardRef<HTMLSpanElement, PopoverProps>(({
   content,
   title,
   placement = "bottom",
@@ -52,7 +53,11 @@ export const Popover: React.FC<PopoverProps> = ({
   onOpenChange,
   children,
   className = "",
-}) => {
+  onClick,
+  onMouseEnter,
+  onMouseLeave,
+  ...rest
+}, ref) => {
   const [inner, setInner] = React.useState(defaultOpen);
   const isControlled = open !== undefined;
   const show = isControlled ? open! : inner;
@@ -76,6 +81,15 @@ export const Popover: React.FC<PopoverProps> = ({
     if (!isControlled) setInner(v);
     onOpenChange?.(v);
   }, [isControlled, onOpenChange]);
+
+  const setTriggerRef = React.useCallback(
+    (node: HTMLSpanElement | null) => {
+      (triggerRef as React.MutableRefObject<HTMLSpanElement | null>).current = node;
+      if (typeof ref === "function") ref(node);
+      else if (ref) ref.current = node;
+    },
+    [ref, triggerRef]
+  );
 
   React.useEffect(() => {
     if (trigger !== "click" || !show) return;
@@ -119,10 +133,22 @@ export const Popover: React.FC<PopoverProps> = ({
   return (
     <>
       <span
-        ref={triggerRef}
+        ref={setTriggerRef}
         className={`popover-anchor ${className}`}
         style={{ display: "inline-flex", alignSelf: "flex-start" }}
-        {...interact}
+        onClick={(e) => {
+          onClick?.(e);
+          if ("onClick" in interact) interact.onClick?.();
+        }}
+        onMouseEnter={(e) => {
+          onMouseEnter?.(e);
+          if ("onMouseEnter" in interact) interact.onMouseEnter?.();
+        }}
+        onMouseLeave={(e) => {
+          onMouseLeave?.(e);
+          if ("onMouseLeave" in interact) interact.onMouseLeave?.();
+        }}
+        {...rest}
       >
         {children}
       </span>
@@ -155,4 +181,5 @@ export const Popover: React.FC<PopoverProps> = ({
         )}
     </>
   );
-};
+});
+Popover.displayName = "Popover";

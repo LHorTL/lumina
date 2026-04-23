@@ -3,7 +3,8 @@ import "../../styles/shared.css";
 import "./Switch.css";
 import * as React from "react";
 
-export interface SwitchProps {
+export interface SwitchProps
+  extends Omit<React.LabelHTMLAttributes<HTMLLabelElement>, "onChange" | "children" | "id"> {
   checked?: boolean;
   defaultChecked?: boolean;
   onChange?: (checked: boolean) => void;
@@ -21,7 +22,7 @@ export interface SwitchProps {
 /**
  * `Switch` — on/off toggle. Controlled or uncontrolled.
  */
-export const Switch: React.FC<SwitchProps> = ({
+export const Switch = React.forwardRef<HTMLLabelElement, SwitchProps>(({
   checked,
   defaultChecked,
   onChange,
@@ -32,7 +33,8 @@ export const Switch: React.FC<SwitchProps> = ({
   unCheckedChildren,
   className = "",
   id,
-}) => {
+  ...rest
+}, ref) => {
   const [inner, setInner] = React.useState(defaultChecked ?? false);
   const isControlled = checked !== undefined;
   const value = isControlled ? checked : inner;
@@ -57,7 +59,7 @@ export const Switch: React.FC<SwitchProps> = ({
     .join(" ");
 
   return (
-    <label className={cls}>
+    <label ref={ref} className={cls} {...rest}>
       <button
         type="button"
         role="switch"
@@ -78,4 +80,5 @@ export const Switch: React.FC<SwitchProps> = ({
       {label && <span className="switch-label">{label}</span>}
     </label>
   );
-};
+});
+Switch.displayName = "Switch";

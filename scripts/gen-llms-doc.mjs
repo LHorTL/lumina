@@ -223,6 +223,7 @@ const COMPONENT_ALIAS = {
   titlebar: ["TitleBar"],
   windowcontrols: ["WindowControls"],
   sidebar: ["Sidebar"],
+  appshell: ["AppShell", "TitleBar", "Sidebar", "StatusBar"],
 };
 
 /* ---------- Markdown rendering ----------------------------------------- */
@@ -389,7 +390,7 @@ function main() {
     `## 必读 · 全局约定`,
     ``,
     `1. **安装**  \n   \`npm install @fangxinyan/lumina\``,
-    `2. **引入样式**(任一即可):  \n   \`\`\`tsx\n   import "@fangxinyan/lumina/styles"; // 一次性引入全部组件样式\n   \`\`\`\n   或按组件单独引入(适合 tree-shake 到极限):  \n   \`\`\`tsx\n   import "@fangxinyan/lumina/tokens";         // 设计令牌 + 全局 reset\n   import { Button } from "@fangxinyan/lumina"; // 会自动带上 Button.css\n   \`\`\``,
+    `2. **引入样式**(任一即可):  \n   \`\`\`tsx\n   import "@fangxinyan/lumina/styles"; // 设计令牌 + 全局 reset + 全部组件样式\n   \`\`\`\n   或按组件单独引入(适合 tree-shake 到极限):  \n   \`\`\`tsx\n   import "@fangxinyan/lumina/tokens";         // 仅设计令牌,不含全局 reset\n   import { Button } from "@fangxinyan/lumina"; // 会自动带上 Button.css / shared.css\n   \`\`\`\n   如果你还需要 reset / scrollbar / focus-visible 基线样式,请改用 \`@fangxinyan/lumina/styles\`。`,
     `3. **TypeScript**: 所有 \`XxxProps\` 接口都是 \`export\`,可直接 \`import { Button, type ButtonProps } from "@fangxinyan/lumina";\``,
     `4. **主题**: 用 \`<ThemeProvider>\` 包根;运行时可通过 \`useTheme()\` 改。六种强调色 (\`rose / sky / coral / mint / violet / amber\`) × 两种模式 (\`light / dark\` + \`system\`) × 三档密度 (\`compact / comfortable / spacious\`)。详见 [\`llms/theme.md\`](./llms/theme.md)。`,
     `5. **图标**: 所有接受 \`icon / leadingIcon / trailingIcon\` 的 prop 用字符串 \`IconName\`。完整列表见 [\`llms/icon.md\`](./llms/icon.md)。`,

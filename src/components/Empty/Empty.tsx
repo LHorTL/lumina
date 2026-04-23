@@ -3,7 +3,8 @@ import "../../styles/shared.css";
 import "./Empty.css";
 import * as React from "react";
 
-export interface EmptyProps {
+export interface EmptyProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "title" | "children"> {
   title?: React.ReactNode;
   description?: React.ReactNode;
   icon?: React.ReactNode;
@@ -15,7 +16,7 @@ export interface EmptyProps {
 }
 
 /** `Empty` — empty state placeholder. */
-export const Empty: React.FC<EmptyProps> = ({
+export const Empty = React.forwardRef<HTMLDivElement, EmptyProps>(({
   title = "暂无内容",
   description,
   icon,
@@ -23,16 +24,18 @@ export const Empty: React.FC<EmptyProps> = ({
   size = "md",
   variant = "default",
   className = "",
-}) => (
-  <div className={`empty ${size} ${variant} ${className}`}>
+  ...rest
+}, ref) => (
+  <div ref={ref} className={`empty ${size} ${variant} ${className}`} {...rest}>
     {icon && <div className="empty-ico">{icon}</div>}
     <div className="empty-title">{title}</div>
     {description && <div className="empty-desc">{description}</div>}
     {action && <div className="empty-action">{action}</div>}
   </div>
-);
+));
+Empty.displayName = "Empty";
 
-export interface SpinnerProps {
+export interface SpinnerProps extends React.HTMLAttributes<HTMLSpanElement> {
   size?: number;
   tone?: "accent" | "success" | "warning" | "danger" | "current";
   /** Text rendered next to the spinner. */
@@ -43,34 +46,46 @@ export interface SpinnerProps {
 }
 
 /** `Spinner` — loading indicator. */
-export const Spinner: React.FC<SpinnerProps> = ({
+export const Spinner = React.forwardRef<HTMLSpanElement, SpinnerProps>(({
   size = 20,
   tone = "accent",
   label,
   variant = "ring",
   className = "",
-}) => {
+  style,
+  ...rest
+}, ref) => {
   const cls = `spinner ${variant} ${tone} ${className}`.trim();
+  const spinnerStyle =
+    variant === "dots"
+      ? ({ fontSize: size, ...style } as React.CSSProperties)
+      : ({ width: size, height: size, ...style } as React.CSSProperties);
   const spinner =
     variant === "dots" ? (
-      <span className={cls} style={{ fontSize: size }} aria-label="Loading">
+      <span className={cls} style={spinnerStyle} aria-label="Loading">
         <i /><i /><i />
       </span>
     ) : (
       <span
         className={cls}
-        style={{ width: size, height: size }}
+        style={spinnerStyle}
         aria-label="Loading"
       />
     );
-  if (!label) return spinner;
+  if (!label) {
+    return React.cloneElement(spinner, {
+      ref,
+      ...rest,
+    });
+  }
   return (
-    <span className="spinner-wrap">
+    <span ref={ref} className="spinner-wrap" style={style} {...rest}>
       {spinner}
       <span className="spinner-label">{label}</span>
     </span>
   );
-};
+});
+Spinner.displayName = "Spinner";
 
 export interface SkeletonAvatarConfig {
   shape?: "circle" | "square";
@@ -86,7 +101,8 @@ export interface SkeletonParagraphConfig {
   width?: (number | string)[];
 }
 
-export interface SkeletonProps {
+export interface SkeletonProps
+  extends Omit<React.HTMLAttributes<HTMLElement>, "title"> {
   /* -------- primitive mode -------- */
   width?: number | string;
   height?: number | string;
@@ -131,7 +147,7 @@ const AVATAR_SIZE_PX = { sm: 32, md: 40, lg: 56 } as const;
  * // composite
  * <Skeleton avatar title paragraph={{ rows: 4 }} />
  */
-export const Skeleton: React.FC<SkeletonProps> = ({
+export const Skeleton = React.forwardRef<HTMLElement, SkeletonProps>(({
   width = "100%",
   height = 16,
   circle,
@@ -140,14 +156,18 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   title,
   paragraph,
   className = "",
-}) => {
+  style,
+  ...rest
+}, ref) => {
   const composite = avatar != null || title != null || paragraph != null;
 
   if (!composite) {
     return (
       <span
+        ref={ref as React.ForwardedRef<HTMLSpanElement>}
         className={`skeleton ${animation} ${circle ? "circle" : ""} ${className}`.trim()}
-        style={{ width, height, borderRadius: circle ? "50%" : undefined }}
+        style={{ width, height, borderRadius: circle ? "50%" : undefined, ...style }}
+        {...rest}
       />
     );
   }
@@ -173,7 +193,12 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   const avatarShape = avatarCfg?.shape ?? "circle";
 
   return (
-    <div className={`skeleton-box ${className}`.trim()}>
+    <div
+      ref={ref as React.ForwardedRef<HTMLDivElement>}
+      className={`skeleton-box ${className}`.trim()}
+      style={style as React.CSSProperties | undefined}
+      {...rest}
+    >
       {avatarCfg && (
         <span
           className={`skeleton ${animation} ${avatarShape === "circle" ? "circle" : ""} skeleton-avatar`.trim()}
@@ -203,4 +228,5 @@ export const Skeleton: React.FC<SkeletonProps> = ({
       </div>
     </div>
   );
-};
+});
+Skeleton.displayName = "Skeleton";

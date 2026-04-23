@@ -86,7 +86,11 @@ const hsvToHex = (h: number, s: number, v: number): string => rgbToHex(...hsvToR
  * Public API
  * ========================================================================== */
 
-export interface ColorPickerProps {
+export interface ColorPickerProps
+  extends Omit<
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
+    "value" | "defaultValue" | "onChange" | "children" | "color"
+  > {
   /** Controlled hex color (e.g. "#ff6b6b"). */
   value?: string;
   /** Initial hex when uncontrolled. */
@@ -113,8 +117,6 @@ export interface ColorPickerProps {
   defaultOpen?: boolean;
   /** Called when open state changes. */
   onOpenChange?: (open: boolean) => void;
-  className?: string;
-  style?: React.CSSProperties;
 }
 
 /* ============================================================================
@@ -266,6 +268,8 @@ export const ColorPicker = React.forwardRef<HTMLButtonElement, ColorPickerProps>
       onOpenChange,
       className = "",
       style,
+      onClick,
+      ...rest
     } = props;
 
     const isControlled = value != null;
@@ -356,7 +360,11 @@ export const ColorPicker = React.forwardRef<HTMLButtonElement, ColorPickerProps>
             ref={triggerRef}
             className="cp-custom-trigger"
             disabled={disabled}
-            onClick={() => !disabled && setOpen(!open)}
+            onClick={(e) => {
+              onClick?.(e);
+              if (!disabled) setOpen(!open);
+            }}
+            {...rest}
           >
             {children}
           </button>
@@ -366,8 +374,13 @@ export const ColorPicker = React.forwardRef<HTMLButtonElement, ColorPickerProps>
             ref={triggerRef}
             className={`cp-trigger ${size}`}
             disabled={disabled}
-            onClick={() => !disabled && setOpen(!open)}
+            onClick={(e) => {
+              onClick?.(e);
+              if (!disabled) setOpen(!open);
+            }}
             aria-label={`选择颜色 (当前 ${current})`}
+            style={style}
+            {...rest}
           >
             <span className="cp-swatch" style={{ background: current }} />
             {showText && <span className="cp-text">{current}</span>}

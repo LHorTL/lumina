@@ -13,7 +13,11 @@ export interface AutoCompleteOption {
   disabled?: boolean;
 }
 
-export interface AutoCompleteProps {
+export interface AutoCompleteProps
+  extends Omit<
+    React.InputHTMLAttributes<HTMLInputElement>,
+    "value" | "defaultValue" | "onChange" | "onSelect" | "size"
+  > {
   value?: string;
   defaultValue?: string;
   onChange?: (value: string, option?: AutoCompleteOption) => void;
@@ -31,14 +35,11 @@ export interface AutoCompleteProps {
   /** Content shown when no option matches. */
   notFoundContent?: React.ReactNode;
   size?: "sm" | "md" | "lg";
-  autoFocus?: boolean;
   className?: string;
   /** Class on the popped-out panel. */
   dropdownClassName?: string;
   /** Force the panel to be as wide as the input. Default true. */
   matchTriggerWidth?: boolean;
-  id?: string;
-  name?: string;
 }
 
 const DEFAULT_FILTER = (input: string, option: AutoCompleteOption) => {
@@ -81,6 +82,9 @@ export const AutoComplete = React.forwardRef<HTMLInputElement, AutoCompleteProps
       matchTriggerWidth = true,
       id,
       name,
+      onFocus,
+      onKeyDown,
+      ...rest
     },
     ref
   ) => {
@@ -209,6 +213,7 @@ export const AutoComplete = React.forwardRef<HTMLInputElement, AutoCompleteProps
       <div ref={triggerRef} className={`autocomplete ${className}`}>
         <Input
           ref={ref}
+          {...rest}
           id={id}
           name={name}
           size={size}
@@ -218,8 +223,14 @@ export const AutoComplete = React.forwardRef<HTMLInputElement, AutoCompleteProps
           allowClear={allowClear}
           autoFocus={autoFocus}
           onChange={handleInput}
-          onFocus={() => !disabled && setOpen(true)}
-          onKeyDown={onKey}
+          onFocus={(event) => {
+            onFocus?.(event);
+            if (!disabled) setOpen(true);
+          }}
+          onKeyDown={(event) => {
+            onKeyDown?.(event);
+            onKey(event);
+          }}
         />
         {panel}
       </div>

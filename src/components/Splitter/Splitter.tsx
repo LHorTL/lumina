@@ -5,7 +5,8 @@ import * as React from "react";
 
 export type SplitterDirection = "horizontal" | "vertical";
 
-export interface SplitterProps {
+export interface SplitterProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "children" | "onResize"> {
   /**
    * Layout direction.
    * - `"horizontal"` (default) — children placed left/right, handle is a vertical bar.
@@ -44,7 +45,7 @@ export interface SplitterProps {
  * </Splitter>
  * ```
  */
-export const Splitter: React.FC<SplitterProps> = ({
+export const Splitter = React.forwardRef<HTMLDivElement, SplitterProps>(({
   direction = "horizontal",
   defaultSize = 240,
   size,
@@ -56,12 +57,13 @@ export const Splitter: React.FC<SplitterProps> = ({
   children,
   className = "",
   handleClassName = "",
-}) => {
+  ...rest
+}, ref) => {
   const isControlled = size !== undefined;
   const [inner, setInner] = React.useState(defaultSize);
   const current = isControlled ? (size as number) : inner;
 
-  const containerRef = React.useRef<HTMLDivElement>(null);
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
   const [dragging, setDragging] = React.useState(false);
 
   const clamp = React.useCallback(
@@ -128,8 +130,13 @@ export const Splitter: React.FC<SplitterProps> = ({
 
   return (
     <div
-      ref={containerRef}
+      ref={(node) => {
+        containerRef.current = node;
+        if (typeof ref === "function") ref(node);
+        else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
+      }}
       className={`splitter ${direction} ${dragging ? "dragging" : ""} ${className}`}
+      {...rest}
     >
       <div className="splitter-panel first" style={firstStyle}>
         {children[0]}
@@ -150,4 +157,5 @@ export const Splitter: React.FC<SplitterProps> = ({
       <div className="splitter-panel second">{children[1]}</div>
     </div>
   );
-};
+});
+Splitter.displayName = "Splitter";

@@ -5,7 +5,7 @@ import * as React from "react";
 import ReactDOM from "react-dom";
 import { Icon } from "../Icon";
 
-export interface ImageProps {
+export interface ImageProps extends React.HTMLAttributes<HTMLDivElement> {
   src?: string;
   alt?: string;
   width?: number | string;
@@ -20,7 +20,7 @@ export interface ImageProps {
 }
 
 /** `Image` — neumorphic framed image with optional preview overlay. */
-export const Image: React.FC<ImageProps> = ({
+export const Image = React.forwardRef<HTMLDivElement, ImageProps>(({
   src,
   alt,
   width = 200,
@@ -29,7 +29,9 @@ export const Image: React.FC<ImageProps> = ({
   hover = true,
   placeholder,
   className = "",
-}) => {
+  style,
+  ...rest
+}, ref) => {
   const [loaded, setLoaded] = React.useState(false);
   const [err, setErr] = React.useState(false);
   const [open, setOpen] = React.useState(false);
@@ -38,9 +40,11 @@ export const Image: React.FC<ImageProps> = ({
   return (
     <>
       <div
+        ref={ref}
         className={`n-image ${hover ? "hover" : ""} ${canPreview ? "clickable" : ""} ${className}`}
-        style={{ width }}
+        style={{ width, ...style }}
         onClick={() => canPreview && setOpen(true)}
+        {...rest}
       >
         <div className="n-image-frame" style={{ width: "100%", height }}>
           {!err && src && (
@@ -84,9 +88,10 @@ export const Image: React.FC<ImageProps> = ({
         )}
     </>
   );
-};
+});
+Image.displayName = "Image";
 
-export interface ImageGridProps {
+export interface ImageGridProps extends React.HTMLAttributes<HTMLDivElement> {
   images: { src: string; alt?: string }[];
   columns?: number;
   itemHeight?: number;
@@ -94,13 +99,16 @@ export interface ImageGridProps {
 }
 
 /** `ImageGrid` — auto-fit grid of `Image` items. */
-export const ImageGrid: React.FC<ImageGridProps> = ({
+export const ImageGrid = React.forwardRef<HTMLDivElement, ImageGridProps>(({
   images,
   columns,
   itemHeight = 130,
   className = "",
-}) => (
+  style,
+  ...rest
+}, ref) => (
   <div
+    ref={ref}
     className={className}
     style={{
       display: "grid",
@@ -108,10 +116,13 @@ export const ImageGrid: React.FC<ImageGridProps> = ({
       gridTemplateColumns: columns
         ? `repeat(${columns}, 1fr)`
         : "repeat(auto-fill, minmax(160px, 1fr))",
+      ...style,
     }}
+    {...rest}
   >
     {images.map((img, i) => (
       <Image key={i} src={img.src} alt={img.alt} width="100%" height={itemHeight} />
     ))}
   </div>
-);
+));
+ImageGrid.displayName = "ImageGrid";

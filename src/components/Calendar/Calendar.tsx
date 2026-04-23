@@ -4,7 +4,8 @@ import "./Calendar.css";
 import * as React from "react";
 import { Icon } from "../Icon";
 
-export interface CalendarProps {
+export interface CalendarProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "defaultValue" | "onChange"> {
   value?: Date;
   defaultValue?: Date;
   onChange?: (date: Date) => void;
@@ -26,7 +27,7 @@ export interface CalendarProps {
 const WEEKDAYS = ["日", "一", "二", "三", "四", "五", "六"];
 
 /** `Calendar` — month-view date picker. */
-export const Calendar: React.FC<CalendarProps> = ({
+export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(({
   value,
   defaultValue,
   onChange,
@@ -34,7 +35,8 @@ export const Calendar: React.FC<CalendarProps> = ({
   max,
   disabledDate,
   className = "",
-}) => {
+  ...rest
+}, ref) => {
   const [inner, setInner] = React.useState(defaultValue ?? new Date());
   const isControlled = value !== undefined;
   const sel = isControlled ? value! : inner;
@@ -60,7 +62,7 @@ export const Calendar: React.FC<CalendarProps> = ({
   };
 
   return (
-    <div className={`calendar ${className}`}>
+    <div ref={ref} className={`calendar ${className}`} {...rest}>
       <div className="calendar-head">
         <button
           type="button"
@@ -108,4 +110,5 @@ export const Calendar: React.FC<CalendarProps> = ({
       </div>
     </div>
   );
-};
+});
+Calendar.displayName = "Calendar";

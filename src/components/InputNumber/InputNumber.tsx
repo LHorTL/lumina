@@ -5,7 +5,11 @@ import * as React from "react";
 import { Input } from "../Input";
 import { Icon } from "../Icon";
 
-export interface InputNumberProps {
+export interface InputNumberProps
+  extends Omit<
+    React.InputHTMLAttributes<HTMLInputElement>,
+    "value" | "defaultValue" | "onChange" | "size" | "prefix" | "suffix" | "type"
+  > {
   /** Controlled value. `null` = empty field. */
   value?: number | null;
   /** Uncontrolled initial value. */
@@ -32,10 +36,6 @@ export interface InputNumberProps {
   className?: string;
   prefix?: React.ReactNode;
   suffix?: React.ReactNode;
-  autoFocus?: boolean;
-  id?: string;
-  name?: string;
-  style?: React.CSSProperties;
 }
 
 /**

@@ -12,7 +12,8 @@ export interface ListItem {
   onClick?: () => void;
 }
 
-export interface ListProps {
+export interface ListProps
+  extends Omit<React.HTMLAttributes<HTMLUListElement>, "children"> {
   items: ListItem[];
   /** Show dividers between items. */
   dividers?: boolean;
@@ -20,8 +21,13 @@ export interface ListProps {
 }
 
 /** `List` — vertical list of rows. */
-export const List: React.FC<ListProps> = ({ items, dividers = true, className = "" }) => (
-  <ul className={`list ${dividers ? "with-dividers" : ""} ${className}`} style={{ listStyle: "none", margin: 0 }}>
+export const List = React.forwardRef<HTMLUListElement, ListProps>(({ items, dividers = true, className = "", style, ...rest }, ref) => (
+  <ul
+    ref={ref}
+    className={`list ${dividers ? "with-dividers" : ""} ${className}`}
+    style={{ listStyle: "none", margin: 0, ...style }}
+    {...rest}
+  >
     {items.map((it) => (
       <li key={it.key} className={`list-item ${it.onClick ? "clickable" : ""}`} onClick={it.onClick}>
         {it.avatar && <div className="list-item-avatar">{it.avatar}</div>}
@@ -33,4 +39,5 @@ export const List: React.FC<ListProps> = ({ items, dividers = true, className = 
       </li>
     ))}
   </ul>
-);
+));
+List.displayName = "List";

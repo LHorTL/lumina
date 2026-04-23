@@ -16,7 +16,7 @@ export interface AvatarProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 
 }
 
 /** `Avatar` — user image or initials chip. */
-export const Avatar: React.FC<AvatarProps> = ({
+export const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(({
   src,
   alt = "",
   initials,
@@ -26,7 +26,7 @@ export const Avatar: React.FC<AvatarProps> = ({
   className = "",
   style,
   ...rest
-}) => {
+}, ref) => {
   const sizeCls = typeof size === "string" && size !== "md" ? size : "";
   const shapeCls = shape === "square" ? "square" : "";
   const customStyle: React.CSSProperties =
@@ -34,6 +34,7 @@ export const Avatar: React.FC<AvatarProps> = ({
   const shown = initials ?? alt.slice(0, 2).toUpperCase();
   return (
     <div
+      ref={ref}
       className={`avatar ${sizeCls} ${shapeCls} ${className}`.trim().replace(/\s+/g, " ")}
       style={customStyle}
       {...rest}
@@ -42,4 +43,5 @@ export const Avatar: React.FC<AvatarProps> = ({
       {status && <span className={`avatar-status ${status}`} />}
     </div>
   );
-};
+});
+Avatar.displayName = "Avatar";

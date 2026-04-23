@@ -260,8 +260,13 @@ export interface FormProps<V extends Record<string, unknown> = Record<string, un
   className?: string;
 }
 
-const FormRoot = <V extends Record<string, unknown> = Record<string, unknown>>(
-  props: FormProps<V>
+type FormRootComponent = <V extends Record<string, unknown> = Record<string, unknown>>(
+  props: FormProps<V> & React.RefAttributes<HTMLFormElement>
+) => React.ReactElement | null;
+
+const FormRootInner = <V extends Record<string, unknown> = Record<string, unknown>>(
+  props: FormProps<V>,
+  ref: React.ForwardedRef<HTMLFormElement>
 ) => {
   const {
     form: externalForm,
@@ -321,6 +326,7 @@ const FormRoot = <V extends Record<string, unknown> = Record<string, unknown>>(
   return (
     <FormCtx.Provider value={ctxValue}>
       <form
+        ref={ref}
         className={`lumina-form layout-${layout} ${className}`}
         onSubmit={(e) => {
           e.preventDefault();
@@ -333,6 +339,9 @@ const FormRoot = <V extends Record<string, unknown> = Record<string, unknown>>(
     </FormCtx.Provider>
   );
 };
+
+const FormRoot = React.forwardRef(FormRootInner) as FormRootComponent;
+(FormRoot as any).displayName = "Form";
 
 /* ---------------------------- Form.Item ---------------------------- */
 

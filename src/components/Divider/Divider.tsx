@@ -18,7 +18,7 @@ export interface DividerProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 /** `Divider` — visual separator, horizontal or vertical. */
-export const Divider: React.FC<DividerProps> = ({
+export const Divider = React.forwardRef<HTMLDivElement, DividerProps>(({
   direction = "horizontal",
   label,
   sunken,
@@ -26,7 +26,7 @@ export const Divider: React.FC<DividerProps> = ({
   orientation = "center",
   className = "",
   ...rest
-}) => {
+}, ref) => {
   const cls = [
     "divider",
     direction,
@@ -38,8 +38,9 @@ export const Divider: React.FC<DividerProps> = ({
     .filter(Boolean)
     .join(" ");
   return (
-    <div className={cls} role="separator" {...rest}>
+    <div ref={ref} className={cls} role="separator" {...rest}>
       {label && <span className="divider-label">{label}</span>}
     </div>
   );
-};
+});
+Divider.displayName = "Divider";

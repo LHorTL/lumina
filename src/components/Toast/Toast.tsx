@@ -60,12 +60,12 @@ export const toast = {
   },
 };
 
-export interface ToastContainerProps {
+export interface ToastContainerProps extends React.HTMLAttributes<HTMLDivElement> {
   placement?: "top-right" | "top-left" | "bottom-right" | "bottom-left" | "top-center";
 }
 
 /** `ToastContainer` — mount once at your app root; subscribes to `toast.*` calls. */
-export const ToastContainer: React.FC<ToastContainerProps> = ({ placement = "top-right" }) => {
+export const ToastContainer = React.forwardRef<HTMLDivElement, ToastContainerProps>(({ placement = "top-right", className = "", ...rest }, ref) => {
   const [list, setList] = React.useState<ListenerState>(items);
   React.useEffect(() => {
     listeners.add(setList);
@@ -75,7 +75,7 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({ placement = "top
   }, []);
   if (typeof document === "undefined") return null;
   return ReactDOM.createPortal(
-    <div className={`toast-container ${placement}`}>
+    <div ref={ref} className={`toast-container ${placement} ${className}`} {...rest}>
       {list.map((t) => {
         const iconName =
           t.type === "success" ? "check2" : t.type === "warning" ? "alert" : t.type === "danger" ? "alert" : "info";
@@ -95,4 +95,5 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({ placement = "top
     </div>,
     document.body
   );
-};
+});
+ToastContainer.displayName = "ToastContainer";

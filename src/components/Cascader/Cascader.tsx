@@ -14,7 +14,8 @@ export interface CascaderOption {
   disabled?: boolean;
 }
 
-export interface CascaderProps {
+export interface CascaderProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange" | "defaultValue"> {
   options: CascaderOption[];
   value?: string[];
   defaultValue?: string[];
@@ -25,7 +26,7 @@ export interface CascaderProps {
 }
 
 /** `Cascader` — multi-column hierarchical selector. */
-export const Cascader: React.FC<CascaderProps> = ({
+export const Cascader = React.forwardRef<HTMLDivElement, CascaderProps>(({
   options,
   value,
   defaultValue = [],
@@ -33,7 +34,8 @@ export const Cascader: React.FC<CascaderProps> = ({
   placeholder = "请选择",
   disabled,
   className = "",
-}) => {
+  ...rest
+}, ref) => {
   const [inner, setInner] = React.useState<string[]>(defaultValue);
   const isControlled = value !== undefined;
   const cur = isControlled ? value! : inner;
@@ -41,19 +43,28 @@ export const Cascader: React.FC<CascaderProps> = ({
   const [path, setPath] = React.useState<string[]>(cur);
   const panelRef = React.useRef<HTMLDivElement>(null);
 
-  const { triggerRef: ref, floatingStyle } = useFloating<HTMLDivElement>({
+  const { triggerRef, floatingStyle } = useFloating<HTMLDivElement>({
     open,
     placement: "bottom",
     panelWidth: 520,
     panelHeight: 260,
   });
 
+  const setTriggerRef = React.useCallback(
+    (node: HTMLDivElement | null) => {
+      (triggerRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+      if (typeof ref === "function") ref(node);
+      else if (ref) ref.current = node;
+    },
+    [ref, triggerRef]
+  );
+
   React.useEffect(() => {
-    const h = (e: MouseEvent) => {
-      const t = e.target as Node;
-      if (ref.current?.contains(t)) return;
-      if (panelRef.current?.contains(t)) return;
-      setOpen(false);
+      const h = (e: MouseEvent) => {
+        const t = e.target as Node;
+        if (triggerRef.current?.contains(t)) return;
+        if (panelRef.current?.contains(t)) return;
+        setOpen(false);
     };
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
@@ -95,7 +106,7 @@ export const Cascader: React.FC<CascaderProps> = ({
   }
 
   return (
-    <div ref={ref} className={`cascader ${open ? "open" : ""} ${className}`}>
+    <div ref={setTriggerRef} className={`cascader ${open ? "open" : ""} ${className}`} {...rest}>
       <button
         type="button"
         className={`cascader-trigger ${labels.length === 0 ? "placeholder" : ""}`}
@@ -142,4 +153,5 @@ export const Cascader: React.FC<CascaderProps> = ({
         )}
     </div>
   );
-};
+});
+Cascader.displayName = "Cascader";

@@ -10,7 +10,8 @@ export interface TabItem {
   content?: React.ReactNode;
 }
 
-export interface TabsProps {
+export interface TabsProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange"> {
   items: TabItem[];
   activeKey?: string;
   defaultActiveKey?: string;
@@ -22,7 +23,7 @@ export interface TabsProps {
 }
 
 /** `Tabs` — switchable sections. */
-export const Tabs: React.FC<TabsProps> = ({
+export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(({
   items,
   activeKey,
   defaultActiveKey,
@@ -30,7 +31,8 @@ export const Tabs: React.FC<TabsProps> = ({
   variant = "line",
   centered,
   className = "",
-}) => {
+  ...rest
+}, ref) => {
   const [inner, setInner] = React.useState(defaultActiveKey ?? items[0]?.key);
   const isControlled = activeKey !== undefined;
   const current = isControlled ? activeKey! : inner;
@@ -43,7 +45,7 @@ export const Tabs: React.FC<TabsProps> = ({
   const active = items.find((i) => i.key === current);
 
   return (
-    <div className={`tabs ${variant} ${centered ? "centered" : ""} ${className}`}>
+    <div ref={ref} className={`tabs ${variant} ${centered ? "centered" : ""} ${className}`} {...rest}>
       <div className="tabs-nav" role="tablist">
         {items.map((it) => (
           <button
@@ -62,9 +64,11 @@ export const Tabs: React.FC<TabsProps> = ({
       {active?.content !== undefined && <div className="tabs-content">{active.content}</div>}
     </div>
   );
-};
+});
+Tabs.displayName = "Tabs";
 
-export interface SegmentedProps<T extends string = string> {
+export interface SegmentedProps<T extends string = string>
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange" | "defaultValue"> {
   options: { value: T; label: React.ReactNode; disabled?: boolean }[];
   value?: T;
   defaultValue?: T;
@@ -73,15 +77,19 @@ export interface SegmentedProps<T extends string = string> {
   className?: string;
 }
 
-/** `Segmented` — exclusive choice chip row. */
-export function Segmented<T extends string = string>({
+type SegmentedComponent = <T extends string = string>(
+  props: SegmentedProps<T> & React.RefAttributes<HTMLDivElement>
+) => React.ReactElement | null;
+
+const SegmentedInner = <T extends string = string>({
   options,
   value,
   defaultValue,
   onChange,
   size = "md",
   className = "",
-}: SegmentedProps<T>) {
+  ...rest
+}: SegmentedProps<T>, ref: React.ForwardedRef<HTMLDivElement>) => {
   const [inner, setInner] = React.useState<T | undefined>(defaultValue ?? options[0]?.value);
   const isControlled = value !== undefined;
   const v = isControlled ? value : inner;
@@ -90,7 +98,7 @@ export function Segmented<T extends string = string>({
     onChange?.(next);
   };
   return (
-    <div className={`segmented ${size} ${className}`}>
+    <div ref={ref} className={`segmented ${size} ${className}`} {...rest}>
       {options.map((o) => (
         <button
           key={String(o.value)}
@@ -104,4 +112,8 @@ export function Segmented<T extends string = string>({
       ))}
     </div>
   );
-}
+};
+
+/** `Segmented` — exclusive choice chip row. */
+export const Segmented = React.forwardRef(SegmentedInner) as SegmentedComponent;
+(Segmented as any).displayName = "Segmented";

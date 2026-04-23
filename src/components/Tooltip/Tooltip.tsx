@@ -5,7 +5,8 @@ import * as React from "react";
 import { createPortal } from "react-dom";
 import { useFloating } from "../../utils/useFloating";
 
-export interface TooltipProps {
+export interface TooltipProps
+  extends Omit<React.HTMLAttributes<HTMLSpanElement>, "children" | "content"> {
   content: React.ReactNode;
   placement?: "top" | "bottom" | "left" | "right";
   children: React.ReactElement;
@@ -14,13 +15,18 @@ export interface TooltipProps {
 }
 
 /** `Tooltip` — hover/focus text bubble. */
-export const Tooltip: React.FC<TooltipProps> = ({
+export const Tooltip = React.forwardRef<HTMLSpanElement, TooltipProps>(({
   content,
   placement = "top",
   children,
   delay = 250,
   disabled,
-}) => {
+  onMouseEnter,
+  onMouseLeave,
+  onFocus,
+  onBlur,
+  ...rest
+}, ref) => {
   const [show, setShow] = React.useState(false);
   const t = React.useRef<number | undefined>();
 
@@ -42,15 +48,37 @@ export const Tooltip: React.FC<TooltipProps> = ({
     alignCross: "center",
   });
 
+  const setTriggerRef = React.useCallback(
+    (node: HTMLSpanElement | null) => {
+      (triggerRef as React.MutableRefObject<HTMLSpanElement | null>).current = node;
+      if (typeof ref === "function") ref(node);
+      else if (ref) ref.current = node;
+    },
+    [ref, triggerRef]
+  );
+
   return (
     <>
       <span
-        ref={triggerRef}
+        ref={setTriggerRef}
         className="tip-anchor"
-        onMouseEnter={open}
-        onMouseLeave={close}
-        onFocus={open}
-        onBlur={close}
+        onMouseEnter={(e) => {
+          onMouseEnter?.(e);
+          open();
+        }}
+        onMouseLeave={(e) => {
+          onMouseLeave?.(e);
+          close();
+        }}
+        onFocus={(e) => {
+          onFocus?.(e);
+          open();
+        }}
+        onBlur={(e) => {
+          onBlur?.(e);
+          close();
+        }}
+        {...rest}
       >
         {children}
       </span>
@@ -63,4 +91,5 @@ export const Tooltip: React.FC<TooltipProps> = ({
         )}
     </>
   );
-};
+});
+Tooltip.displayName = "Tooltip";

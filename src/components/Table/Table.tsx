@@ -96,7 +96,8 @@ export interface TableScrollConfig {
   y?: number | string;
 }
 
-export interface TableProps<Row = any> {
+export interface TableProps<Row = any>
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onSelect"> {
   columns: TableColumn<Row>[];
   data: Row[];
   rowKey?: keyof Row | ((row: Row) => RowKey);
@@ -150,8 +151,11 @@ export interface TableProps<Row = any> {
   className?: string;
 }
 
-/** `Table` — neumorphic data table with sorting, selection and visual variants. */
-export function Table<Row extends Record<string, any> = any>({
+type TableComponent = <Row extends Record<string, any> = any>(
+  props: TableProps<Row> & React.RefAttributes<HTMLDivElement>
+) => React.ReactElement | null;
+
+const TableInner = <Row extends Record<string, any> = any>({
   columns,
   data,
   rowKey,
@@ -171,7 +175,9 @@ export function Table<Row extends Record<string, any> = any>({
   onRowClick,
   empty = "暂无数据",
   className = "",
-}: TableProps<Row>) {
+  style,
+  ...rest
+}: TableProps<Row>, ref: React.ForwardedRef<HTMLDivElement>) => {
   const keyOf = React.useCallback(
     (row: Row, i: number): RowKey => {
       if (typeof rowKey === "function") return rowKey(row);
@@ -410,7 +416,12 @@ export function Table<Row extends Record<string, any> = any>({
   // ---------- Render ----------
   return (
     <>
-      <div className={`${wrapClass} ${className}`} style={wrapStyle}>
+      <div
+        ref={ref}
+        className={`${wrapClass} ${className}`}
+        style={{ ...wrapStyle, ...style }}
+        {...rest}
+      >
         <table
           className={`table ${v} ${hoverable ? "hoverable" : ""} ${scroll?.y != null ? "sticky-head" : ""}`}
           style={innerTableStyle}
@@ -573,7 +584,11 @@ export function Table<Row extends Record<string, any> = any>({
       )}
     </>
   );
-}
+};
+
+/** `Table` — neumorphic data table with sorting, selection and visual variants. */
+export const Table = React.forwardRef(TableInner) as TableComponent;
+(Table as any).displayName = "Table";
 
 /* ============ Column filter button (header popover) ============ */
 
@@ -688,7 +703,7 @@ function ColumnFilterButton<Row>({
 
 /* ============ TablePro ============ */
 
-export interface TableProProps<Row = any> extends TableProps<Row> {
+export interface TableProProps<Row = any> extends Omit<TableProps<Row>, "title"> {
   /** Toolbar slot — search input, filter, etc. */
   toolbar?: React.ReactNode;
   /** Right-aligned actions slot in toolbar. */

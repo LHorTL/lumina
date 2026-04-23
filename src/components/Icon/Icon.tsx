@@ -128,22 +128,26 @@ search:    <><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></>,
  * @example
  * <Icon name="plus" size={18} />
  */
-export const Icon: React.FC<IconProps> = ({ name, size = 16, stroke = 2, style, ...rest }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={stroke}
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    overflow="visible"
-    style={style}
-    {...rest}
-  >
-    {paths[name]}
-  </svg>
+export const Icon = React.forwardRef<SVGSVGElement, IconProps>(
+  ({ name, size = 16, stroke = 2, style, ...rest }, ref) => (
+    <svg
+      ref={ref}
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={stroke}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      overflow="visible"
+      style={style}
+      {...rest}
+    >
+      {paths[name]}
+    </svg>
+  )
 );
+Icon.displayName = "Icon";
 
 export const ICON_NAMES: IconName[] = ["search", "plus", "minus", "check", "x", "chevDown", "chevRight", "chevLeft", "chevUp", "arrowRight", "settings", "user", "bell", "mail", "heart", "star", "home", "folder", "file", "image", "play", "pause", "volume", "trash", "edit", "copy", "download", "upload", "info", "alert", "check2", "eye", "eyeOff", "sparkle", "moon", "sun", "palette", "layers", "grid", "list", "zap", "filter", "mic", "send", "calendar", "clock", "menu", "more", "sliders", "aim", "swap", "camera", "qq", "code"];

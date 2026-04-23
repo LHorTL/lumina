@@ -4,7 +4,7 @@ import "./AppShell.css";
 import * as React from "react";
 import { Icon } from "../Icon";
 
-export interface WindowControlsProps {
+export interface WindowControlsProps extends React.HTMLAttributes<HTMLDivElement> {
   /** macOS traffic lights or Windows-style buttons. */
   platform?: "mac" | "windows";
   onMinimize?: () => void;
@@ -17,17 +17,18 @@ export interface WindowControlsProps {
  * `WindowControls` — standalone window control buttons.
  * Mac: traffic lights (close/min/max). Windows: rectangular controls.
  */
-export const WindowControls: React.FC<WindowControlsProps> = ({
+export const WindowControls = React.forwardRef<HTMLDivElement, WindowControlsProps>(({
   platform = "mac",
   onMinimize,
   onMaximize,
   onClose,
   className = "",
-}) => {
+  ...rest
+}, ref) => {
   const noDragStyle = { WebkitAppRegion: "no-drag" } as React.CSSProperties;
   if (platform === "windows") {
     return (
-      <div className={`win-controls windows ${className}`} style={noDragStyle}>
+      <div ref={ref} className={`win-controls windows ${className}`} style={noDragStyle} {...rest}>
         <button type="button" className="win-btn minimize" onClick={onMinimize} aria-label="Minimize">
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden>
             <path d="M1 5h8" stroke="currentColor" strokeWidth="1" />
@@ -47,15 +48,17 @@ export const WindowControls: React.FC<WindowControlsProps> = ({
     );
   }
   return (
-    <div className={`win-controls mac ${className}`} style={noDragStyle}>
+    <div ref={ref} className={`win-controls mac ${className}`} style={noDragStyle} {...rest}>
       <button type="button" className="win-btn close" onClick={onClose} aria-label="Close" />
       <button type="button" className="win-btn minimize" onClick={onMinimize} aria-label="Minimize" />
       <button type="button" className="win-btn maximize" onClick={onMaximize} aria-label="Maximize" />
     </div>
   );
-};
+});
+WindowControls.displayName = "WindowControls";
 
-export interface TitleBarProps {
+export interface TitleBarProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
   title?: React.ReactNode;
   /** Platform appearance — affects button placement. Default "mac". */
   platform?: "mac" | "windows";
@@ -75,7 +78,7 @@ export interface TitleBarProps {
  * `TitleBar` — Electron-style window chrome. Attach at the top of your app.
  * Buttons are non-draggable regions so clicks register correctly.
  */
-export const TitleBar: React.FC<TitleBarProps> = ({
+export const TitleBar = React.forwardRef<HTMLDivElement, TitleBarProps>(({
   title,
   platform = "mac",
   onMinimize,
@@ -85,12 +88,13 @@ export const TitleBar: React.FC<TitleBarProps> = ({
   actions,
   draggable = true,
   className = "",
-}) => {
+  ...rest
+}, ref) => {
   const dragStyle = draggable ? ({ WebkitAppRegion: "drag" } as React.CSSProperties) : undefined;
   const noDragStyle = { WebkitAppRegion: "no-drag" } as React.CSSProperties;
 
   return (
-    <div className={`titlebar ${platform} ${className}`} style={dragStyle}>
+    <div ref={ref} className={`titlebar ${platform} ${className}`} style={dragStyle} {...rest}>
       {platform === "mac" && (
         <WindowControls platform="mac" onMinimize={onMinimize} onMaximize={onMaximize} onClose={onClose} />
       )}
@@ -110,7 +114,8 @@ export const TitleBar: React.FC<TitleBarProps> = ({
       )}
     </div>
   );
-};
+});
+TitleBar.displayName = "TitleBar";
 
 export interface SidebarItem {
   key: string;
@@ -120,7 +125,8 @@ export interface SidebarItem {
   children?: SidebarItem[];
 }
 
-export interface SidebarProps {
+export interface SidebarProps
+  extends Omit<React.HTMLAttributes<HTMLElement>, "onSelect" | "children"> {
   items: SidebarItem[];
   activeKey?: string;
   onSelect?: (key: string) => void;
@@ -134,7 +140,7 @@ export interface SidebarProps {
 }
 
 /** `Sidebar` — navigation rail. Pair with `AppShell`. */
-export const Sidebar: React.FC<SidebarProps> = ({
+export const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(({
   items,
   activeKey,
   onSelect,
@@ -142,8 +148,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   header,
   footer,
   className = "",
-}) => (
-  <aside className={`sidebar ${collapsed ? "collapsed" : ""} ${className}`}>
+  ...rest
+}, ref) => (
+  <aside ref={ref} className={`sidebar ${collapsed ? "collapsed" : ""} ${className}`} {...rest}>
     {header && <div className="sidebar-header">{header}</div>}
     <nav className="sidebar-nav">
       {items.map((it) => (
@@ -161,9 +168,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
     </nav>
     {footer && <div className="sidebar-footer">{footer}</div>}
   </aside>
-);
+));
+Sidebar.displayName = "Sidebar";
 
-export interface AppShellProps {
+export interface AppShellProps extends React.HTMLAttributes<HTMLDivElement> {
   sidebar?: React.ReactNode;
   titleBar?: React.ReactNode;
   children?: React.ReactNode;
@@ -173,12 +181,13 @@ export interface AppShellProps {
 /**
  * `AppShell` — 3-zone Electron layout: title bar across top, sidebar on left, content fills rest.
  */
-export const AppShell: React.FC<AppShellProps> = ({ sidebar, titleBar, children, className = "" }) => (
-  <div className={`app-shell ${className}`}>
+export const AppShell = React.forwardRef<HTMLDivElement, AppShellProps>(({ sidebar, titleBar, children, className = "", ...rest }, ref) => (
+  <div ref={ref} className={`app-shell ${className}`} {...rest}>
     {titleBar}
     <div className="app-shell-body">
       {sidebar}
       <main className="app-shell-main">{children}</main>
     </div>
   </div>
-);
+));
+AppShell.displayName = "AppShell";

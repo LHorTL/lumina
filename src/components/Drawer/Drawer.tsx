@@ -5,7 +5,8 @@ import * as React from "react";
 import ReactDOM from "react-dom";
 import { Icon } from "../Icon";
 
-export interface DrawerProps {
+export interface DrawerProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "title" | "children" | "onClose"> {
   /** Whether the drawer is visible. */
   open: boolean;
   /** Close callback (triggered by mask click / close button / Esc). */
@@ -48,7 +49,7 @@ export interface DrawerProps {
 const ANIM_MS = 280;
 
 /** `Drawer` — slide-in panel from an edge. */
-export const Drawer: React.FC<DrawerProps> = ({
+export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(({
   open,
   onClose,
   placement = "right",
@@ -66,7 +67,10 @@ export const Drawer: React.FC<DrawerProps> = ({
   afterOpenChange,
   zIndex,
   className = "",
-}) => {
+  style,
+  onClick,
+  ...rest
+}, ref) => {
   const [hasOpenedOnce, setHasOpenedOnce] = React.useState(open);
   React.useEffect(() => {
     if (open) setHasOpenedOnce(true);
@@ -95,8 +99,9 @@ export const Drawer: React.FC<DrawerProps> = ({
   if (!open && destroyOnClose) return null;
 
   const isV = placement === "left" || placement === "right";
-  const style: React.CSSProperties = isV ? { width: size } : { height: size };
-  if (zIndex != null) style.zIndex = zIndex;
+  const panelStyle: React.CSSProperties = isV ? { width: size } : { height: size };
+  if (zIndex != null) panelStyle.zIndex = zIndex;
+  Object.assign(panelStyle, style);
 
   return ReactDOM.createPortal(
     <>
@@ -108,11 +113,16 @@ export const Drawer: React.FC<DrawerProps> = ({
         />
       )}
       <div
+        ref={ref}
         className={`drawer ${placement} ${open ? "" : "hidden"} ${className}`}
-        style={style}
-        onClick={(e) => e.stopPropagation()}
+        style={panelStyle}
+        onClick={(e) => {
+          onClick?.(e);
+          e.stopPropagation();
+        }}
         role="dialog"
         aria-hidden={!open}
+        {...rest}
       >
         {(title || extra || closable) && (
           <div className="drawer-head">
@@ -138,4 +148,5 @@ export const Drawer: React.FC<DrawerProps> = ({
     </>,
     document.body
   );
-};
+});
+Drawer.displayName = "Drawer";

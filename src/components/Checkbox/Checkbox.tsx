@@ -4,7 +4,8 @@ import "./Checkbox.css";
 import * as React from "react";
 import { Icon } from "../Icon";
 
-export interface CheckboxProps {
+export interface CheckboxProps
+  extends Omit<React.LabelHTMLAttributes<HTMLLabelElement>, "onChange" | "children" | "id"> {
   checked?: boolean;
   defaultChecked?: boolean;
   indeterminate?: boolean;
@@ -16,7 +17,7 @@ export interface CheckboxProps {
 }
 
 /** `Checkbox` — binary choice, supports indeterminate state. */
-export const Checkbox: React.FC<CheckboxProps> = ({
+export const Checkbox = React.forwardRef<HTMLLabelElement, CheckboxProps>(({
   checked,
   defaultChecked,
   indeterminate,
@@ -25,7 +26,8 @@ export const Checkbox: React.FC<CheckboxProps> = ({
   label,
   className = "",
   id,
-}) => {
+  ...rest
+}, ref) => {
   const [inner, setInner] = React.useState(defaultChecked ?? false);
   const isControlled = checked !== undefined;
   const value = isControlled ? checked : inner;
@@ -48,7 +50,7 @@ export const Checkbox: React.FC<CheckboxProps> = ({
     .join(" ");
 
   return (
-    <label className={cls}>
+    <label ref={ref} className={cls} {...rest}>
       <button
         type="button"
         role="checkbox"
@@ -63,7 +65,8 @@ export const Checkbox: React.FC<CheckboxProps> = ({
       {label && <span className="checkbox-label">{label}</span>}
     </label>
   );
-};
+});
+Checkbox.displayName = "Checkbox";
 
 export interface RadioOption<T extends string | number = string> {
   value: T;
@@ -71,7 +74,8 @@ export interface RadioOption<T extends string | number = string> {
   disabled?: boolean;
 }
 
-export interface RadioGroupProps<T extends string | number = string> {
+export interface RadioGroupProps<T extends string | number = string>
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange" | "defaultValue"> {
   options: RadioOption<T>[];
   value?: T;
   defaultValue?: T;
@@ -81,15 +85,19 @@ export interface RadioGroupProps<T extends string | number = string> {
   className?: string;
 }
 
-/** `RadioGroup` — mutually exclusive options. */
-export function RadioGroup<T extends string | number = string>({
+type RadioGroupComponent = <T extends string | number = string>(
+  props: RadioGroupProps<T> & React.RefAttributes<HTMLDivElement>
+) => React.ReactElement | null;
+
+const RadioGroupInner = <T extends string | number = string>({
   options,
   value,
   defaultValue,
   onChange,
   direction = "vertical",
   className = "",
-}: RadioGroupProps<T>) {
+  ...rest
+}: RadioGroupProps<T>, ref: React.ForwardedRef<HTMLDivElement>) => {
   const [inner, setInner] = React.useState<T | undefined>(defaultValue);
   const isControlled = value !== undefined;
   const current = isControlled ? value : inner;
@@ -100,7 +108,7 @@ export function RadioGroup<T extends string | number = string>({
   };
 
   return (
-    <div className={`radio-group ${direction} ${className}`}>
+    <div ref={ref} className={`radio-group ${direction} ${className}`} {...rest}>
       {options.map((opt) => (
         <label
           key={String(opt.value)}
@@ -119,4 +127,8 @@ export function RadioGroup<T extends string | number = string>({
       ))}
     </div>
   );
-}
+};
+
+/** `RadioGroup` — mutually exclusive options. */
+export const RadioGroup = React.forwardRef(RadioGroupInner) as RadioGroupComponent;
+(RadioGroup as any).displayName = "RadioGroup";

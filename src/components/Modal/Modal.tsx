@@ -6,7 +6,8 @@ import ReactDOM from "react-dom";
 import { Icon } from "../Icon";
 import { Button, type ButtonProps } from "../Button";
 
-export interface ModalProps {
+export interface ModalProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "title" | "children" | "onClose"> {
   /** Whether the modal is visible. */
   open: boolean;
   /** Fired by mask click / close button / Esc. Also the fallback for cancel. */
@@ -58,7 +59,7 @@ export interface ModalProps {
 const ANIM_MS = 280;
 
 /** `Modal` — centered dialog with mask. Renders into `document.body`. */
-export const Modal: React.FC<ModalProps> = ({
+export const Modal = React.forwardRef<HTMLDivElement, ModalProps>(({
   open,
   onClose,
   onCancel,
@@ -81,7 +82,10 @@ export const Modal: React.FC<ModalProps> = ({
   afterOpenChange,
   zIndex,
   className = "",
-}) => {
+  style,
+  onClick,
+  ...rest
+}, ref) => {
   const [hasOpenedOnce, setHasOpenedOnce] = React.useState(open);
   React.useEffect(() => {
     if (open) setHasOpenedOnce(true);
@@ -143,12 +147,17 @@ export const Modal: React.FC<ModalProps> = ({
       role="presentation"
     >
       <div
+        ref={ref}
         className="modal"
-        style={{ width }}
-        onClick={(e) => e.stopPropagation()}
+        style={{ width, ...style }}
+        onClick={(e) => {
+          onClick?.(e);
+          e.stopPropagation();
+        }}
         role="dialog"
         aria-modal
         aria-hidden={!open}
+        {...rest}
       >
         {(title || description || closable) && (
           <div className="modal-head">
@@ -176,4 +185,5 @@ export const Modal: React.FC<ModalProps> = ({
     </div>,
     document.body
   );
-};
+});
+Modal.displayName = "Modal";

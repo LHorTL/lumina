@@ -5,7 +5,8 @@ import * as React from "react";
 import { Icon } from "../Icon";
 import { Select } from "../Select";
 
-export interface PaginationProps {
+export interface PaginationProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange"> {
   /** Total number of items. */
   total: number;
   /** Items per page. */
@@ -36,7 +37,7 @@ export interface PaginationProps {
 const DEFAULT_SIZE_OPTIONS = [10, 20, 50, 100];
 
 /** `Pagination` — page number controls. */
-export const Pagination: React.FC<PaginationProps> = ({
+export const Pagination = React.forwardRef<HTMLDivElement, PaginationProps>(({
   total,
   pageSize = 10,
   page,
@@ -48,7 +49,8 @@ export const Pagination: React.FC<PaginationProps> = ({
   pageSizeOptions = DEFAULT_SIZE_OPTIONS,
   onShowSizeChange,
   className = "",
-}) => {
+  ...rest
+}, ref) => {
   const [inner, setInner] = React.useState(defaultPage);
   const isControlled = page !== undefined;
   const cur = isControlled ? page! : inner;
@@ -93,7 +95,7 @@ export const Pagination: React.FC<PaginationProps> = ({
   };
 
   return (
-    <div className={`pagination ${className}`}>
+    <div ref={ref} className={`pagination ${className}`} {...rest}>
       <span className="pg-info">
         共 {total} 条 · 第 {cur} / {pages} 页
       </span>
@@ -156,4 +158,5 @@ export const Pagination: React.FC<PaginationProps> = ({
       </div>
     </div>
   );
-};
+});
+Pagination.displayName = "Pagination";

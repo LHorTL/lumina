@@ -24,7 +24,8 @@ export interface CommandItem {
   onSelect?: () => void;
 }
 
-export interface CommandPaletteProps {
+export interface CommandPaletteProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "children"> {
   open: boolean;
   onOpenChange?: (open: boolean) => void;
   items: CommandItem[];
@@ -80,7 +81,7 @@ const DEFAULT_FILTER = (item: CommandItem, q: string) => {
  * />
  * ```
  */
-export const CommandPalette: React.FC<CommandPaletteProps> = ({
+export const CommandPalette = React.forwardRef<HTMLDivElement, CommandPaletteProps>(({
   open,
   onOpenChange,
   items,
@@ -90,11 +91,16 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   resetOnOpen = true,
   footer,
   className = "",
-}) => {
+  onMouseDown,
+  ...rest
+}, ref) => {
   const [query, setQuery] = React.useState("");
   const [active, setActive] = React.useState(0);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const listRef = React.useRef<HTMLDivElement>(null);
+  const panelRef = React.useRef<HTMLDivElement>(null);
+
+  React.useImperativeHandle(ref, () => panelRef.current as HTMLDivElement, []);
 
   const filtered = React.useMemo(() => items.filter((it) => filter(it, query)), [items, query, filter]);
 
@@ -176,11 +182,16 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   return ReactDOM.createPortal(
     <div className={`cmdp-overlay ${className}`} onMouseDown={close} role="presentation">
       <div
+        ref={panelRef}
         className="cmdp-panel"
-        onMouseDown={(e) => e.stopPropagation()}
+        onMouseDown={(e) => {
+          onMouseDown?.(e);
+          e.stopPropagation();
+        }}
         role="dialog"
         aria-modal
         aria-label="命令面板"
+        {...rest}
       >
         <div className="cmdp-search">
           <Input
@@ -247,4 +258,5 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     </div>,
     document.body
   );
-};
+});
+CommandPalette.displayName = "CommandPalette";

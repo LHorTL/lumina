@@ -23,13 +23,14 @@
    `npm install @fangxinyan/lumina`
 2. **引入样式**(任一即可):  
    ```tsx
-   import "@fangxinyan/lumina/styles"; // 一次性引入全部组件样式
+   import "@fangxinyan/lumina/styles"; // 设计令牌 + 全局 reset + 全部组件样式
    ```
    或按组件单独引入(适合 tree-shake 到极限):  
    ```tsx
-   import "@fangxinyan/lumina/tokens";         // 设计令牌 + 全局 reset
-   import { Button } from "@fangxinyan/lumina"; // 会自动带上 Button.css
+   import "@fangxinyan/lumina/tokens";         // 仅设计令牌,不含全局 reset
+   import { Button } from "@fangxinyan/lumina"; // 会自动带上 Button.css / shared.css
    ```
+   如果你还需要 reset / scrollbar / focus-visible 基线样式,请改用 `@fangxinyan/lumina/styles`。
 3. **TypeScript**: 所有 `XxxProps` 接口都是 `export`,可直接 `import { Button, type ButtonProps } from "@fangxinyan/lumina";`
 4. **主题**: 用 `<ThemeProvider>` 包根;运行时可通过 `useTheme()` 改。六种强调色 (`rose / sky / coral / mint / violet / amber`) × 两种模式 (`light / dark` + `system`) × 三档密度 (`compact / comfortable / spacious`)。详见 [`llms/theme.md`](./llms/theme.md)。
 5. **图标**: 所有接受 `icon / leadingIcon / trailingIcon` 的 prop 用字符串 `IconName`。完整列表见 [`llms/icon.md`](./llms/icon.md)。
@@ -99,6 +100,7 @@
 - [WindowControls 窗口控件](./llms/windowcontrols.md) — 独立的窗口控件按钮组。
 - [Sidebar 侧边栏](./llms/sidebar.md) — 应用主导航,沿屏幕左侧垂直排列。
 - [StatusBar 状态栏](./llms/statusbar.md) — 窗口底部状态栏,展示分支、编码、行列等应用元信息。
+- [AppShell 应用外壳](./llms/appshell.md) — 组合 TitleBar、Sidebar 与主内容区的 Electron 桌面布局容器。
 - [Splitter 可拖拽分栏](./llms/splitter.md) — 两栏之间可拖拽的分隔条,支持横向、纵向与嵌套。
 - [ContextMenu 右键菜单](./llms/contextmenu.md) — 桌面应用风格的右键上下文菜单。
 - [CommandPalette ⌘K 命令面板](./llms/commandpalette.md) — 全局命令搜索与执行入口。

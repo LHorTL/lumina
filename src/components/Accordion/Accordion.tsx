@@ -11,7 +11,8 @@ export interface AccordionItem {
   disabled?: boolean;
 }
 
-export interface AccordionProps {
+export interface AccordionProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange"> {
   items: AccordionItem[];
   /** If true, multiple sections can be open at once. */
   multiple?: boolean;
@@ -64,7 +65,7 @@ const AccordionPanel: React.FC<{ open: boolean; children: React.ReactNode }> = (
 };
 
 /** `Accordion` — collapsible sections. */
-export const Accordion: React.FC<AccordionProps> = ({
+export const Accordion = React.forwardRef<HTMLDivElement, AccordionProps>(({
   items,
   multiple = false,
   accordion = false,
@@ -73,7 +74,8 @@ export const Accordion: React.FC<AccordionProps> = ({
   defaultActiveKeys = [],
   onChange,
   className = "",
-}) => {
+  ...rest
+}, ref) => {
   const [inner, setInner] = React.useState<string[]>(defaultActiveKeys);
   const isControlled = activeKeys !== undefined;
   const keys = isControlled ? activeKeys! : inner;
@@ -93,7 +95,7 @@ export const Accordion: React.FC<AccordionProps> = ({
   };
 
   return (
-    <div className={`accordion ${className}`}>
+    <div ref={ref} className={`accordion ${className}`} {...rest}>
       {items.map((it) => {
         const open = keys.includes(it.key);
         const isDisabled = it.disabled || collapsible === "disabled";
@@ -129,4 +131,5 @@ export const Accordion: React.FC<AccordionProps> = ({
       })}
     </div>
   );
-};
+});
+Accordion.displayName = "Accordion";

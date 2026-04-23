@@ -33,7 +33,8 @@ const isGroup = <T extends string | number>(
   it: SelectItem<T>
 ): it is SelectOptionGroup<T> => Array.isArray((it as SelectOptionGroup<T>).options);
 
-interface BaseSelectProps<T extends string | number = string> {
+interface BaseSelectProps<T extends string | number = string>
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange" | "defaultValue"> {
   /** Flat or mixed (groups + options) item list. */
   options: SelectItem<T>[];
   placeholder?: string;
@@ -92,10 +93,15 @@ const defaultFilter = <T extends string | number>(input: string, opt: SelectOpti
   return txt.toLowerCase().includes(q);
 };
 
-/** `Select` — neumorphic dropdown. Set `multiple` for tag-style multi-select. */
-export function Select<T extends string | number = string>(props: SingleSelectProps<T>): React.ReactElement;
-export function Select<T extends string | number = string>(props: MultiSelectProps<T>): React.ReactElement;
-export function Select<T extends string | number = string>(props: SelectProps<T>): React.ReactElement {
+type SelectComponent = {
+  <T extends string | number = string>(props: SingleSelectProps<T> & React.RefAttributes<HTMLDivElement>): React.ReactElement;
+  <T extends string | number = string>(props: MultiSelectProps<T> & React.RefAttributes<HTMLDivElement>): React.ReactElement;
+};
+
+const SelectInner = <T extends string | number = string>(
+  props: SelectProps<T>,
+  forwardedRef: React.ForwardedRef<HTMLDivElement>
+): React.ReactElement => {
   const {
     options,
     placeholder = "请选择…",
@@ -112,8 +118,19 @@ export function Select<T extends string | number = string>(props: SelectProps<T>
     onOpenChange,
     className = "",
     menuClassName = "",
-  } = props;
-  const isMulti = props.multiple === true;
+    onKeyDown: onRootKeyDown,
+    multiple,
+    value: _value,
+    defaultValue: _defaultValue,
+    onChange: _selectionChange,
+    onClear: _onClear,
+    maxTagCount: _maxTagCount,
+    ...rest
+  } = props as SelectProps<T> & {
+    onClear?: () => void;
+    maxTagCount?: number;
+  };
+  const isMulti = multiple === true;
 
   const [innerSingle, setInnerSingle] = React.useState<T | undefined>(
     !isMulti ? (props as SingleSelectProps<T>).defaultValue : undefined
@@ -135,12 +152,21 @@ export function Select<T extends string | number = string>(props: SelectProps<T>
     if (!v) setQuery("");
   };
 
-  const { triggerRef: ref, floatingRef: menuRef, floatingStyle } = useFloating<HTMLDivElement, HTMLDivElement>({
+  const { triggerRef, floatingRef: menuRef, floatingStyle } = useFloating<HTMLDivElement, HTMLDivElement>({
     open,
     placement: "bottom",
     matchTriggerWidth: true,
     panelHeight: 320,
   });
+
+  const setTriggerRef = React.useCallback(
+    (node: HTMLDivElement | null) => {
+      (triggerRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+      if (typeof forwardedRef === "function") forwardedRef(node);
+      else if (forwardedRef) forwardedRef.current = node;
+    },
+    [forwardedRef, triggerRef]
+  );
 
   const singleControlled = !isMulti && (props as SingleSelectProps<T>).value !== undefined;
   const multiControlled = isMulti && (props as MultiSelectProps<T>).value !== undefined;
@@ -152,7 +178,7 @@ export function Select<T extends string | number = string>(props: SelectProps<T>
     if (!open) return;
     const h = (e: MouseEvent) => {
       const t = e.target as Node;
-      if (ref.current?.contains(t)) return;
+      if (triggerRef.current?.contains(t)) return;
       if (menuRef.current?.contains(t)) return;
       setOpen(false);
     };
@@ -343,10 +369,14 @@ export function Select<T extends string | number = string>(props: SelectProps<T>
 
   return (
     <div
-      ref={ref}
+      ref={setTriggerRef}
+      {...rest}
       className={`select ${size} ${isMulti ? "multi" : ""} ${open ? "open" : ""} ${disabled ? "disabled" : ""} ${invalid ? "invalid" : ""} ${className}`}
-      onKeyDown={onKeyDown}
-      tabIndex={disabled ? -1 : 0}
+      onKeyDown={(e) => {
+        onRootKeyDown?.(e);
+        onKeyDown(e);
+      }}
+      tabIndex={disabled ? -1 : rest.tabIndex ?? 0}
     >
       <button
         type="button"
@@ -420,4 +450,8 @@ export function Select<T extends string | number = string>(props: SelectProps<T>
         )}
     </div>
   );
-}
+};
+
+/** `Select` — neumorphic dropdown. Set `multiple` for tag-style multi-select. */
+export const Select = React.forwardRef(SelectInner) as SelectComponent;
+(Select as any).displayName = "Select";

@@ -14,14 +14,14 @@ export interface StatusBarItemProps extends Omit<React.HTMLAttributes<HTMLDivEle
 }
 
 /** `StatusBar.Item` — one inline slot. Put icon + text inside. */
-export const StatusBarItem: React.FC<StatusBarItemProps> = ({
+export const StatusBarItem = React.forwardRef<HTMLElement, StatusBarItemProps>(({
   icon,
   tone = "default",
   onClick,
   className = "",
   children,
   ...rest
-}) => {
+}, ref) => {
   const content = (
     <>
       {icon && <span className="statusbar-item-icon">{icon}</span>}
@@ -31,17 +31,23 @@ export const StatusBarItem: React.FC<StatusBarItemProps> = ({
   const cls = `statusbar-item tone-${tone} ${onClick ? "clickable" : ""} ${className}`;
   if (onClick) {
     return (
-      <button type="button" className={cls} onClick={onClick as React.MouseEventHandler<HTMLButtonElement>}>
+      <button
+        ref={ref as React.ForwardedRef<HTMLButtonElement>}
+        type="button"
+        className={cls}
+        onClick={onClick as React.MouseEventHandler<HTMLButtonElement>}
+      >
         {content}
       </button>
     );
   }
   return (
-    <div className={cls} {...rest}>
+    <div ref={ref as React.ForwardedRef<HTMLDivElement>} className={cls} {...rest}>
       {content}
     </div>
   );
-};
+});
+StatusBarItem.displayName = "StatusBarItem";
 
 export interface StatusBarProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Left-aligned slot. */
@@ -65,20 +71,23 @@ export interface StatusBarProps extends React.HTMLAttributes<HTMLDivElement> {
  * />
  * ```
  */
-export const StatusBar: React.FC<StatusBarProps> & { Item: typeof StatusBarItem } = ({
+const StatusBarBase = React.forwardRef<HTMLDivElement, StatusBarProps>(({
   left,
   center,
   right,
   className = "",
   children,
   ...rest
-}) => (
-  <div className={`statusbar ${className}`} role="status" {...rest}>
+}, ref) => (
+  <div ref={ref} className={`statusbar ${className}`} role="status" {...rest}>
     {left != null && <div className="statusbar-section left">{left}</div>}
     {center != null && <div className="statusbar-section center">{center}</div>}
     {children}
     {right != null && <div className="statusbar-section right">{right}</div>}
   </div>
-);
+));
+StatusBarBase.displayName = "StatusBar";
+
+export const StatusBar = StatusBarBase as typeof StatusBarBase & { Item: typeof StatusBarItem };
 
 StatusBar.Item = StatusBarItem;

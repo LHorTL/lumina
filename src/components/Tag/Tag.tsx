@@ -22,7 +22,7 @@ export interface TagProps extends React.HTMLAttributes<HTMLSpanElement> {
 }
 
 /** `Tag` — small label/pill. */
-export const Tag: React.FC<TagProps> = ({
+export const Tag = React.forwardRef<HTMLSpanElement, TagProps>(({
   tone = "neutral",
   solid,
   dot,
@@ -33,7 +33,7 @@ export const Tag: React.FC<TagProps> = ({
   className = "",
   children,
   ...rest
-}) => {
+}, ref) => {
   const cls = [
     "tag",
     tone,
@@ -44,7 +44,7 @@ export const Tag: React.FC<TagProps> = ({
     .filter(Boolean)
     .join(" ");
   return (
-    <span className={cls} {...rest}>
+    <span ref={ref} className={cls} {...rest}>
       {dot && <span className="dot" />}
       {icon && <Icon name={icon} size={11} className="tag-ico" />}
       {children}
@@ -63,7 +63,8 @@ export const Tag: React.FC<TagProps> = ({
       )}
     </span>
   );
-};
+});
+Tag.displayName = "Tag";
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   /** Numeric count — renders as "99+" if > 99. */
@@ -75,17 +76,17 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 }
 
 /** `Badge` — notification dot / count. Wrap around another element. */
-export const Badge: React.FC<BadgeProps> = ({
+export const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(({
   count,
   dot,
   tone = "danger",
   children,
   className = "",
   ...rest
-}) => {
+}, ref) => {
   const show = dot || (typeof count === "number" && count > 0);
   return (
-    <span className={`badge-wrap ${className}`} {...rest}>
+    <span ref={ref} className={`badge-wrap ${className}`} {...rest}>
       {children}
       {show && (
         <span className={`badge ${tone} ${dot ? "dot" : ""}`}>
@@ -94,4 +95,5 @@ export const Badge: React.FC<BadgeProps> = ({
       )}
     </span>
   );
-};
+});
+Badge.displayName = "Badge";

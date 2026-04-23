@@ -19,7 +19,8 @@ export interface ContextMenuItem {
   onSelect?: () => void;
 }
 
-export interface ContextMenuProps {
+export interface ContextMenuProps
+  extends Omit<React.HTMLAttributes<HTMLSpanElement>, "children"> {
   items: ContextMenuItem[];
   /**
    * Any content — right-click anywhere inside the trigger area opens the menu.
@@ -54,12 +55,16 @@ const MARGIN = 8;
  * </ContextMenu>
  * ```
  */
-export const ContextMenu: React.FC<ContextMenuProps> = ({
+export const ContextMenu = React.forwardRef<HTMLSpanElement, ContextMenuProps>(({
   items,
   children,
   disabled,
   minWidth = 180,
-}) => {
+  className = "",
+  style,
+  onContextMenu,
+  ...rest
+}, ref) => {
   const [open, setOpen] = React.useState(false);
   const [pos, setPos] = React.useState<{ top: number; left: number }>({ top: 0, left: 0 });
   const [active, setActive] = React.useState(-1);
@@ -152,7 +157,16 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   // fully control — React.cloneElement would fail to reach the DOM when
   // `children` is a React component that doesn't forward `onContextMenu`.
   const trigger = (
-    <span style={{ display: "contents" }} onContextMenu={handleTriggerContextMenu}>
+    <span
+      ref={ref}
+      className={className}
+      style={{ display: "contents", ...style }}
+      onContextMenu={(e) => {
+        onContextMenu?.(e);
+        handleTriggerContextMenu(e);
+      }}
+      {...rest}
+    >
       {children}
     </span>
   );
@@ -206,4 +220,5 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       {panel}
     </>
   );
-};
+});
+ContextMenu.displayName = "ContextMenu";
