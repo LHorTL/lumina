@@ -19,20 +19,20 @@ const ThemedSwatch: React.FC<{ palette: string; active: boolean; onClick: () => 
   onClick,
   label,
 }) => (
-  <button
-    type="button"
+  <Button
     onClick={onClick}
     aria-label={label}
     title={label}
+    className="icon"
+    size="sm"
     style={{
       width: 28,
       height: 28,
       borderRadius: 999,
       border: active ? "2px solid var(--fg)" : "2px solid transparent",
       background: palette,
-      cursor: "pointer",
       padding: 0,
-      boxShadow: "var(--neu-flat)",
+      boxShadow: active ? "var(--neu-in-sm)" : "var(--neu-flat)",
     }}
   />
 );
@@ -99,10 +99,11 @@ const ThemeCustomDemo: React.FC = () => {
         />
         <Row gap={8}>
           {["#00b894", "#ff6b6b", "oklch(70% 0.18 180)", "oklch(60% 0.2 310)"].map((c) => (
-            <button
+            <Button
               key={c}
-              type="button"
               onClick={() => setColor(c)}
+              size="sm"
+              variant="ghost"
               style={{
                 height: 26,
                 padding: "0 10px",
@@ -110,12 +111,11 @@ const ThemeCustomDemo: React.FC = () => {
                 borderRadius: 999,
                 border: "1px solid var(--divider)",
                 background: "var(--bg)",
-                cursor: "pointer",
                 fontFamily: "var(--font-mono)",
               }}
             >
               {c}
-            </button>
+            </Button>
           ))}
         </Row>
         <ThemePreviewControls />

@@ -115,7 +115,8 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "gen:docs": "node scripts/gen-llms-doc.mjs",
-    "prepublishOnly": "npm run typecheck && npm run gen:docs && npm run build:lib"
+    "verify:public-api": "node scripts/verify-public-api.mjs",
+    "prepublishOnly": "npm run typecheck && npm run gen:docs && npm run build:lib && npm run verify:public-api"
   },
   "peerDependencies": {
     "react": ">=18",
