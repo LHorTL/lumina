@@ -36,27 +36,11 @@ body {
   min-height: 0;
 }
 .sidebar .search {
-  position: relative;
   margin-bottom: 4px;
 }
-.sidebar .search input {
-  width: 100%;
+.sidebar .search .input-wrap.sm {
   height: 38px;
-  padding: 0 14px 0 36px;
   border-radius: var(--r-md);
-  background: var(--bg);
-  box-shadow: var(--neu-in-sm);
-  border: none;
-  color: var(--fg);
-  font-size: 13px;
-  outline: none;
-}
-.sidebar .search input::placeholder { color: var(--fg-subtle); }
-.sidebar .search .search-icon {
-  position: absolute;
-  left: 12px; top: 50%; transform: translateY(-50%);
-  color: var(--fg-subtle);
-  pointer-events: none;
 }
 .sidebar .group-label {
   font-size: 11px;

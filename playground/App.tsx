@@ -74,6 +74,56 @@ const BUILT_IN_CUSTOM_THEME_PRESETS = {
       "shadow-light": "rgba(255, 255, 255, 0.96)",
     },
   },
+  assistant: {
+    base: "light",
+    accent: {
+      accent: "#646cff",
+      ink: "#4f56d8",
+      soft: "rgba(100, 108, 255, 0.12)",
+      glow: "rgba(100, 108, 255, 0.26)",
+    },
+    density: "comfortable",
+    intensity: 4,
+    radius: 16,
+    font: "Inter, system-ui, Avenir, Helvetica, Arial, sans-serif",
+    tokens: {
+      bg: "#e6eaf4",
+      "bg-raised": "#f9f9f9",
+      "bg-sunken": "#d7dce8",
+      fg: "#213547",
+      "fg-muted": "#68768a",
+      "fg-subtle": "#9aa6b8",
+      border: "rgba(240, 247, 255, 0.72)",
+      divider: "rgba(33, 53, 71, 0.12)",
+      "shadow-dark": "#d1d5de",
+      "shadow-light": "#fbffff",
+    },
+  },
+  assistantDark: {
+    base: "dark",
+    accent: {
+      accent: "#818cf8",
+      ink: "#c4c9ff",
+      soft: "rgba(129, 140, 248, 0.17)",
+      glow: "rgba(129, 140, 248, 0.18)",
+    },
+    density: "comfortable",
+    intensity: 4,
+    radius: 16,
+    font: "Inter, system-ui, Avenir, Helvetica, Arial, sans-serif",
+    tokens: {
+      bg: "#2a2a36",
+      "bg-raised": "#33333f",
+      "bg-sunken": "#20202b",
+      fg: "#d4d7e0",
+      "fg-muted": "#9ca1b0",
+      "fg-subtle": "#6f7484",
+      border: "#3e4455",
+      divider: "rgba(255, 255, 255, 0.08)",
+      "shadow-dark": "#1a1a24",
+      "shadow-light": "#3a3a46",
+    },
+  },
   ember: {
     base: "dark",
     accent: {
@@ -182,6 +232,8 @@ const BUILT_IN_CUSTOM_THEME_KEYS = new Set(Object.keys(BUILT_IN_CUSTOM_THEME_PRE
 const CUSTOM_THEME_OPTIONS: { key: string; label: string; tone: string }[] = [
   { key: "graphite", label: "石墨", tone: "冷暗" },
   { key: "porcelain", label: "瓷白", tone: "清亮" },
+  { key: "assistant", label: "助手", tone: "Soft" },
+  { key: "assistantDark", label: "助手暗", tone: "Soft" },
   { key: "ember", label: "余烬", tone: "暖暗" },
 ];
 
@@ -618,13 +670,12 @@ const AppInner: React.FC = () => {
       <div className="main">
         <aside className="sidebar">
           <div className="search">
-            <span className="search-icon">
-              <Icon name="search" size={14} />
-            </span>
-            <input
+            <Input
+              size="sm"
+              leadingIcon="search"
               placeholder="搜索组件..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onValueChange={setSearch}
             />
           </div>
 
