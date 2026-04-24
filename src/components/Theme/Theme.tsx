@@ -17,8 +17,10 @@ import * as React from "react";
 
 /* ------------------------------- Types ---------------------------------- */
 
-export type ThemeMode = "light" | "dark" | "system";
-export type ResolvedThemeMode = "light" | "dark";
+export type ThemeBaseMode = "light" | "dark";
+export type BuiltInThemeMode = ThemeBaseMode | "system";
+export type ThemeMode = BuiltInThemeMode | (string & {});
+export type ResolvedThemeMode = ThemeBaseMode | (string & {});
 export type AccentKey = "sky" | "coral" | "mint" | "violet" | "amber" | "rose";
 export type DensityMode = "compact" | "comfortable" | "spacious";
 export type FontKey = "system" | "sf" | "serif" | "mono";
@@ -49,8 +51,23 @@ export type FontConfig =
  *  (e.g. `"bg"` → `--bg`) or a full var name (e.g. `"--bg"`). */
 export type ThemeTokens = Record<string, string>;
 
+/** Named custom theme mode. `base` keeps dark/light specific component rules. */
+export interface ThemePreset {
+  base?: ThemeBaseMode;
+  accent?: AccentKey | CustomAccentInput;
+  density?: DensityMode;
+  intensity?: number;
+  radius?: number;
+  font?: FontConfig;
+  tokens?: ThemeTokens;
+}
+
+export type ThemePresets = Record<string, ThemePreset>;
+
 export interface ThemeConfig {
   mode?: ThemeMode;
+  /** Base light/dark color scheme used by custom modes. */
+  colorScheme?: ThemeBaseMode;
   accent?: AccentKey | CustomAccentInput;
   density?: DensityMode;
   /** Shadow strength, 1..10. Maps to `--d` (0.4..1.6). */
@@ -59,13 +76,17 @@ export interface ThemeConfig {
   radius?: number;
   font?: FontConfig;
   tokens?: ThemeTokens;
+  /** Custom named modes addressable through `mode` / `setMode`. */
+  themes?: ThemePresets;
 }
 
 export interface ThemeValue {
   /** Requested mode ("system" is preserved here). */
   mode: ThemeMode;
-  /** Resolved concrete mode ("system" → "light" | "dark" based on OS). */
+  /** Resolved concrete mode ("system" → "light" | "dark"; custom modes keep their name). */
   resolvedMode: ResolvedThemeMode;
+  /** The light/dark base currently used for component-specific selectors. */
+  colorScheme: ThemeBaseMode;
   /** Accent key or "custom" if a palette was supplied. */
   accent: AccentKey | "custom";
   /** Resolved palette currently in effect. */
@@ -75,6 +96,8 @@ export interface ThemeValue {
   radius: number;
   font: FontConfig;
   tokens: ThemeTokens;
+  themes: ThemePresets;
+  activeTheme: ThemePreset | null;
 
   setMode: (m: ThemeMode) => void;
   toggleMode: () => void;
@@ -84,6 +107,7 @@ export interface ThemeValue {
   setRadius: (n: number) => void;
   setFont: (f: FontConfig) => void;
   setTokens: (t: ThemeTokens) => void;
+  setThemes: (t: ThemePresets) => void;
   /** Shallow-merge a partial config. */
   update: (cfg: Partial<ThemeConfig>) => void;
   /** Reset to the initial props. */
@@ -121,37 +145,120 @@ export const FONT_STACKS: Record<FontKey, string> = {
   mono: 'ui-monospace, "SF Mono", "JetBrains Mono", Consolas, monospace',
 };
 
-const DEFAULT_CONFIG: Required<Omit<ThemeConfig, "tokens">> & { tokens: ThemeTokens } = {
+const DEFAULT_CONFIG: Required<ThemeConfig> = {
   mode: "light",
+  colorScheme: "light",
   accent: "sky",
   density: "comfortable",
   intensity: 5,
   radius: 20,
   font: "sf",
   tokens: {},
+  themes: {},
 };
 
 /* ------------------------------ Helpers --------------------------------- */
 
 const isBrowser = typeof window !== "undefined" && typeof document !== "undefined";
 
-/** Resolve "system" mode against `prefers-color-scheme`. */
+function isThemeBaseMode(mode: ThemeMode | undefined): mode is ThemeBaseMode {
+  return mode === "light" || mode === "dark";
+}
+
+function isBuiltInThemeMode(mode: ThemeMode | undefined): mode is BuiltInThemeMode {
+  return mode === "light" || mode === "dark" || mode === "system";
+}
+
+function getThemePreset(themes: ThemePresets | undefined, mode: ThemeMode | undefined): ThemePreset | undefined {
+  if (!mode || isBuiltInThemeMode(mode)) return undefined;
+  return themes?.[mode];
+}
+
+function applyThemePreset(config: ThemeConfig, mode: ThemeMode): ThemeConfig {
+  const preset = getThemePreset(config.themes, mode);
+  if (!preset) {
+    return {
+      ...config,
+      mode,
+      colorScheme: isThemeBaseMode(mode) ? mode : config.colorScheme,
+    };
+  }
+  return {
+    ...config,
+    mode,
+    colorScheme: preset.base ?? config.colorScheme ?? DEFAULT_CONFIG.colorScheme,
+    accent: preset.accent ?? config.accent,
+    density: preset.density ?? config.density,
+    intensity: preset.intensity ?? config.intensity,
+    radius: preset.radius ?? config.radius,
+    font: preset.font ?? config.font,
+    tokens: preset.tokens ? { ...preset.tokens } : config.tokens,
+  };
+}
+
+function resolveThemeConfig(config: ThemeConfig): Required<ThemeConfig> {
+  const mode = config.mode ?? DEFAULT_CONFIG.mode;
+  const themes = config.themes ?? DEFAULT_CONFIG.themes;
+  const preset = getThemePreset(themes, mode);
+  const presetConfig = preset
+    ? {
+        ...(preset.base ? { colorScheme: preset.base } : null),
+        ...(preset.accent ? { accent: preset.accent } : null),
+        ...(preset.density ? { density: preset.density } : null),
+        ...(preset.intensity != null ? { intensity: preset.intensity } : null),
+        ...(preset.radius != null ? { radius: preset.radius } : null),
+        ...(preset.font ? { font: preset.font } : null),
+      }
+    : {};
+  const merged = {
+    ...DEFAULT_CONFIG,
+    ...presetConfig,
+    ...config,
+    mode,
+    themes,
+    tokens: {
+      ...(preset?.tokens ?? {}),
+      ...(config.tokens ?? {}),
+    },
+  };
+  return {
+    ...merged,
+    colorScheme: merged.colorScheme ?? preset?.base ?? DEFAULT_CONFIG.colorScheme,
+    accent: merged.accent ?? preset?.accent ?? DEFAULT_CONFIG.accent,
+    density: merged.density ?? preset?.density ?? DEFAULT_CONFIG.density,
+    intensity: merged.intensity ?? preset?.intensity ?? DEFAULT_CONFIG.intensity,
+    radius: merged.radius ?? preset?.radius ?? DEFAULT_CONFIG.radius,
+    font: merged.font ?? preset?.font ?? DEFAULT_CONFIG.font,
+  };
+}
+
+/** Resolve "system" mode against `prefers-color-scheme`; custom modes keep their name. */
 export function resolveThemeMode(mode: ThemeMode): ResolvedThemeMode {
   if (mode !== "system") return mode;
   if (!isBrowser) return "light";
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
+export function resolveThemeColorScheme(
+  mode: ThemeMode,
+  themes?: ThemePresets,
+  fallback?: ThemeBaseMode
+): ThemeBaseMode {
+  if (mode === "system") return fallback ?? (resolveThemeMode(mode) as ThemeBaseMode);
+  if (isThemeBaseMode(mode)) return mode;
+  return getThemePreset(themes, mode)?.base ?? fallback ?? DEFAULT_CONFIG.colorScheme;
+}
+
 /** Fill missing slots of a custom accent via color-mix. */
 export function normalizeAccentInput(
   input: AccentKey | CustomAccentInput,
-  resolvedMode: ResolvedThemeMode
+  colorScheme: ThemeBaseMode
 ): { key: AccentKey | "custom"; palette: AccentPalette } {
   // Preset key?
   if (typeof input === "string" && input in ACCENT_PRESETS) {
     const key = input as AccentKey;
     const base = ACCENT_PRESETS[key];
-    if (resolvedMode === "dark") {
+    if (colorScheme === "dark") {
       return { key, palette: { ...base, ...ACCENT_PRESETS_DARK[key] } };
     }
     return { key, palette: base };
@@ -162,13 +269,13 @@ export function normalizeAccentInput(
   const ink = raw.ink ?? `color-mix(in oklch, ${accent} 65%, black)`;
   const soft =
     raw.soft ??
-    (resolvedMode === "dark"
+    (colorScheme === "dark"
       ? `color-mix(in oklch, ${accent} 30%, black)`
       : `color-mix(in oklch, ${accent} 15%, white)`);
   // Dark-mode glow is halved so it doesn't wash into a white halo on dark surfaces.
   const glow =
     raw.glow ??
-    (resolvedMode === "dark"
+    (colorScheme === "dark"
       ? `color-mix(in oklch, ${accent} 18%, transparent)`
       : `color-mix(in oklch, ${accent} 35%, transparent)`);
   return { key: "custom", palette: { accent, ink, soft, glow } };
@@ -181,13 +288,15 @@ function toVar(key: string): string {
 
 /** Imperative theme application — writes CSS vars / data-attrs on a target. */
 export function applyTheme(target: HTMLElement, config: ThemeConfig): void {
-  const cfg: ThemeConfig = { ...DEFAULT_CONFIG, ...config };
-  const resolvedMode = resolveThemeMode(cfg.mode!);
-  const { key, palette } = normalizeAccentInput(cfg.accent!, resolvedMode);
+  const cfg = resolveThemeConfig(config);
+  const resolvedMode = resolveThemeMode(cfg.mode);
+  const colorScheme = resolveThemeColorScheme(cfg.mode, cfg.themes, cfg.colorScheme);
+  const { key, palette } = normalizeAccentInput(cfg.accent, colorScheme);
 
   // data-* attributes
-  target.dataset.theme = resolvedMode;
-  target.dataset.density = cfg.density!;
+  target.dataset.theme = colorScheme;
+  target.dataset.themeMode = cfg.mode;
+  target.dataset.density = cfg.density;
   if (key === "custom") {
     delete target.dataset.accent;
   } else {
@@ -269,7 +378,8 @@ function loadPersisted(key: string | undefined): Partial<ThemeConfig> | null {
 function persist(key: string | undefined, cfg: ThemeConfig): void {
   if (!key || !isBrowser) return;
   try {
-    localStorage.setItem(key, JSON.stringify(cfg));
+    const { themes: _themes, ...persisted } = cfg;
+    localStorage.setItem(key, JSON.stringify(persisted));
   } catch {
     /* quota exceeded / disabled storage — ignore */
   }
@@ -324,19 +434,37 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = (props) => {
     ...configProps
   } = props;
 
-  // Build the initial config: defaults ← props ← persisted (if any)
+  // Build the initial config: defaults ← props ← custom preset ← persisted (if any)
   const initialConfig = React.useMemo<ThemeConfig>(() => {
     const fromProps: ThemeConfig = {
       mode: configProps.mode ?? DEFAULT_CONFIG.mode,
+      colorScheme: configProps.colorScheme,
       accent: configProps.accent ?? DEFAULT_CONFIG.accent,
       density: configProps.density ?? DEFAULT_CONFIG.density,
       intensity: configProps.intensity ?? DEFAULT_CONFIG.intensity,
       radius: configProps.radius ?? DEFAULT_CONFIG.radius,
       font: configProps.font ?? DEFAULT_CONFIG.font,
       tokens: configProps.tokens ?? {},
+      themes: configProps.themes ?? DEFAULT_CONFIG.themes,
     };
     const persisted = loadPersisted(storageKey);
-    return persisted ? { ...fromProps, ...persisted } : fromProps;
+    const seeded = applyThemePreset(fromProps, fromProps.mode ?? DEFAULT_CONFIG.mode);
+    const withExplicitProps: ThemeConfig = {
+      ...seeded,
+      ...(configProps.colorScheme ? { colorScheme: configProps.colorScheme } : null),
+      ...(configProps.accent ? { accent: configProps.accent } : null),
+      ...(configProps.density ? { density: configProps.density } : null),
+      ...(configProps.intensity != null ? { intensity: configProps.intensity } : null),
+      ...(configProps.radius != null ? { radius: configProps.radius } : null),
+      ...(configProps.font ? { font: configProps.font } : null),
+      ...(configProps.tokens ? { tokens: configProps.tokens } : null),
+    };
+    if (!persisted) return withExplicitProps;
+    const persistedMode = persisted.mode ?? withExplicitProps.mode ?? DEFAULT_CONFIG.mode;
+    return {
+      ...applyThemePreset({ ...withExplicitProps, mode: persistedMode }, persistedMode),
+      ...persisted,
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -348,23 +476,33 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = (props) => {
   // parent later changes the prop.
   React.useEffect(() => {
     setConfig((c) => {
+      const base: ThemeConfig = {
+        ...c,
+        themes: configProps.themes ?? c.themes,
+      };
+      const mode = configProps.mode ?? c.mode ?? DEFAULT_CONFIG.mode;
+      const nextFromMode = configProps.mode ? applyThemePreset(base, mode) : base;
       const next: ThemeConfig = {
-        mode: configProps.mode ?? c.mode,
-        accent: configProps.accent ?? c.accent,
-        density: configProps.density ?? c.density,
-        intensity: configProps.intensity ?? c.intensity,
-        radius: configProps.radius ?? c.radius,
-        font: configProps.font ?? c.font,
-        tokens: configProps.tokens ?? c.tokens,
+        ...nextFromMode,
+        mode,
+        colorScheme: configProps.colorScheme ?? nextFromMode.colorScheme,
+        accent: configProps.accent ?? nextFromMode.accent,
+        density: configProps.density ?? nextFromMode.density,
+        intensity: configProps.intensity ?? nextFromMode.intensity,
+        radius: configProps.radius ?? nextFromMode.radius,
+        font: configProps.font ?? nextFromMode.font,
+        tokens: configProps.tokens ?? nextFromMode.tokens,
       };
       if (
         next.mode === c.mode &&
+        next.colorScheme === c.colorScheme &&
         next.accent === c.accent &&
         next.density === c.density &&
         next.intensity === c.intensity &&
         next.radius === c.radius &&
         next.font === c.font &&
-        next.tokens === c.tokens
+        next.tokens === c.tokens &&
+        next.themes === c.themes
       ) {
         return c;
       }
@@ -372,12 +510,14 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = (props) => {
     });
   }, [
     configProps.mode,
+    configProps.colorScheme,
     configProps.accent,
     configProps.density,
     configProps.intensity,
     configProps.radius,
     configProps.font,
     configProps.tokens,
+    configProps.themes,
   ]);
 
   // Listen for system preference changes when mode === "system".
@@ -392,38 +532,58 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = (props) => {
     return () => mql.removeEventListener?.("change", handler);
   }, []);
 
+  const effectiveConfig = React.useMemo(() => resolveThemeConfig(config), [config]);
+  const activeTheme = React.useMemo(
+    () => getThemePreset(effectiveConfig.themes, effectiveConfig.mode) ?? null,
+    [effectiveConfig.mode, effectiveConfig.themes]
+  );
+  const colorScheme: ThemeBaseMode =
+    effectiveConfig.mode === "system"
+      ? (systemDark ? "dark" : "light")
+      : isThemeBaseMode(effectiveConfig.mode)
+        ? effectiveConfig.mode
+        : effectiveConfig.colorScheme ?? activeTheme?.base ?? DEFAULT_CONFIG.colorScheme;
   const resolvedMode: ResolvedThemeMode =
-    config.mode === "system" ? (systemDark ? "dark" : "light") : (config.mode as ResolvedThemeMode);
+    effectiveConfig.mode === "system" ? colorScheme : (effectiveConfig.mode as ResolvedThemeMode);
 
   const { key: accentKey, palette: accentPalette } = React.useMemo(
-    () => normalizeAccentInput(config.accent!, resolvedMode),
-    [config.accent, resolvedMode]
+    () => normalizeAccentInput(effectiveConfig.accent, colorScheme),
+    [effectiveConfig.accent, colorScheme]
   );
 
   const scopeRef = React.useRef<HTMLElement | null>(null);
+  const appliedTokenKeysRef = React.useRef<Set<string>>(new Set());
 
   // Apply theme whenever config/resolvedMode changes.
   React.useEffect(() => {
     if (!isBrowser) return;
     const el = target === "root" ? document.documentElement : scopeRef.current;
     if (!el) return;
-    applyTheme(el as HTMLElement, { ...config, mode: resolvedMode });
+    const nextTokenKeys = new Set(Object.keys(effectiveConfig.tokens));
+    for (const key of appliedTokenKeysRef.current) {
+      if (!nextTokenKeys.has(key)) el.style.removeProperty(toVar(key));
+    }
+    applyTheme(el as HTMLElement, { ...effectiveConfig, colorScheme });
+    appliedTokenKeysRef.current = nextTokenKeys;
     persist(storageKey, config);
-  }, [config, resolvedMode, target, storageKey]);
+  }, [config, effectiveConfig, colorScheme, target, storageKey]);
 
   const value: ThemeValue = React.useMemo(() => {
     const patch = (p: Partial<ThemeConfig>) => setConfig((c) => ({ ...c, ...p }));
     return {
-      mode: config.mode!,
+      mode: effectiveConfig.mode,
       resolvedMode,
+      colorScheme,
       accent: accentKey,
       accentPalette,
-      density: config.density!,
-      intensity: config.intensity!,
-      radius: config.radius!,
-      font: config.font!,
-      tokens: config.tokens ?? {},
-      setMode: (m) => patch({ mode: m }),
+      density: effectiveConfig.density,
+      intensity: effectiveConfig.intensity,
+      radius: effectiveConfig.radius,
+      font: effectiveConfig.font,
+      tokens: effectiveConfig.tokens,
+      themes: effectiveConfig.themes,
+      activeTheme,
+      setMode: (m) => setConfig((c) => applyThemePreset(c, m)),
       toggleMode: () =>
         setConfig((c) => ({
           ...c,
@@ -435,10 +595,11 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = (props) => {
       setRadius: (n) => patch({ radius: n }),
       setFont: (f) => patch({ font: f }),
       setTokens: (t) => patch({ tokens: t }),
+      setThemes: (t) => patch({ themes: t }),
       update: patch,
       reset: () => setConfig(initialConfig),
     };
-  }, [config, resolvedMode, accentKey, accentPalette, initialConfig]);
+  }, [effectiveConfig, resolvedMode, colorScheme, accentKey, accentPalette, activeTheme, initialConfig]);
 
   // onChange callback.
   const onChangeRef = React.useRef(onChange);

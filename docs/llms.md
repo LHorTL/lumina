@@ -32,7 +32,7 @@
    ```
    如果你还需要 reset / scrollbar / focus-visible 基线样式,请改用 `@fangxinyan/lumina/styles`。
 3. **TypeScript**: 所有 `XxxProps` 接口都是 `export`,可直接 `import { Button, type ButtonProps } from "@fangxinyan/lumina";`
-4. **主题**: 用 `<ThemeProvider>` 包根;运行时可通过 `useTheme()` 改。六种强调色 (`rose / sky / coral / mint / violet / amber`) × 两种模式 (`light / dark` + `system`) × 三档密度 (`compact / comfortable / spacious`)。详见 [`llms/theme.md`](./llms/theme.md)。
+4. **主题**: 用 `<ThemeProvider>` 包根;运行时可通过 `useTheme()` 改。六种强调色 (`rose / sky / coral / mint / violet / amber`) × 内置模式 (`light / dark / system`) × 命名自定义模式 × 三档密度 (`compact / comfortable / spacious`)。详见 [`llms/theme.md`](./llms/theme.md)。
 5. **图标**: 所有接受 `icon / leadingIcon / trailingIcon` 的 prop 用字符串 `IconName`。完整列表见 [`llms/icon.md`](./llms/icon.md)。
 6. **浮层组件**(Tooltip / Popover / Select / Cascader / ColorPicker / Modal / Drawer): 内部已 `createPortal` 到 `document.body` + 视口边界翻转,放在 `overflow: hidden` 的容器里也不会被裁。
 7. **Electron 专属组件**: `TitleBar` / `WindowControls` / `Sidebar` / `AppShell` 提供 macOS / Windows 原生风格的标题栏与导航。
@@ -42,7 +42,7 @@
 ### 起步
 
 - [Lumina](./llms/intro.md) — 为 Electron 应用定制的拟态风格 React 组件库。
-- [Theme 主题](./llms/theme.md) — ThemeProvider + useTheme,覆盖深浅色、强调色、密度、圆角、字体、阴影强度。
+- [Theme 主题](./llms/theme.md) — ThemeProvider + useTheme,覆盖深浅色、自定义模式、强调色、密度、圆角、字体、阴影强度。
 
 ### 通用
 

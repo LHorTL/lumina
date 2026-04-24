@@ -1,6 +1,6 @@
 # Theme 主题
 
-> ThemeProvider + useTheme,覆盖深浅色、强调色、密度、圆角、字体、阴影强度。
+> ThemeProvider + useTheme,覆盖深浅色、自定义模式、强调色、密度、圆角、字体、阴影强度。
 
 ## 导入
 
@@ -22,6 +22,7 @@ function Root() {
     <ThemeProvider
       mode="system"        // "light" | "dark" | "system"
       accent="violet"      // 预设 或 自定义颜色
+      themes={{ graphite: { base: "dark", tokens: {} } }}
       density="comfortable"
       intensity={5}        // 1..10 阴影强度
       radius={20}          // 圆角基准 px
@@ -78,6 +79,38 @@ t.reset();                   // 重置到 props 初值
 }} />
 ```
 
+### 自定义主题模式
+
+mode 可以指向 themes 中的命名 preset。base 决定 light/dark 基底,tokens 决定完整视觉。
+
+```tsx
+const themes = {
+  graphite: {
+    base: "dark",
+    accent: {
+      accent: "oklch(72% 0.13 190)",
+      ink: "oklch(85% 0.1 190)",
+      soft: "oklch(31% 0.05 190)",
+      glow: "oklch(72% 0.13 190 / 0.18)",
+    },
+    intensity: 4,
+    radius: 18,
+    tokens: {
+      bg: "#181b22",
+      "bg-raised": "#20242d",
+      "bg-sunken": "#11141a",
+      fg: "#edf1f7",
+      "shadow-dark": "rgba(0,0,0,.58)",
+      "shadow-light": "rgba(128,146,166,.07)",
+    },
+  },
+};
+
+<ThemeProvider mode="graphite" themes={themes}>
+  <App />
+</ThemeProvider>
+```
+
 ### 作用域嵌套
 
 target="scope" 只作用于子树,可以层层嵌套。
@@ -131,13 +164,15 @@ applyTheme(document.documentElement, {
 
 | Prop | 类型 | 默认 | 说明 |
 | --- | --- | --- | --- |
-| mode | `"light" | "dark" | "system"` | `"light"` | 深浅色模式 |
+| mode | `ThemeMode` | `"light"` | 深浅色模式或自定义模式名 |
+| colorScheme | `"light" | "dark"` | `"light"` | 自定义模式使用的 light/dark 基底 |
 | accent | `AccentKey | CustomAccentInput` | `"sky"` | 强调色,预设或自定义 |
 | density | `"compact" | "comfortable" | "spacious"` | `"comfortable"` | 密度 |
 | intensity | `number` | `5` | 阴影强度 1-10 |
 | radius | `number` | `20` | 圆角基准 px |
 | font | `FontConfig` | `"sf"` | 字体预设或 CSS 栈 |
 | tokens | `Record<string, string>` | — | 任意 CSS 变量覆写 |
+| themes | `Record<string, ThemePreset>` | — | 命名自定义模式 preset |
 | target | `"root" | "scope"` | `"root"` | 应用到根还是局部 |
 | as | `keyof JSX.IntrinsicElements` | `"div"` | scope 模式的元素标签 |
 | storageKey | `string` | — | localStorage 持久化 key |
@@ -149,14 +184,16 @@ applyTheme(document.documentElement, {
 | Prop | 类型 | 默认 | 说明 |
 | --- | --- | --- | --- |
 | mode | `ThemeMode` | — | 请求的模式(保留 system) |
-| resolvedMode | `"light" | "dark"` | — | 解析后的具体模式 |
+| resolvedMode | `ResolvedThemeMode` | — | 解析后的具体模式;自定义模式保留名称 |
+| colorScheme | `"light" | "dark"` | — | 当前 light/dark 基底 |
 | accent | `AccentKey | "custom"` | — | 预设 key 或 "custom" |
 | accentPalette | `AccentPalette` | — | 当前完整调色板 |
 | density / intensity / radius / font / tokens | `-` | — | 当前各维度状态 |
+| themes / activeTheme | `-` | — | 自定义模式注册表与当前命中的 preset |
 | setMode(m) | `(m: ThemeMode) => void` | — | 切换模式 |
 | toggleMode() | `() => void` | — | light ⇄ dark 切换 |
 | setAccent(a) | `(a: AccentKey | CustomAccentInput) => void` | — | 切换强调色 |
-| setDensity / setIntensity / setRadius / setFont / setTokens | `-` | — | 对应字段的 setter |
+| setDensity / setIntensity / setRadius / setFont / setTokens / setThemes | `-` | — | 对应字段的 setter |
 | update(cfg) | `(cfg: Partial<ThemeConfig>) => void` | — | 浅合并多字段 |
 | reset() | `() => void` | — | 重置到初始 props |
 

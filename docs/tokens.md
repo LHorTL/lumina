@@ -5,12 +5,13 @@
 ## 主题切换
 
 ```html
-<html data-theme="light" data-accent="rose" data-density="comfortable">
+<html data-theme="light" data-theme-mode="porcelain" data-accent="rose" data-density="comfortable">
 ```
 
 | 属性 | 可选值 |
 |---|---|
 | `data-theme` | `light`（默认） \| `dark` |
+| `data-theme-mode` | 当前模式名，例如 `light` / `dark` / `system` / 自定义模式名 |
 | `data-accent` | `rose` \| `sky` \| `coral` \| `mint` \| `violet` \| `amber` |
 | `data-density` | `compact` \| `comfortable` \| `spacious` |
 

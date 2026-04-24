@@ -8,6 +8,8 @@ import {
   useTheme,
   ACCENT_PRESETS,
   type AccentKey,
+  type ThemeMode,
+  type ThemePresets,
 } from "lumina";
 import { DocPage } from "../docs";
 import { Row } from "./_shared";
@@ -124,6 +126,66 @@ const ThemeCustomDemo: React.FC = () => {
   );
 };
 
+const CUSTOM_MODE_THEMES = {
+  graphite: {
+    base: "dark",
+    accent: {
+      accent: "oklch(72% 0.13 190)",
+      ink: "oklch(85% 0.1 190)",
+      soft: "oklch(31% 0.05 190)",
+      glow: "oklch(72% 0.13 190 / 0.18)",
+    },
+    intensity: 4,
+    radius: 18,
+    tokens: {
+      bg: "#181b22",
+      "bg-raised": "#20242d",
+      "bg-sunken": "#11141a",
+      fg: "#edf1f7",
+      "fg-muted": "#a3adbd",
+      "shadow-dark": "rgba(0,0,0,.58)",
+      "shadow-light": "rgba(128,146,166,.07)",
+    },
+  },
+  porcelain: {
+    base: "light",
+    accent: "mint",
+    intensity: 6,
+    radius: 24,
+    tokens: {
+      bg: "#edf3f1",
+      "bg-raised": "#f5faf8",
+      "bg-sunken": "#dfe8e5",
+      fg: "#33434a",
+      "fg-muted": "#75868c",
+      "shadow-dark": "rgba(143,163,168,.45)",
+      "shadow-light": "rgba(255,255,255,.96)",
+    },
+  },
+} satisfies ThemePresets;
+
+const ThemeCustomModeDemo: React.FC = () => {
+  const [mode, setMode] = React.useState<ThemeMode>("graphite");
+  return (
+    <ThemeProvider target="scope" mode={mode} themes={CUSTOM_MODE_THEMES} as="div">
+      <ThemePreviewBox label={`mode="${mode}"`}>
+        <Row gap={8}>
+          <Button size="sm" onClick={() => setMode("graphite")}>
+            graphite
+          </Button>
+          <Button size="sm" onClick={() => setMode("porcelain")}>
+            porcelain
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => setMode("light")}>
+            light
+          </Button>
+        </Row>
+        <ThemePreviewControls />
+      </ThemePreviewBox>
+    </ThemeProvider>
+  );
+};
+
 const ThemeHookInner: React.FC = () => {
   const t = useTheme();
   return (
@@ -187,6 +249,7 @@ const SectionTheme: React.FC<SectionCtx> = () => (
           <li>想给某一块(推广卡片/对话框)单独换一套主题</li>
           <li>想把用户的偏好持久化(加 <code>storageKey</code>)</li>
           <li>想跟随系统主题(<code>mode="system"</code>)</li>
+          <li>想暴露命名自定义模式(<code>mode="graphite"</code>)并一次套完整 token</li>
         </ul>
       </>
     }
@@ -203,6 +266,7 @@ function Root() {
     <ThemeProvider
       mode="system"        // "light" | "dark" | "system"
       accent="violet"      // 预设 或 自定义颜色
+      themes={{ graphite: { base: "dark", tokens: {} } }}
       density="comfortable"
       intensity={5}        // 1..10 阴影强度
       radius={20}          // 圆角基准 px
@@ -261,6 +325,37 @@ t.reset();                   // 重置到 props 初值`,
         render: () => <ThemeCustomDemo />,
       },
       {
+        id: "custom-mode",
+        title: "自定义主题模式",
+        description: "mode 可以指向 themes 中的命名 preset。base 决定 light/dark 基底,tokens 决定完整视觉。",
+        code: `const themes = {
+  graphite: {
+    base: "dark",
+    accent: {
+      accent: "oklch(72% 0.13 190)",
+      ink: "oklch(85% 0.1 190)",
+      soft: "oklch(31% 0.05 190)",
+      glow: "oklch(72% 0.13 190 / 0.18)",
+    },
+    intensity: 4,
+    radius: 18,
+    tokens: {
+      bg: "#181b22",
+      "bg-raised": "#20242d",
+      "bg-sunken": "#11141a",
+      fg: "#edf1f7",
+      "shadow-dark": "rgba(0,0,0,.58)",
+      "shadow-light": "rgba(128,146,166,.07)",
+    },
+  },
+};
+
+<ThemeProvider mode="graphite" themes={themes}>
+  <App />
+</ThemeProvider>`,
+        render: () => <ThemeCustomModeDemo />,
+      },
+      {
         id: "scope",
         title: "作用域嵌套",
         description: "target=\"scope\" 只作用于子树,可以层层嵌套。",
@@ -308,13 +403,15 @@ applyTheme(document.documentElement, {
       {
         title: "ThemeProvider Props",
         rows: [
-          { prop: "mode", description: "深浅色模式", type: `"light" | "dark" | "system"`, default: `"light"` },
+          { prop: "mode", description: "深浅色模式或自定义模式名", type: "ThemeMode", default: `"light"` },
+          { prop: "colorScheme", description: "自定义模式使用的 light/dark 基底", type: `"light" | "dark"`, default: `"light"` },
           { prop: "accent", description: "强调色,预设或自定义", type: "AccentKey | CustomAccentInput", default: `"sky"` },
           { prop: "density", description: "密度", type: `"compact" | "comfortable" | "spacious"`, default: `"comfortable"` },
           { prop: "intensity", description: "阴影强度 1-10", type: "number", default: "5" },
           { prop: "radius", description: "圆角基准 px", type: "number", default: "20" },
           { prop: "font", description: "字体预设或 CSS 栈", type: "FontConfig", default: `"sf"` },
           { prop: "tokens", description: "任意 CSS 变量覆写", type: "Record<string, string>" },
+          { prop: "themes", description: "命名自定义模式 preset", type: "Record<string, ThemePreset>" },
           { prop: "target", description: "应用到根还是局部", type: `"root" | "scope"`, default: `"root"` },
           { prop: "as", description: "scope 模式的元素标签", type: "keyof JSX.IntrinsicElements", default: `"div"` },
           { prop: "storageKey", description: "localStorage 持久化 key", type: "string" },
@@ -325,14 +422,16 @@ applyTheme(document.documentElement, {
         title: "useTheme() → ThemeValue",
         rows: [
           { prop: "mode", description: "请求的模式(保留 system)", type: "ThemeMode" },
-          { prop: "resolvedMode", description: "解析后的具体模式", type: `"light" | "dark"` },
+          { prop: "resolvedMode", description: "解析后的具体模式;自定义模式保留名称", type: "ResolvedThemeMode" },
+          { prop: "colorScheme", description: "当前 light/dark 基底", type: `"light" | "dark"` },
           { prop: "accent", description: "预设 key 或 \"custom\"", type: "AccentKey | \"custom\"" },
           { prop: "accentPalette", description: "当前完整调色板", type: "AccentPalette" },
           { prop: "density / intensity / radius / font / tokens", description: "当前各维度状态", type: "-" },
+          { prop: "themes / activeTheme", description: "自定义模式注册表与当前命中的 preset", type: "-" },
           { prop: "setMode(m)", description: "切换模式", type: "(m: ThemeMode) => void" },
           { prop: "toggleMode()", description: "light ⇄ dark 切换", type: "() => void" },
           { prop: "setAccent(a)", description: "切换强调色", type: "(a: AccentKey | CustomAccentInput) => void" },
-          { prop: "setDensity / setIntensity / setRadius / setFont / setTokens", description: "对应字段的 setter", type: "-" },
+          { prop: "setDensity / setIntensity / setRadius / setFont / setTokens / setThemes", description: "对应字段的 setter", type: "-" },
           { prop: "update(cfg)", description: "浅合并多字段", type: "(cfg: Partial<ThemeConfig>) => void" },
           { prop: "reset()", description: "重置到初始 props", type: "() => void" },
         ],
@@ -348,6 +447,6 @@ export default defineSection({
   label: "Theme 主题",
   eyebrow: "FOUNDATION",
   title: "Theme 主题",
-  desc: "ThemeProvider + useTheme,覆盖深浅色、强调色、密度、圆角、字体、阴影强度。",
+  desc: "ThemeProvider + useTheme,覆盖深浅色、自定义模式、强调色、密度、圆角、字体、阴影强度。",
   Component: SectionTheme,
 });

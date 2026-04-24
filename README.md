@@ -92,10 +92,11 @@ package/
 所有设计令牌都在 `:root` 上定义，可以通过 `data-*` 属性切换主题：
 
 ```html
-<html data-theme="dark" data-accent="sky" data-density="compact">
+<html data-theme="dark" data-theme-mode="graphite" data-accent="sky" data-density="compact">
 ```
 
 - `data-theme`: `light` | `dark`
+- `data-theme-mode`: 当前模式名，例如 `light` / `dark` / `system` / 自定义模式名
 - `data-accent`: `rose` | `sky` | `coral` | `mint` | `violet` | `amber`
 - `data-density`: `compact` | `comfortable` | `spacious`
 
