@@ -200,7 +200,7 @@ export const CommandPalette = React.forwardRef<HTMLDivElement, CommandPalettePro
             leadingIcon="search"
             placeholder={placeholder}
             value={query}
-            onChange={(v) => setQuery(v)}
+            onValueChange={(v) => setQuery(v)}
             onKeyDown={onKey}
             suffix={<span className="cmdp-kbd">esc</span>}
           />

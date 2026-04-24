@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Button, IconButton, Tooltip } from "lumina";
+import { Button, Tooltip } from "lumina";
 import { DocPage } from "../docs";
 import { Row } from "./_shared";
 import { defineSection, type SectionCtx } from "./_types";
@@ -11,17 +11,17 @@ const SectionTooltip: React.FC<SectionCtx> = () => (
       {
         id: "basic",
         title: "基础",
-        code: `<Tooltip content="新建文档"><IconButton icon="plus" /></Tooltip>`,
+        code: `<Tooltip content="新建文档"><Button icon="plus" /></Tooltip>`,
         render: () => (
           <Row>
             <Tooltip content="新建文档">
-              <IconButton icon="plus" />
+              <Button icon="plus" />
             </Tooltip>
             <Tooltip content="收藏">
-              <IconButton icon="star" />
+              <Button icon="star" />
             </Tooltip>
             <Tooltip content="发送 ⌘↵">
-              <IconButton icon="send" />
+              <Button icon="send" />
             </Tooltip>
           </Row>
         ),
@@ -47,15 +47,31 @@ const SectionTooltip: React.FC<SectionCtx> = () => (
           </Row>
         ),
       },
+      {
+        id: "title-alias",
+        title: "title 别名",
+        description: "title 与 content 等价,也支持 bottomLeft 等细分位置。",
+        code: `<Tooltip title="复制路径" placement="bottomLeft">
+  <Button icon="copy">复制</Button>
+</Tooltip>`,
+        render: () => (
+          <Tooltip title="复制路径" placement="bottomLeft" overlayClassName="demo-tooltip-overlay">
+            <Button icon="copy">复制</Button>
+          </Tooltip>
+        ),
+      },
     ]}
     api={[
       {
         title: "Tooltip",
         rows: [
-          { prop: "content", description: "提示内容", type: "ReactNode", required: true },
-          { prop: "placement", description: "位置", type: `"top" | "bottom" | "left" | "right"`, default: `"top"` },
+          { prop: "content", description: "提示内容", type: "ReactNode" },
+          { prop: "title", description: "content 的等价别名", type: "ReactNode" },
+          { prop: "placement", description: "位置,支持 bottomLeft 等细分方向", type: `"top" | "bottom" | "left" | "right" | ...`, default: `"top"` },
           { prop: "delay", description: "悬浮延时 (ms)", type: "number", default: "250" },
           { prop: "disabled", description: "禁用提示", type: "boolean", default: "false" },
+          { prop: "open / visible", description: "受控显示状态", type: "boolean" },
+          { prop: "overlayClassName / popupClassName", description: "浮层 className", type: "string" },
         ],
       },
     ]}

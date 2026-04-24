@@ -1,5 +1,5 @@
-/* ============ Checkbox & Radio ============ */
-.checkbox, .radio {
+/* ============ Checkbox ============ */
+.checkbox {
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -8,7 +8,7 @@
   font-size: 13px;
   color: var(--fg);
 }
-.checkbox.disabled, .radio.disabled { opacity: 0.5; cursor: not-allowed; }
+.checkbox.disabled { opacity: 0.5; cursor: not-allowed; }
 .checkbox-box {
   width: 20px; height: 20px;
   border: none;
@@ -20,7 +20,7 @@
   place-items: center;
   flex-shrink: 0;
   cursor: inherit;
-  color: white;
+  color: var(--bg);
   transition: all var(--dur) var(--ease);
 }
 .checkbox-box svg { opacity: 0; transform: scale(0.6); transition: all var(--dur) var(--ease); }
@@ -36,37 +36,7 @@
 .checkbox.indeterminate .checkbox-box::after {
   content: "";
   width: 10px; height: 2px;
-  background: white;
+  background: var(--bg);
   border-radius: 2px;
 }
 .checkbox.indeterminate .checkbox-box svg { display: none; }
-
-.radio-dot {
-  width: 20px; height: 20px;
-  border: none;
-  padding: 0;
-  border-radius: 999px;
-  background: var(--bg);
-  box-shadow: var(--neu-in-sm);
-  cursor: inherit;
-  position: relative;
-  flex-shrink: 0;
-  transition: all var(--dur) var(--ease);
-}
-.radio.checked .radio-dot {
-  background: var(--accent);
-  box-shadow: var(--neu-out-sm), 0 2px 8px var(--accent-glow);
-}
-.radio.checked .radio-dot::after {
-  content: "";
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 8px; height: 8px;
-  border-radius: 999px;
-  background: white;
-}
-
-.radio-group { display: flex; gap: 14px; }
-.radio-group.vertical { flex-direction: column; gap: 10px; }
-.radio-group.horizontal { flex-direction: row; flex-wrap: wrap; }

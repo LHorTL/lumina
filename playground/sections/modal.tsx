@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Button, Modal, toast } from "lumina";
+import { Button, Modal, message } from "lumina";
 import { DocPage } from "../docs";
 import { defineSection, type SectionCtx } from "./_types";
 
@@ -22,6 +22,56 @@ const SectionModal: React.FC<SectionCtx> = () => {
               <Modal open={m} onClose={() => setM(false)} title="基础对话框" description="这是一个简单的弹窗示例">
                 Modal 会渲染到 document.body,自动处理 Esc 关闭和点击遮罩关闭。
               </Modal>
+            </>
+          ),
+        },
+        {
+          id: "static-api",
+          title: "静态确认框",
+          description: "通过 Modal.confirm / warning / error / success / info 直接创建一次性对话框。",
+          code: `Modal.confirm({
+  title: "覆盖当前配置?",
+  content: "保存后会立即生效。",
+  okText: "覆盖",
+  onOk: async () => {
+    await save();
+    message.success("已覆盖");
+  },
+});
+
+Modal.warning({ title: "容量不足", content: "请先清理缓存。" });`,
+          render: () => (
+            <>
+              <Button
+                icon="alert"
+                onClick={() => {
+                  Modal.confirm({
+                    title: "覆盖当前配置?",
+                    content: "保存后会立即生效。",
+                    okText: "覆盖",
+                    onOk: () =>
+                      new Promise<void>((resolve) => {
+                        window.setTimeout(() => {
+                          message.success("已覆盖");
+                          resolve();
+                        }, 900);
+                      }),
+                  });
+                }}
+              >
+                Modal.confirm
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  Modal.warning({
+                    title: "容量不足",
+                    content: "请先清理缓存后再继续。",
+                  });
+                }}
+              >
+                Modal.warning
+              </Button>
             </>
           ),
         },
@@ -49,7 +99,7 @@ const SectionModal: React.FC<SectionCtx> = () => {
                       variant="danger"
                       onClick={() => {
                         setConfirm(false);
-                        toast.error("项目已删除");
+                        message.error("项目已删除");
                       }}
                     >
                       删除
@@ -88,7 +138,7 @@ const SectionModal: React.FC<SectionCtx> = () => {
                   okButtonProps={{ icon: "send" }}
                   onOk={() => {
                     setOpen(false);
-                    toast.success("已发布");
+                    message.success("已发布");
                   }}
                   onCancel={() => setOpen(false)}
                 >
@@ -125,7 +175,7 @@ const SectionModal: React.FC<SectionCtx> = () => {
                   setTimeout(() => {
                     setSubmitting(false);
                     setAsyncOpen(false);
-                    toast.success("已保存");
+                    message.success("已保存");
                   }, 1200);
                 }}
                 onCancel={() => setAsyncOpen(false)}
@@ -181,6 +231,17 @@ const SectionModal: React.FC<SectionCtx> = () => {
             { prop: "destroyOnClose", description: "关闭时卸载子树", type: "boolean", default: "false" },
             { prop: "afterOpenChange", description: "动画结束后回调", type: "(open: boolean) => void" },
             { prop: "zIndex", description: "覆盖遮罩 z-index", type: "number" },
+          ],
+        },
+        {
+          title: "Modal 静态 API",
+          rows: [
+            { prop: "Modal.confirm(config)", description: "确认框,默认显示取消/确定", type: "(config) => { destroy, update }" },
+            { prop: "Modal.info / success / warning / error(config)", description: "单按钮提示框", type: "(config) => { destroy, update }" },
+            { prop: "Modal.destroyAll()", description: "关闭全部静态弹窗", type: "() => void" },
+            { prop: "config.content", description: "正文内容", type: "ReactNode" },
+            { prop: "config.okCancel", description: "是否显示取消按钮", type: "boolean" },
+            { prop: "config.onOk", description: "确定回调,返回 Promise 时自动显示 loading", type: "() => void | Promise<void>" },
           ],
         },
       ]}

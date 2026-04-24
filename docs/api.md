@@ -3,7 +3,7 @@
 > 所有组件均从 `lumina` 主入口导出。类型定义随包一起发布。
 
 ```tsx
-import { Button, Input, Modal, toast } from "lumina";
+import { Button, Input, Modal, message } from "lumina";
 ```
 
 ---
@@ -22,22 +22,13 @@ import { Button, Input, Modal, toast } from "lumina";
 | `size` | `"sm" \| "md" \| "lg"` | `"md"` | 尺寸 |
 | `icon` | `IconName` | — | 前置图标 |
 | `trailingIcon` | `IconName` | — | 后置图标 |
+| `iconOnly` | `boolean` | 自动 | 方形纯图标按钮；仅传 `icon` 且无 children 时自动启用 |
+| `tip` | `string` | — | 原生悬浮提示，常用于纯图标按钮 |
 | `loading` | `boolean` | `false` | 加载中（禁用交互 + 显示 spinner） |
 | `disabled` | `boolean` | `false` | 禁用 |
 | `type` | `"button" \| "submit" \| "reset"` | `"button"` | 表单类型 |
 
 继承 `React.ButtonHTMLAttributes<HTMLButtonElement>`。
-
-## IconButton
-
-方形图标按钮。
-
-| Prop | 类型 | 说明 |
-|---|---|---|
-| `icon` | `IconName` | **必填**，图标名 |
-| `tip` | `string` | Tooltip 文本（也用作 aria-label） |
-
-其余 props 同 `Button`。
 
 ## Icon
 
@@ -60,7 +51,8 @@ import { Button, Input, Modal, toast } from "lumina";
 | Prop | 类型 | 说明 |
 |---|---|---|
 | `value` / `defaultValue` | `string` | 受控 / 非受控值 |
-| `onChange` | `(value, event) => void` | 值变化回调，第一个参数是新字符串 |
+| `onChange` | `(event) => void` | 值变化回调，传入 React 原生事件 |
+| `onValueChange` | `(value, event) => void` | 值变化便捷回调 |
 | `leadingIcon` / `trailingIcon` | `IconName` | 前/后置图标 |
 | `size` | `"sm" \| "md" \| "lg"` | 尺寸 |
 | `invalid` | `boolean` | 校验错误态 |
@@ -89,12 +81,12 @@ import { Button, Input, Modal, toast } from "lumina";
 | `onChange` | `(checked) => void` | 切换回调 |
 | `label` | `ReactNode` | 右侧文本 |
 
-## RadioGroup
+## Radio / RadioGroup
 
 ```tsx
 <RadioGroup
   options={[{ value: "a", label: "选项 A" }, ...]}
-  value={v} onChange={setV}
+  value={v} onChange={(e) => setV(e.target.value)}
 />
 ```
 
@@ -129,16 +121,6 @@ import { Button, Input, Modal, toast } from "lumina";
 | `showValue` | `boolean` | 显示数值 |
 | `tone` | `"accent" \| "success" \| "warning" \| "danger"` | 填充色 |
 
-## Segmented
-
-```tsx
-<Segmented options={[{ value: "day", label: "日" }, ...]} />
-```
-
-同 `RadioGroup` 的 props 形态。
-
----
-
 ## Tabs
 
 ```tsx
@@ -152,13 +134,14 @@ import { Button, Input, Modal, toast } from "lumina";
 | `onChange` | `(key) => void` | 切换回调 |
 | `variant` | `"line" \| "pill" \| "segmented"` | 样式 |
 
-## Accordion
+## Collapse
 
 | Prop | 类型 | 说明 |
 |---|---|---|
-| `items` | `AccordionItem[]` | `{ key, title, content, disabled? }` |
+| `items` | `CollapseItem[]` | `{ key, label, children, disabled? }` |
+| `accordion` | `boolean` | 是否同一时间只允许展开一项 |
 | `multiple` | `boolean` | 是否允许多项同时展开 |
-| `activeKeys` / `defaultActiveKeys` | `string[]` | 展开项 |
+| `activeKey` / `defaultActiveKey` | `string | string[]` | 展开项 |
 | `onChange` | `(keys) => void` | 展开变化 |
 
 ## Pagination
@@ -178,13 +161,6 @@ import { Button, Input, Modal, toast } from "lumina";
 |---|---|---|
 | `variant` | `"raised" \| "sunken" \| "flat"` | 视觉变体 |
 | `padding` | `"none" \| "sm" \| "md" \| "lg"` | 内边距 |
-
-## Panel
-
-带标题的 Card。
-
-| Prop | 类型 | 说明 |
-|---|---|---|
 | `title` | `ReactNode` | 标题 |
 | `description` | `ReactNode` | 副标题 |
 | `actions` | `ReactNode` | 右侧操作 |
@@ -216,6 +192,13 @@ import { Button, Input, Modal, toast } from "lumina";
 | `width` | `number \| string` | 宽度 |
 | `maskClosable` | `boolean` | 点击遮罩关闭，默认 true |
 | `escClosable` | `boolean` | Esc 关闭，默认 true |
+
+静态 API：
+
+```tsx
+Modal.confirm({ title: "确认操作", content: "保存后立即生效" });
+Modal.warning({ title: "容量不足", content: "请先清理缓存" });
+```
 
 ## Drawer
 
@@ -258,20 +241,20 @@ import { Button, Input, Modal, toast } from "lumina";
 | `closable` | `boolean` | 显示关闭按钮 |
 | `onClose` | `() => void` | 关闭回调 |
 
-## toast
+## message
 
-命令式 API。先在应用根挂载 `<ToastContainer />`。
+命令式 API。可直接调用，也可在应用根挂载 `<MessageContainer />` 统一承载。
 
 ```tsx
-toast.info("消息");
-toast.success("成功", "标题");
-toast.warn("警告");
-toast.error("失败");
-toast.dismiss(id);
-toast.clear();
+message.info("消息");
+message.success("成功", "标题");
+message.warning("警告");
+message.error("失败");
+message.destroy(id);
+message.clear();
 ```
 
-`<ToastContainer placement="top-right" />` 可选位置：`top-right | top-left | bottom-right | bottom-left | top-center`。
+`<MessageContainer placement="top-right" />` 可选位置：`top-right | top-left | bottom-right | bottom-left | top-center`。
 
 ## Progress
 
@@ -289,10 +272,10 @@ toast.clear();
 | `label` | `ReactNode` | 顶部文案 |
 | `showValue` | `boolean` | 显示百分比 |
 
-## Spinner / Skeleton
+## Spin / Skeleton
 
 ```tsx
-<Spinner size={20} />
+<Spin size="large" />
 <Skeleton height={12} width="70%" />
 ```
 
@@ -343,7 +326,7 @@ toast.clear();
 
 ```tsx
 <Tag tone="success">在线</Tag>
-<Badge count={5}><IconButton icon="bell" /></Badge>
+<Badge count={5}><Button icon="bell" /></Badge>
 ```
 
 | Tag Prop | 说明 |
@@ -353,7 +336,8 @@ toast.clear();
 
 | Badge Prop | 说明 |
 |---|---|
-| `count` | 数字（>99 显示 "99+"） |
+| `count` | 数字（超过 `max` 显示 `max+`） |
+| `max` | 最大展示数字，默认 99 |
 | `dot` | 只显示红点 |
 | `tone` | 同 Tag |
 

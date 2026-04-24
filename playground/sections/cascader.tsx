@@ -64,6 +64,32 @@ const SectionCascader: React.FC<SectionCtx> = () => {
             </div>
           ),
         },
+        {
+          id: "search",
+          title: "搜索与清除",
+          span: 2,
+          description: "showSearch 开启路径搜索,allowClear 提供一键清空,popupClassName 可标记浮层。",
+          code: `<Cascader
+  showSearch={{ limit: 8 }}
+  allowClear
+  popupClassName="my-cascader-popup"
+  options={regions}
+  value={addr}
+  onChange={setAddr}
+/>`,
+          render: () => (
+            <Field label="可搜索地区">
+              <Cascader
+                showSearch={{ limit: 8 }}
+                allowClear
+                popupClassName="demo-cascader-popup"
+                options={regions}
+                value={addr}
+                onChange={setAddr}
+              />
+            </Field>
+          ),
+        },
       ]}
       api={[
         {
@@ -74,6 +100,10 @@ const SectionCascader: React.FC<SectionCtx> = () => {
             { prop: "onChange", description: "选择叶子时触发", type: "(path: string[]) => void" },
             { prop: "placeholder", description: "占位文案", type: "string" },
             { prop: "disabled", description: "禁用", type: "boolean", default: "false" },
+            { prop: "allowClear", description: "显示清除按钮", type: "boolean", default: "false" },
+            { prop: "showSearch", description: "搜索路径,支持 boolean / 对象配置", type: "boolean | { filter?, render?, limit? }" },
+            { prop: "popupClassName / dropdownClassName", description: "浮层面板 className", type: "string" },
+            { prop: "changeOnSelect", description: "允许选中非叶子节点", type: "boolean", default: "false" },
           ],
         },
       ]}

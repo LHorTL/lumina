@@ -3,16 +3,30 @@ import "../../styles/shared.css";
 import "./Popover.css";
 import * as React from "react";
 import { createPortal } from "react-dom";
-import { useFloating } from "../../utils/useFloating";
+import { useFloating, type Placement } from "../../utils/useFloating";
+
+export type PopoverPlacement =
+  | "top"
+  | "bottom"
+  | "left"
+  | "right"
+  | "topLeft"
+  | "topRight"
+  | "bottomLeft"
+  | "bottomRight"
+  | "leftTop"
+  | "leftBottom"
+  | "rightTop"
+  | "rightBottom";
 
 export interface PopoverProps
   extends Omit<React.HTMLAttributes<HTMLSpanElement>, "title" | "children" | "content"> {
   /** Popover body content. */
-  content: React.ReactNode;
+  content?: React.ReactNode;
   /** Optional title rendered above content. */
   title?: React.ReactNode;
   /** Preferred placement relative to the trigger. */
-  placement?: "top" | "bottom" | "left" | "right";
+  placement?: PopoverPlacement;
   /** How the popover is triggered. */
   trigger?: "click" | "hover";
   /** Show a small arrow pointing at the trigger. */
@@ -25,12 +39,40 @@ export interface PopoverProps
   defaultOpen?: boolean;
   /** Controlled open state. */
   open?: boolean;
+  /** Controlled visibility alias. */
+  visible?: boolean;
   /** Callback when visibility changes. */
   onOpenChange?: (open: boolean) => void;
+  onVisibleChange?: (visible: boolean) => void;
   /** Trigger element. */
   children: React.ReactElement;
   className?: string;
+  /** Class for the popped-out panel. */
+  overlayClassName?: string;
+  /** Alias used by some popup APIs. */
+  popupClassName?: string;
 }
+
+const normalizePlacement = (
+  placement: PopoverPlacement
+): { placement: Placement; alignCross: "start" | "center" | "end" } => {
+  const base = placement.startsWith("top")
+    ? "top"
+    : placement.startsWith("bottom")
+      ? "bottom"
+      : placement.startsWith("left")
+        ? "left"
+        : placement.startsWith("right")
+          ? "right"
+          : placement;
+  const alignCross =
+    placement.endsWith("Left") || placement.endsWith("Top")
+      ? "start"
+      : placement.endsWith("Right") || placement.endsWith("Bottom")
+        ? "end"
+        : "center";
+  return { placement: base as Placement, alignCross };
+};
 
 /**
  * `Popover` — rich content bubble with optional title, arrow, and close button.
@@ -50,19 +92,25 @@ export const Popover = React.forwardRef<HTMLSpanElement, PopoverProps>(({
   width,
   defaultOpen = false,
   open,
+  visible,
   onOpenChange,
+  onVisibleChange,
   children,
   className = "",
+  overlayClassName = "",
+  popupClassName = "",
   onClick,
   onMouseEnter,
   onMouseLeave,
   ...rest
 }, ref) => {
   const [inner, setInner] = React.useState(defaultOpen);
-  const isControlled = open !== undefined;
-  const show = isControlled ? open! : inner;
+  const controlledOpen = open ?? visible;
+  const isControlled = controlledOpen !== undefined;
+  const show = isControlled ? controlledOpen! : inner;
 
   const panelWidth = width === "auto" ? 160 : (width ?? 240);
+  const normalized = normalizePlacement(placement);
 
   const {
     triggerRef,
@@ -71,16 +119,17 @@ export const Popover = React.forwardRef<HTMLSpanElement, PopoverProps>(({
     placement: resolved,
   } = useFloating<HTMLSpanElement, HTMLDivElement>({
     open: show,
-    placement,
+    placement: normalized.placement,
     panelWidth,
     panelHeight: 160,
-    alignCross: "center",
+    alignCross: normalized.alignCross,
   });
 
   const set = React.useCallback((v: boolean) => {
     if (!isControlled) setInner(v);
     onOpenChange?.(v);
-  }, [isControlled, onOpenChange]);
+    onVisibleChange?.(v);
+  }, [isControlled, onOpenChange, onVisibleChange]);
 
   const setTriggerRef = React.useCallback(
     (node: HTMLSpanElement | null) => {
@@ -156,7 +205,7 @@ export const Popover = React.forwardRef<HTMLSpanElement, PopoverProps>(({
         createPortal(
           <div
             ref={floatingRef}
-            className={`popover popover-${resolved}`}
+            className={`popover popover-${resolved} ${overlayClassName} ${popupClassName}`}
             style={{ ...floatingStyle, ...widthStyle }}
             {...panelHover}
           >

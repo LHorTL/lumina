@@ -3,13 +3,19 @@ import "../../styles/shared.css";
 import "./Card.css";
 import * as React from "react";
 
-export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface CardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
   /** Visual variant. `raised` protrudes; `sunken` recesses; `flat` is subtle. */
   variant?: "raised" | "sunken" | "flat";
   /** Inner padding. */
   padding?: "none" | "sm" | "md" | "lg";
   /** When true, the card raises and lifts on hover. */
   hoverable?: boolean;
+  /** Optional card heading. */
+  title?: React.ReactNode;
+  /** Secondary text shown under `title`. */
+  description?: React.ReactNode;
+  /** Action slot aligned to the card heading. */
+  actions?: React.ReactNode;
   children?: React.ReactNode;
 }
 
@@ -17,7 +23,17 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
  * `Card` — neumorphic surface container. Use to group related content.
  */
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ variant = "raised", padding = "md", hoverable, className = "", children, ...rest }, ref) => {
+  ({
+    variant = "raised",
+    padding = "md",
+    hoverable,
+    title,
+    description,
+    actions,
+    className = "",
+    children,
+    ...rest
+  }, ref) => {
     const cls = [
       "card",
       variant,
@@ -29,41 +45,18 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
       .join(" ");
     return (
       <div ref={ref} className={cls} {...rest}>
-        {children}
+        {(title || description || actions) && (
+          <div className="card-head">
+            <div className="card-titles">
+              {title && <div className="card-title">{title}</div>}
+              {description && <div className="card-desc">{description}</div>}
+            </div>
+            {actions && <div className="card-actions">{actions}</div>}
+          </div>
+        )}
+        <div className="card-body">{children}</div>
       </div>
     );
   }
 );
 Card.displayName = "Card";
-
-export interface PanelProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
-  title?: React.ReactNode;
-  description?: React.ReactNode;
-  actions?: React.ReactNode;
-  children?: React.ReactNode;
-}
-
-/**
- * `Panel` — a titled `Card` with optional actions row.
- */
-export const Panel: React.FC<PanelProps> = ({
-  title,
-  description,
-  actions,
-  children,
-  className = "",
-  ...rest
-}) => (
-  <div className={`panel ${className}`} {...rest}>
-    {(title || actions) && (
-      <div className="panel-head">
-        <div className="panel-titles">
-          {title && <div className="panel-title">{title}</div>}
-          {description && <div className="panel-desc">{description}</div>}
-        </div>
-        {actions && <div className="panel-actions">{actions}</div>}
-      </div>
-    )}
-    <div className="panel-body">{children}</div>
-  </div>
-);

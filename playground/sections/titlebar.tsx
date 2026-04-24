@@ -1,5 +1,5 @@
 import * as React from "react";
-import { IconButton, TitleBar } from "lumina";
+import { Button, TitleBar } from "lumina";
 import { DocPage } from "../docs";
 import { Row } from "./_shared";
 import { defineSection, type SectionCtx } from "./_types";
@@ -28,9 +28,9 @@ const SectionTitleBar: React.FC<SectionCtx> = () => (
               platform="mac"
               actions={
                 <Row gap={6}>
-                  <IconButton icon="search" size="sm" tip="搜索" />
-                  <IconButton icon="sparkle" size="sm" tip="AI 助手" />
-                  <IconButton icon="settings" size="sm" tip="设置" />
+                  <Button icon="search" size="sm" tip="搜索" />
+                  <Button icon="sparkle" size="sm" tip="AI 助手" />
+                  <Button icon="settings" size="sm" tip="设置" />
                 </Row>
               }
             />
@@ -54,8 +54,8 @@ const SectionTitleBar: React.FC<SectionCtx> = () => (
               platform="windows"
               actions={
                 <Row gap={6}>
-                  <IconButton icon="search" size="sm" tip="搜索" />
-                  <IconButton icon="settings" size="sm" tip="设置" />
+                  <Button icon="search" size="sm" tip="搜索" />
+                  <Button icon="settings" size="sm" tip="设置" />
                 </Row>
               }
             />

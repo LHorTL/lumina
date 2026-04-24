@@ -1,4 +1,4 @@
-/* ============ Input / Textarea ============ */
+/* ============ Input ============ */
 .input-shell {
   display: inline-flex;
   flex-direction: column;
@@ -73,6 +73,20 @@
   background: var(--bg-sunken);
 }
 
+.input-password-toggle {
+  border: none;
+  background: transparent;
+  color: var(--fg-subtle);
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+.input-password-toggle:hover { color: var(--fg); }
+
 .input-wrap > .input {
   flex: 1;
   min-width: 0;
@@ -91,44 +105,3 @@
 .input-wrap.lg > .input { font-size: 14px; }
 .input-wrap > .input::placeholder { color: var(--fg-subtle); }
 .input-wrap.disabled > .input { cursor: not-allowed; }
-
-.textarea-wrap { position: relative; width: 100%; }
-.textarea-wrap .textarea-clear {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 999px;
-  color: var(--fg-subtle);
-  background: transparent;
-  cursor: pointer;
-  transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
-}
-.textarea-wrap .textarea-clear:hover {
-  color: var(--fg);
-  background: var(--bg-sunken);
-}
-
-.textarea {
-  width: 100%;
-  min-height: 96px;
-  padding: 12px 14px;
-  border: none;
-  border-radius: var(--r-md);
-  background: var(--bg);
-  box-shadow: var(--neu-in-sm);
-  color: var(--fg);
-  font-size: 13px;
-  font-family: inherit;
-  line-height: 1.55;
-  resize: vertical;
-  outline: none;
-  transition: box-shadow var(--dur) var(--ease);
-}
-.textarea:focus { box-shadow: var(--neu-in-sm), 0 0 0 2px var(--accent-glow); }
-.textarea.invalid { box-shadow: var(--neu-in-sm), 0 0 0 2px color-mix(in oklch, var(--danger) 30%, transparent); }
-.textarea::placeholder { color: var(--fg-subtle); }

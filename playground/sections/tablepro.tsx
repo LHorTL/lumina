@@ -8,7 +8,7 @@ import {
   Select,
   TablePro,
   Tag,
-  toast,
+  message,
 } from "lumina";
 import { DocPage } from "../docs";
 import { defineSection, type SectionCtx } from "./_types";
@@ -130,7 +130,7 @@ const SectionTablePro: React.FC<SectionCtx> = () => {
               toolbar={
                 <>
                   <div style={{ width: 200 }}>
-                    <Input placeholder="搜索成员..." leadingIcon="search" value={search} onChange={setSearch} />
+                    <Input placeholder="搜索成员..." leadingIcon="search" value={search} onValueChange={setSearch} />
                   </div>
                   <div style={{ width: 140 }}>
                     <Select
@@ -157,7 +157,7 @@ const SectionTablePro: React.FC<SectionCtx> = () => {
                         variant="danger"
                         icon="trash"
                         onClick={() => {
-                          toast.error(`已删除 ${selectedKeys.length} 条`);
+                          message.error(`已删除 ${selectedKeys.length} 条`);
                           setSelectedKeys([]);
                         }}
                       >

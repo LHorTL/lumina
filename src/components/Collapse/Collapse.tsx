@@ -1,26 +1,23 @@
 import "../../styles/tokens.css";
 import "../../styles/shared.css";
-import "./Accordion.css";
+import "./Collapse.css";
 import * as React from "react";
 import { Icon } from "../Icon";
 
-export interface AccordionItem {
+export interface CollapseItem {
   key: string;
-  title: React.ReactNode;
-  content: React.ReactNode;
+  label: React.ReactNode;
+  children: React.ReactNode;
   disabled?: boolean;
 }
 
-export interface AccordionProps
+export interface CollapseProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange"> {
-  items: AccordionItem[];
-  /** If true, multiple sections can be open at once. */
-  multiple?: boolean;
-  /**
-   * Accordion mode — at most one item open at a time. Takes precedence over `multiple`
-   * when both are set.
-   */
+  items: CollapseItem[];
+  /** If true, at most one item can be open at a time. */
   accordion?: boolean;
+  /** If false, at most one section can be open. Kept for explicit Lumina layouts. */
+  multiple?: boolean;
   /**
    * What triggers expansion.
    * - `"header"` (default): clicking anywhere on the header toggles.
@@ -28,13 +25,15 @@ export interface AccordionProps
    * - `"disabled"`: the panel cannot be toggled.
    */
   collapsible?: "header" | "icon" | "disabled";
-  activeKeys?: string[];
-  defaultActiveKeys?: string[];
+  activeKey?: string | string[];
+  defaultActiveKey?: string | string[];
   onChange?: (keys: string[]) => void;
+  ghost?: boolean;
+  size?: "small" | "middle" | "large";
   className?: string;
 }
 
-const AccordionPanel: React.FC<{ open: boolean; children: React.ReactNode }> = ({ open, children }) => {
+const CollapsePanel: React.FC<{ open: boolean; children: React.ReactNode }> = ({ open, children }) => {
   const innerRef = React.useRef<HTMLDivElement>(null);
   const [h, setH] = React.useState(0);
   const [animated, setAnimated] = React.useState(false);
@@ -55,32 +54,36 @@ const AccordionPanel: React.FC<{ open: boolean; children: React.ReactNode }> = (
 
   return (
     <div
-      className="accordion-body"
+      className="collapse-body"
       style={{ maxHeight: open ? h : 0, transition: animated ? undefined : "none" }}
       aria-hidden={!open}
     >
-      <div ref={innerRef} className="accordion-body-inner">{children}</div>
+      <div ref={innerRef} className="collapse-body-inner">{children}</div>
     </div>
   );
 };
 
-/** `Accordion` — collapsible sections. */
-export const Accordion = React.forwardRef<HTMLDivElement, AccordionProps>(({
+const normalizeKeys = (value: string | string[] | undefined): string[] =>
+  value == null ? [] : Array.isArray(value) ? value : [value];
+
+/** `Collapse` — collapsible sections. */
+export const Collapse = React.forwardRef<HTMLDivElement, CollapseProps>(({
   items,
-  multiple = false,
   accordion = false,
+  multiple = true,
   collapsible = "header",
-  activeKeys,
-  defaultActiveKeys = [],
+  activeKey,
+  defaultActiveKey,
   onChange,
+  ghost = false,
+  size = "middle",
   className = "",
   ...rest
 }, ref) => {
-  const [inner, setInner] = React.useState<string[]>(defaultActiveKeys);
-  const isControlled = activeKeys !== undefined;
-  const keys = isControlled ? activeKeys! : inner;
+  const [inner, setInner] = React.useState<string[]>(() => normalizeKeys(defaultActiveKey));
+  const isControlled = activeKey !== undefined;
+  const keys = isControlled ? normalizeKeys(activeKey) : inner;
 
-  // accordion takes precedence over multiple
   const singleOpen = accordion || !multiple;
 
   const toggle = (k: string, itemDisabled?: boolean) => {
@@ -95,7 +98,11 @@ export const Accordion = React.forwardRef<HTMLDivElement, AccordionProps>(({
   };
 
   return (
-    <div ref={ref} className={`accordion ${className}`} {...rest}>
+    <div
+      ref={ref}
+      className={`collapse ${ghost ? "ghost" : ""} ${size} ${className}`}
+      {...rest}
+    >
       {items.map((it) => {
         const open = keys.includes(it.key);
         const isDisabled = it.disabled || collapsible === "disabled";
@@ -103,18 +110,18 @@ export const Accordion = React.forwardRef<HTMLDivElement, AccordionProps>(({
         return (
           <div
             key={it.key}
-            className={`accordion-item ${open ? "open" : ""} ${isDisabled ? "disabled" : ""} ${collapsible === "icon" ? "icon-only" : ""}`}
+            className={`collapse-item ${open ? "open" : ""} ${isDisabled ? "disabled" : ""} ${collapsible === "icon" ? "icon-only" : ""}`}
           >
             <button
               type="button"
-              className="accordion-head"
+              className="collapse-head"
               disabled={isDisabled}
               onClick={() => headerClickable && toggle(it.key, it.disabled)}
               aria-expanded={open}
             >
-              <span>{it.title}</span>
+              <span>{it.label}</span>
               <span
-                className={`accordion-chev${collapsible === "icon" ? " clickable" : ""}`}
+                className={`collapse-chev${collapsible === "icon" ? " clickable" : ""}`}
                 onClick={(e) => {
                   if (collapsible === "icon" && !isDisabled) {
                     e.stopPropagation();
@@ -125,11 +132,11 @@ export const Accordion = React.forwardRef<HTMLDivElement, AccordionProps>(({
                 <Icon name="chevDown" size={16} />
               </span>
             </button>
-            <AccordionPanel open={open}>{it.content}</AccordionPanel>
+            <CollapsePanel open={open}>{it.children}</CollapsePanel>
           </div>
         );
       })}
     </div>
   );
 });
-Accordion.displayName = "Accordion";
+Collapse.displayName = "Collapse";

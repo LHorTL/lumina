@@ -4,7 +4,7 @@ import "./Form.css";
 import * as React from "react";
 
 /* ============================================================================
- * Form — minimal antd-compatible form with validation + field binding.
+ * Form — compact form with validation + field binding.
  *
  * Scope:
  * - useForm() → [FormInstance]
@@ -215,7 +215,7 @@ type InstanceWithStore<V extends Record<string, unknown>> = FormInstance<V> & {
   [STORE_SYMBOL]: InternalStore;
 };
 
-/** `Form.useForm()` — create a form instance. Same shape as antd's hook. */
+/** `Form.useForm()` — create a form instance. */
 export function useForm<V extends Record<string, unknown> = Record<string, unknown>>(): [FormInstance<V>] {
   const ref = React.useRef<InstanceWithStore<V>>();
   if (!ref.current) {

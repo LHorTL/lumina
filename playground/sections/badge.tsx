@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Avatar, Badge, IconButton } from "lumina";
+import { Avatar, Badge, Button } from "lumina";
 import { DocPage } from "../docs";
 import { Row } from "./_shared";
 import { defineSection, type SectionCtx } from "./_types";
@@ -11,18 +11,18 @@ const SectionBadge: React.FC<SectionCtx> = () => (
       {
         id: "basic",
         title: "数字徽标",
-        code: `<Badge count={3}><IconButton icon="bell" /></Badge>
-<Badge count={128} max={99}><IconButton icon="mail" /></Badge>`,
+        code: `<Badge count={3}><Button icon="bell" /></Badge>
+<Badge count={128} max={99}><Button icon="mail" /></Badge>`,
         render: () => (
           <Row gap={32}>
             <Badge count={3}>
-              <IconButton icon="bell" tip="3 条新通知" />
+              <Button icon="bell" tip="3 条新通知" />
             </Badge>
             <Badge count={128}>
-              <IconButton icon="mail" tip="未读消息" />
+              <Button icon="mail" tip="未读消息" />
             </Badge>
             <Badge count={1000}>
-              <IconButton icon="info" />
+              <Button icon="info" />
             </Badge>
           </Row>
         ),
@@ -31,11 +31,11 @@ const SectionBadge: React.FC<SectionCtx> = () => (
         id: "dot",
         title: "圆点",
         description: "dot 模式不显示数字,只是状态指示。",
-        code: `<Badge dot><IconButton icon="user" /></Badge>`,
+        code: `<Badge dot><Button icon="user" /></Badge>`,
         render: () => (
           <Row gap={32}>
             <Badge dot>
-              <IconButton icon="user" tip="在线" />
+              <Button icon="user" tip="在线" />
             </Badge>
             <Badge dot>
               <Avatar alt="金" />

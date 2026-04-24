@@ -1,0 +1,94 @@
+/* ============ Spin ============ */
+.spin {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+.spin.accent  { color: var(--accent); }
+.spin.success { color: var(--success); }
+.spin.warning { color: var(--warning); }
+.spin.danger  { color: var(--danger); }
+
+.spin.ring {
+  position: relative;
+  display: inline-block;
+  border: none;
+  border-radius: 50%;
+  background: var(--bg);
+  box-shadow: var(--neu-in-sm);
+  animation: none;
+}
+
+.spin.ring::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: conic-gradient(from 0deg,
+    transparent 0deg,
+    color-mix(in oklch, currentColor 30%, transparent) 40deg,
+    color-mix(in oklch, currentColor 70%, transparent) 100deg,
+    currentColor 220deg,
+    currentColor 340deg,
+    transparent 360deg);
+  -webkit-mask: radial-gradient(circle, transparent 60%, currentColor 61%);
+  mask: radial-gradient(circle, transparent 60%, currentColor 61%);
+  animation: spin 0.9s linear infinite;
+}
+
+.spin.ring.accent::before,
+.spin.ring.success::before,
+.spin.ring.warning::before,
+.spin.ring.danger::before {
+  filter: drop-shadow(0 0 4px color-mix(in oklch, currentColor 50%, transparent));
+}
+
+.spin.dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.34em;
+  border: none;
+  background: none;
+  box-shadow: none;
+  width: auto;
+  height: auto;
+  animation: none;
+  line-height: 1;
+}
+
+.spin.dots i {
+  width: 0.4em;
+  height: 0.4em;
+  border-radius: 999px;
+  background: radial-gradient(circle at 32% 28%,
+    color-mix(in oklch, currentColor 40%, var(--bg)),
+    currentColor 62%,
+    color-mix(in oklch, currentColor 82%, var(--fg)) 100%);
+  box-shadow:
+    0 0.06em 0.14em color-mix(in oklch, currentColor 45%, transparent),
+    0 0 0.35em color-mix(in oklch, currentColor 50%, transparent);
+  display: inline-block;
+  animation: spin-dot-bounce 1.2s ease-in-out infinite;
+}
+
+.spin.dots i:nth-child(2) { animation-delay: 0.15s; }
+.spin.dots i:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes spin-dot-bounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.5; }
+  40% { transform: translateY(-30%); opacity: 1; }
+}
+
+.spin-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--fg-muted);
+}
+
+.spin-label { font-size: 12px; }

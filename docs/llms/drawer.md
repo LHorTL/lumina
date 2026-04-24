@@ -23,7 +23,7 @@ extra 渲染到标题右边,常用来放刷新 / 更多 / 保存按钮。
 ```tsx
 <Drawer
   title="订单详情"
-  extra={<><IconButton icon="edit" tip="编辑" /><Button variant="primary">保存</Button></>}
+  extra={<><Button icon="edit" tip="编辑" /><Button variant="primary">保存</Button></>}
 />
 ```
 

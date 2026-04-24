@@ -49,16 +49,45 @@ function verifyTypeSmoke() {
   const smokeSource = `import * as React from "react";
 import {
   Button,
+  Badge,
+  Collapse,
+  Cascader,
   Input,
+  Modal,
+  Popover,
+  Radio,
+  RadioGroup,
+  Select,
+  Skeleton,
+  Spin,
+  TablePro,
+  Textarea,
+  Tooltip,
   ThemeProvider,
+  type BadgeProps,
   type ButtonProps,
+  type CascaderProps,
+  type CollapseProps,
   type InputProps,
+  type ModalStaticHandle,
+  type PopoverProps,
+  type RadioGroupProps,
+  type RadioProps,
+  type SelectProps,
+  type SkeletonProps,
+  type SpinProps,
+  type TableProProps,
+  type TextareaProps,
+  type TooltipProps,
 } from "@fangxinyan/lumina";
-import { IconButton, type IconButtonProps } from "@fangxinyan/lumina/IconButton";
-import { Textarea, type TextareaProps } from "@fangxinyan/lumina/Textarea";
-import { Badge, type BadgeProps } from "@fangxinyan/lumina/Badge";
+import {
+  LoadingOutlined,
+  RobotOutlined,
+  SettingOutlined,
+  resolveIconName,
+} from "@fangxinyan/lumina/Icon";
 import { StatusBarItem, type StatusBarItemProps } from "@fangxinyan/lumina/StatusBarItem";
-import { ToastContainer, toast } from "@fangxinyan/lumina/toast";
+import { MessageContainer, message } from "@fangxinyan/lumina/message";
 
 const buttonProps: ButtonProps = {
   variant: "primary",
@@ -66,15 +95,55 @@ const buttonProps: ButtonProps = {
   style: { opacity: 0.9 },
 };
 
+const iconButtonProps: ButtonProps = {
+  icon: "plus",
+  tip: "Add item",
+};
+
 const inputProps: InputProps = {
   className: "input-check",
   style: { width: 240 },
   placeholder: "Search",
+  onChange: (event) => {
+    void event.target.value;
+  },
 };
 
-const iconButtonProps: IconButtonProps = {
-  icon: "plus",
-  tip: "Add item",
+const selectProps: SelectProps<string> = {
+  options: [{ value: "a", label: "A" }],
+  allowClear: true,
+  showSearch: true,
+  popupClassName: "popup-check",
+  optionFilterProp: "label",
+};
+
+const cascaderProps: CascaderProps = {
+  options: [{ value: "root", label: "Root", children: [{ value: "leaf", label: "Leaf" }] }],
+  showSearch: { limit: 8 },
+  allowClear: true,
+  popupClassName: "cascader-check",
+};
+
+const tooltipProps: Omit<TooltipProps, "children"> = {
+  title: "Tip",
+  placement: "bottomLeft",
+  overlayClassName: "tip-check",
+};
+
+const popoverProps: Omit<PopoverProps, "children"> = {
+  content: <span>Content</span>,
+  placement: "bottomLeft",
+  overlayClassName: "popover-check",
+};
+
+const collapseProps: CollapseProps = {
+  items: [{ key: "one", label: "One", children: <span>Body</span> }],
+  defaultActiveKey: "one",
+};
+
+const spinProps: SpinProps = {
+  size: "small",
+  tip: "Loading",
 };
 
 const textareaProps: TextareaProps = {
@@ -86,19 +155,45 @@ const badgeProps: BadgeProps = {
   count: 3,
 };
 
+const radioProps: RadioProps = {
+  label: "Daily",
+  defaultChecked: true,
+};
+
+const radioGroupProps: RadioGroupProps = {
+  options: [{ value: "a", label: "A" }],
+  defaultValue: "a",
+};
+
+const segmentedRadioGroupProps: RadioGroupProps = {
+  options: [{ value: "grid", label: "Grid" }],
+  defaultValue: "grid",
+  variant: "segmented",
+};
+
+const skeletonProps: SkeletonProps = {
+  avatar: true,
+  paragraph: true,
+};
+
+const tableProProps: TableProProps<{ id: number; name: string }> = {
+  columns: [{ key: "name", title: "Name", dataIndex: "name" }],
+  data: [{ id: 1, name: "Lumina" }],
+  rowKey: "id",
+};
+
 const statusBarItemProps: StatusBarItemProps = {
   tone: "accent",
 };
 
 const Example = () => {
   const buttonRef = React.useRef<HTMLButtonElement>(null);
-  const iconButtonRef = React.useRef<HTMLButtonElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   return (
     <ThemeProvider>
-      <ToastContainer />
+      <MessageContainer />
       <Button
         ref={buttonRef}
         {...buttonProps}
@@ -107,8 +202,7 @@ const Example = () => {
       >
         ok
       </Button>
-      <IconButton
-        ref={iconButtonRef}
+      <Button
         {...iconButtonProps}
         data-testid="icon-btn"
       />
@@ -118,6 +212,32 @@ const Example = () => {
         data-testid="input"
         aria-label="input"
       />
+      <Input.Password
+        defaultValue="secret"
+        data-testid="password"
+      />
+      <Input.TextArea
+        defaultValue="notes"
+        onChange={(event) => void event.target.value}
+        data-testid="input-textarea"
+      />
+      <Collapse {...collapseProps} data-testid="collapse" />
+      <Select {...selectProps} data-testid="select" />
+      <Cascader {...cascaderProps} data-testid="cascader" />
+      <Tooltip {...tooltipProps}>
+        <Button>tip</Button>
+      </Tooltip>
+      <Popover {...popoverProps}>
+        <Button>pop</Button>
+      </Popover>
+      <Modal open={false} title="Hidden" onClose={() => {}}>
+        body
+      </Modal>
+      <Spin {...spinProps} data-testid="spin" />
+      <Radio {...radioProps} data-testid="radio" />
+      <RadioGroup {...radioGroupProps} data-testid="radio-group" />
+      <RadioGroup {...segmentedRadioGroupProps} data-testid="radio-segmented" />
+      <Skeleton {...skeletonProps} data-testid="skeleton" />
       <Textarea
         ref={textareaRef}
         {...textareaProps}
@@ -130,12 +250,20 @@ const Example = () => {
       <StatusBarItem {...statusBarItemProps} data-testid="status">
         synced
       </StatusBarItem>
+      <TablePro {...tableProProps} data-testid="table-pro" />
+      <SettingOutlined />
+      <RobotOutlined />
+      <LoadingOutlined spin />
     </ThemeProvider>
   );
 };
 
 void Example;
-void toast.success("Ready");
+void message.success("Ready");
+const modalHandle: ModalStaticHandle = Modal.confirm({ title: "Confirm", content: "Sure?" });
+modalHandle.update({ content: "Updated" });
+modalHandle.destroy();
+void resolveIconName("RobotOutlined");
 `;
 
   fs.writeFileSync(smokeFile, smokeSource, "utf8");

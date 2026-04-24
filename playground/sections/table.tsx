@@ -153,7 +153,7 @@ const SectionTable: React.FC<SectionCtx> = () => {
           id: "rowSelection",
           title: "行选择 (rowSelection)",
           span: 2,
-          description: "antd 风格的 rowSelection。表头多选框支持 indeterminate;可通过 getCheckboxProps 禁用指定行。",
+          description: "rowSelection 提供表头全选、半选状态与按行禁用能力。",
           code: `<Table
   rowSelection={{
     selectedRowKeys,
@@ -324,11 +324,11 @@ const SectionTable: React.FC<SectionCtx> = () => {
             { prop: "variant", description: "视觉变体", type: `"default" | "striped" | "embossed" | "cards"`, default: `"default"` },
             { prop: "pagination", description: "分页配置;false 关闭", type: "false | PaginationConfig" },
             { prop: "scroll", description: "滚动配置:{ x?, y? }", type: "TableScrollConfig" },
-            { prop: "rowSelection", description: "行选择配置 (antd 风格)", type: "RowSelectionConfig" },
+            { prop: "rowSelection", description: "行选择配置", type: "RowSelectionConfig" },
             { prop: "expandable", description: "可展开行配置", type: "ExpandableConfig" },
             { prop: "sortKey / sortDir / onSort", description: "受控排序", type: "—" },
             { prop: "onRowClick", description: "点击行", type: "(row, i) => void" },
-            { prop: "selectable / selected / onSelect", description: "旧版多选 API (保留兼容,优先使用 rowSelection)", type: "—" },
+            { prop: "selectable / selected / onSelect", description: "旧版多选 API,优先使用 rowSelection", type: "—" },
           ],
         },
         {

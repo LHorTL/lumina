@@ -25,7 +25,7 @@ export default defineConfig({
   clean: true,
   splitting: true,
   treeshake: true,
-  external: ["react", "react-dom"],
+  external: ["react", "react-dom", "react-dom/client"],
   loader: {
     ".css": "copy",
   },

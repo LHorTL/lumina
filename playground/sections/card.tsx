@@ -1,11 +1,11 @@
 import * as React from "react";
-import { Avatar, Button, Card, Panel, Tag } from "lumina";
+import { Avatar, Button, Card, Tag } from "lumina";
 import { DocPage } from "../docs";
 import { defineSection, type SectionCtx } from "./_types";
 
 const SectionCard: React.FC<SectionCtx> = () => (
   <DocPage
-    whenToUse={<p>用作信息分组的容器。Panel 是带标题与操作区的 Card 变体。</p>}
+    whenToUse={<p>用作信息分组的容器。Card 可直接承载标题、描述与操作区。</p>}
     demos={[
       {
         id: "variants",
@@ -56,27 +56,27 @@ const SectionCard: React.FC<SectionCtx> = () => (
         ),
       },
       {
-        id: "panel",
-        title: "Panel",
+        id: "header",
+        title: "带标题",
         description: "带标题、描述、操作区。",
-        code: `<Panel title="月度营收" description="2026 年 4 月" actions={...}>
+        code: `<Card title="月度营收" description="2026 年 4 月" actions={...}>
   ¥ 12,480
-</Panel>`,
+</Card>`,
         render: () => (
-          <Panel title="月度营收" description="2026 年 4 月">
+          <Card title="月度营收" description="2026 年 4 月">
             <div style={{ display: "flex", alignItems: "baseline", gap: 18 }}>
               <div style={{ fontSize: 28, fontWeight: 700, color: "var(--accent-ink)" }}>¥ 12,480</div>
               <Tag tone="success">+18.2%</Tag>
             </div>
-          </Panel>
+          </Card>
         ),
       },
       {
-        id: "panel-actions",
-        title: "Panel 带操作",
-        code: `<Panel title="..." actions={<Button size="sm" icon="plus">邀请</Button>}>...</Panel>`,
+        id: "actions",
+        title: "标题区操作",
+        code: `<Card title="..." actions={<Button size="sm" icon="plus">邀请</Button>}>...</Card>`,
         render: () => (
-          <Panel
+          <Card
             title="团队成员"
             description="活跃 7 / 12"
             actions={
@@ -90,7 +90,7 @@ const SectionCard: React.FC<SectionCtx> = () => (
                 <Avatar key={n} alt={n} size="sm" />
               ))}
             </div>
-          </Panel>
+          </Card>
         ),
       },
     ]}
@@ -101,11 +101,6 @@ const SectionCard: React.FC<SectionCtx> = () => (
           { prop: "variant", description: "视觉变体", type: `"raised" | "flat" | "sunken"`, default: `"raised"` },
           { prop: "padding", description: "内边距", type: `"none" | "sm" | "md" | "lg"`, default: `"md"` },
           { prop: "hoverable", description: "悬浮时抬起", type: "boolean", default: "false" },
-        ],
-      },
-      {
-        title: "Panel",
-        rows: [
           { prop: "title", description: "标题", type: "ReactNode" },
           { prop: "description", description: "副标题", type: "ReactNode" },
           { prop: "actions", description: "右上操作区", type: "ReactNode" },

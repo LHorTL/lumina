@@ -88,7 +88,7 @@
 .timeline-item-dot.info { background: var(--info); }
 .timeline-item-dot.muted { background: var(--fg-subtle); }
 
-/* Pending dot: clear default fill, Spinner handles its own visuals */
+/* Pending dot: clear default fill, Spin handles its own visuals */
 .timeline-item-dot.pending {
   background: transparent;
   box-shadow: none;
@@ -125,7 +125,7 @@
   color: var(--fg-muted);
 }
 
-/* When dot has custom content (Spinner / Icon), expand to fit */
+/* When dot has custom content (Spin / Icon), expand to fit */
 .timeline-item-dot:has(> *) {
   width: auto;
   height: auto;

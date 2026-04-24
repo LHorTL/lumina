@@ -1,4 +1,4 @@
-/* ============ Tag & Badge ============ */
+/* ============ Tag ============ */
 .tag {
   display: inline-flex;
   align-items: center;
@@ -17,35 +17,13 @@
 .tag.success { color: var(--success); }
 .tag.warning { color: var(--warning); }
 .tag.danger  { color: var(--danger); }
-.tag.solid          { background: var(--accent); color: white; box-shadow: 0 2px 6px var(--accent-glow); }
-.tag.solid.info     { background: var(--info);    color: white; box-shadow: 0 2px 6px color-mix(in oklch, var(--info) 35%, transparent); }
-.tag.solid.success  { background: var(--success); color: white; box-shadow: 0 2px 6px color-mix(in oklch, var(--success) 35%, transparent); }
-.tag.solid.warning  { background: var(--warning); color: white; box-shadow: 0 2px 6px color-mix(in oklch, var(--warning) 35%, transparent); }
-.tag.solid.danger   { background: var(--danger);  color: white; box-shadow: 0 2px 6px color-mix(in oklch, var(--danger) 35%, transparent); }
+.tag.solid          { background: var(--accent); color: var(--bg); box-shadow: 0 2px 6px var(--accent-glow); }
+.tag.solid.info     { background: var(--info);    color: var(--bg); box-shadow: 0 2px 6px color-mix(in oklch, var(--info) 35%, transparent); }
+.tag.solid.success  { background: var(--success); color: var(--bg); box-shadow: 0 2px 6px color-mix(in oklch, var(--success) 35%, transparent); }
+.tag.solid.warning  { background: var(--warning); color: var(--bg); box-shadow: 0 2px 6px color-mix(in oklch, var(--warning) 35%, transparent); }
+.tag.solid.danger   { background: var(--danger);  color: var(--bg); box-shadow: 0 2px 6px color-mix(in oklch, var(--danger) 35%, transparent); }
 .tag.borderless { background: transparent; box-shadow: none; }
 .tag .dot { width: 6px; height: 6px; border-radius: 999px; background: currentColor; }
 .tag .tag-ico { color: currentColor; display: inline-flex; }
 .tag .x { cursor: pointer; color: var(--fg-subtle); margin-left: 2px; display: inline-flex; }
 .tag .x:hover { color: var(--fg); }
-
-.badge {
-  display: inline-flex;
-  align-items: center; justify-content: center;
-  min-width: 18px; height: 18px;
-  padding: 0 6px;
-  border-radius: 999px;
-  font-size: 10px;
-  font-weight: 700;
-  background: var(--danger);
-  color: white;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
-  font-variant-numeric: tabular-nums;
-}
-.badge.dot { min-width: 10px; height: 10px; padding: 0; }
-.badge.accent  { background: var(--accent);  box-shadow: 0 1px 4px var(--accent-glow); }
-.badge.info    { background: var(--info);    box-shadow: 0 1px 4px color-mix(in oklch, var(--info) 35%, transparent); }
-.badge.success { background: var(--success); box-shadow: 0 1px 4px color-mix(in oklch, var(--success) 35%, transparent); }
-.badge.warning { background: var(--warning); box-shadow: 0 1px 4px color-mix(in oklch, var(--warning) 35%, transparent); }
-.badge.neutral { background: var(--fg-muted); box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
-.badge-wrap { position: relative; display: inline-block; }
-.badge-wrap > .badge { position: absolute; top: -4px; right: -4px; }

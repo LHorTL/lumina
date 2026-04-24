@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Avatar, Button, Popover, toast, Input } from "lumina";
+import { Avatar, Button, Popover, message, Input } from "lumina";
 import { DocPage, type ApiRow } from "../docs";
 import { Row } from "./_shared";
 import { defineSection, type SectionCtx } from "./_types";
@@ -7,7 +7,7 @@ import { defineSection, type SectionCtx } from "./_types";
 const popoverApi: ApiRow[] = [
   { prop: "content", description: "浮层内容", type: "ReactNode", required: true },
   { prop: "title", description: "标题", type: "ReactNode" },
-  { prop: "placement", description: "弹出位置", type: `"top" | "bottom" | "left" | "right"`, default: `"bottom"` },
+  { prop: "placement", description: "弹出位置,支持 bottomLeft 等细分方向", type: `"top" | "bottom" | "left" | "right" | ...`, default: `"bottom"` },
   { prop: "trigger", description: "触发方式", type: `"click" | "hover"`, default: `"click"` },
   { prop: "arrow", description: "显示箭头", type: "boolean", default: "false" },
   { prop: "closable", description: "显示关闭按钮", type: "boolean", default: "false" },
@@ -15,6 +15,8 @@ const popoverApi: ApiRow[] = [
   { prop: "open", description: "受控显示状态", type: "boolean" },
   { prop: "defaultOpen", description: "非受控初始状态", type: "boolean", default: "false" },
   { prop: "onOpenChange", description: "显示状态变化回调", type: "(open: boolean) => void" },
+  { prop: "visible / onVisibleChange", description: "受控显示状态别名", type: "boolean / (visible) => void" },
+  { prop: "overlayClassName / popupClassName", description: "浮层 className", type: "string" },
 ];
 
 const SectionPopover: React.FC<SectionCtx> = () => (
@@ -69,7 +71,7 @@ const SectionPopover: React.FC<SectionCtx> = () => (
                   </div>
                   <Row gap={6}>
                     <Button size="sm" variant="ghost">取消</Button>
-                    <Button size="sm" variant="danger" onClick={() => toast.error("已删除")}>删除</Button>
+                    <Button size="sm" variant="danger" onClick={() => message.error("已删除")}>删除</Button>
                   </Row>
                 </div>
               }
@@ -126,6 +128,29 @@ const SectionPopover: React.FC<SectionCtx> = () => (
               <Button variant="ghost">右侧</Button>
             </Popover>
           </div>
+        ),
+      },
+      {
+        id: "placement-detail",
+        title: "细分位置与浮层 class",
+        description: "placement 支持 bottomLeft 等细分方向,overlayClassName 可标记浮层节点。",
+        code: `<Popover
+  placement="bottomLeft"
+  overlayClassName="settings-popover"
+  title="快捷设置"
+  content={<div>显示在触发器左下方。</div>}
+>
+  <Button icon="settings">设置</Button>
+</Popover>`,
+        render: () => (
+          <Popover
+            placement="bottomLeft"
+            overlayClassName="demo-popover-overlay"
+            title="快捷设置"
+            content={<div style={{ color: "var(--fg-muted)", fontSize: 13 }}>显示在触发器左下方。</div>}
+          >
+            <Button icon="settings">设置</Button>
+          </Popover>
         ),
       },
       {
@@ -241,7 +266,7 @@ const SectionPopover: React.FC<SectionCtx> = () => (
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 <Input placeholder="输入备注..." />
                 <div style={{ display: "flex", justifyContent: "flex-end", gap: 6 }}>
-                  <Button size="sm" onClick={() => toast.success("已保存")}>保存</Button>
+                  <Button size="sm" onClick={() => message.success("已保存")}>保存</Button>
                 </div>
               </div>
             }

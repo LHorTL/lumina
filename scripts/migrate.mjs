@@ -2,7 +2,7 @@
 /**
  * One-shot migrator — moves a flat component .tsx + its CSS section into a folder.
  * Usage: node scripts/migrate.mjs [name:section-header] ...
- *   e.g. node scripts/migrate.mjs Avatar:Avatar Card:"Card & Panel" Alert:Alert
+ *   e.g. node scripts/migrate.mjs Avatar:Avatar Card:Card Alert:Alert
  * The section header is the text inside the `/* ============ <text> ============ *\/` comment
  * in src/styles/components.css. Defaults to the name if not given (name:name).
  */

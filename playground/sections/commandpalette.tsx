@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Button, CommandPalette, Icon, toast } from "lumina";
+import { Button, CommandPalette, Icon, message } from "lumina";
 import { DocPage } from "../docs";
 import { defineSection, type SectionCtx } from "./_types";
 
@@ -75,18 +75,18 @@ useEffect(() => {
                   open={open}
                   onOpenChange={setOpen}
                   items={[
-                    { key: "nav-home",    group: "导航", label: "回到首页",       icon: <Icon name="home" size={14} />,     shortcut: "⌘H", onSelect: () => toast.info("回到首页") },
-                    { key: "nav-inbox",   group: "导航", label: "收件箱",         icon: <Icon name="mail" size={14} />,     shortcut: "⌘1", keywords: ["inbox", "邮件"], onSelect: () => toast.info("收件箱") },
-                    { key: "nav-search",  group: "导航", label: "全局搜索",       icon: <Icon name="search" size={14} />,   shortcut: "⌘P",  onSelect: () => toast.info("搜索") },
+                    { key: "nav-home",    group: "导航", label: "回到首页",       icon: <Icon name="home" size={14} />,     shortcut: "⌘H", onSelect: () => message.info("回到首页") },
+                    { key: "nav-inbox",   group: "导航", label: "收件箱",         icon: <Icon name="mail" size={14} />,     shortcut: "⌘1", keywords: ["inbox", "邮件"], onSelect: () => message.info("收件箱") },
+                    { key: "nav-search",  group: "导航", label: "全局搜索",       icon: <Icon name="search" size={14} />,   shortcut: "⌘P",  onSelect: () => message.info("搜索") },
 
-                    { key: "file-new",    group: "文件", label: "新建文件",       icon: <Icon name="plus" size={14} />,     shortcut: "⌘N",  onSelect: () => toast.success("已创建") },
+                    { key: "file-new",    group: "文件", label: "新建文件",       icon: <Icon name="plus" size={14} />,     shortcut: "⌘N",  onSelect: () => message.success("已创建") },
                     { key: "file-open",   group: "文件", label: "打开最近",       description: "README.md · 2 小时前", icon: <Icon name="folder" size={14} />, shortcut: "⌘O" },
                     { key: "file-save",   group: "文件", label: "保存",           icon: <Icon name="download" size={14} />, shortcut: "⌘S" },
 
                     { key: "theme-light", group: "主题", label: "切换到浅色",     icon: <Icon name="sun" size={14} />,      keywords: ["light", "日"] },
                     { key: "theme-dark",  group: "主题", label: "切换到深色",     icon: <Icon name="moon" size={14} />,     keywords: ["dark", "夜"] },
 
-                    { key: "settings",    group: "其它", label: "偏好设置",       icon: <Icon name="settings" size={14} />, shortcut: "⌘,", onSelect: () => toast.info("设置") },
+                    { key: "settings",    group: "其它", label: "偏好设置",       icon: <Icon name="settings" size={14} />, shortcut: "⌘,", onSelect: () => message.info("设置") },
                     { key: "shortcuts",   group: "其它", label: "键盘快捷键",     icon: <Icon name="sparkle" size={14} />,  disabled: true },
                   ]}
                 />

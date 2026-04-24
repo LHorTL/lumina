@@ -3,6 +3,7 @@ import "../../styles/shared.css";
 import "./Modal.css";
 import * as React from "react";
 import ReactDOM from "react-dom";
+import { createRoot, type Root } from "react-dom/client";
 import { Icon } from "../Icon";
 import { Button, type ButtonProps } from "../Button";
 
@@ -46,7 +47,7 @@ export interface ModalProps
   /**
    * When true the modal's children are unmounted every time it closes.
    * Default `false` — children stay mounted so internal state survives
-   * reopens, matching antd's default.
+   * reopens.
    */
   destroyOnClose?: boolean;
   /** Fires after the open/close animation finishes. */
@@ -56,10 +57,50 @@ export interface ModalProps
   className?: string;
 }
 
+export type ModalStaticKind = "confirm" | "info" | "success" | "warning" | "error";
+
+export interface ModalStaticConfig
+  extends Omit<
+    ModalProps,
+    "open" | "onClose" | "onOk" | "onCancel" | "children" | "afterOpenChange" | "content"
+  > {
+  content?: React.ReactNode;
+  children?: React.ReactNode;
+  /** Override the semantic icon. Pass `false` to hide it. */
+  icon?: React.ReactNode | false;
+  /** Whether to show Cancel + OK. Defaults to true for confirm, false for the other static methods. */
+  okCancel?: boolean;
+  onOk?: () => void | boolean | Promise<void | boolean>;
+  onCancel?: () => void;
+}
+
+export interface ModalStaticHandle {
+  destroy: () => void;
+  update: (
+    config:
+      | Partial<ModalStaticConfig>
+      | ((prev: ModalStaticConfig) => Partial<ModalStaticConfig>)
+  ) => void;
+}
+
+export interface ModalStaticFunctions {
+  confirm: (config: ModalStaticConfig) => ModalStaticHandle;
+  info: (config: ModalStaticConfig) => ModalStaticHandle;
+  success: (config: ModalStaticConfig) => ModalStaticHandle;
+  warning: (config: ModalStaticConfig) => ModalStaticHandle;
+  warn: (config: ModalStaticConfig) => ModalStaticHandle;
+  error: (config: ModalStaticConfig) => ModalStaticHandle;
+  destroyAll: () => void;
+}
+
+export type ModalComponent =
+  React.ForwardRefExoticComponent<ModalProps & React.RefAttributes<HTMLDivElement>> &
+    ModalStaticFunctions;
+
 const ANIM_MS = 280;
 
 /** `Modal` — centered dialog with mask. Renders into `document.body`. */
-export const Modal = React.forwardRef<HTMLDivElement, ModalProps>(({
+const ModalBase = React.forwardRef<HTMLDivElement, ModalProps>(({
   open,
   onClose,
   onCancel,
@@ -186,4 +227,185 @@ export const Modal = React.forwardRef<HTMLDivElement, ModalProps>(({
     document.body
   );
 });
-Modal.displayName = "Modal";
+ModalBase.displayName = "Modal";
+
+const staticHandles = new Set<ModalStaticHandle>();
+
+const staticIconName: Record<ModalStaticKind, "info" | "check2" | "alert"> = {
+  confirm: "info",
+  info: "info",
+  success: "check2",
+  warning: "alert",
+  error: "alert",
+};
+
+const isThenable = (value: unknown): value is Promise<unknown> =>
+  !!value && typeof (value as { then?: unknown }).then === "function";
+
+interface StaticModalHostProps {
+  kind: ModalStaticKind;
+  config: ModalStaticConfig;
+  open: boolean;
+  destroy: () => void;
+}
+
+const StaticModalHost: React.FC<StaticModalHostProps> = ({
+  kind,
+  config,
+  open,
+  destroy,
+}) => {
+  const [loading, setLoading] = React.useState(false);
+  const {
+    content,
+    children,
+    icon,
+    okCancel = kind === "confirm",
+    onOk,
+    onCancel,
+    okText = "确定",
+    cancelText = "取消",
+    okButtonProps,
+    cancelButtonProps,
+    confirmLoading,
+    footer,
+    maskClosable,
+    escClosable,
+    className = "",
+    ...modalProps
+  } = config;
+
+  const close = React.useCallback(() => {
+    onCancel?.();
+    destroy();
+  }, [destroy, onCancel]);
+
+  const handleOk = React.useCallback(() => {
+    const result = onOk?.();
+    if (result === false) return;
+    if (isThenable(result)) {
+      setLoading(true);
+      result
+        .then((next) => {
+          if (next !== false) destroy();
+        })
+        .finally(() => setLoading(false));
+      return;
+    }
+    destroy();
+  }, [destroy, onOk]);
+
+  const okVariant = kind === "error" ? "danger" : "primary";
+  const mergedFooter =
+    footer !== undefined ? (
+      footer
+    ) : okCancel ? (
+      <>
+        <Button variant="ghost" onClick={close} {...cancelButtonProps}>
+          {cancelText}
+        </Button>
+        <Button
+          variant={okVariant}
+          loading={loading || confirmLoading}
+          onClick={handleOk}
+          {...okButtonProps}
+        >
+          {okText}
+        </Button>
+      </>
+    ) : (
+      <Button
+        variant={okVariant}
+        loading={loading || confirmLoading}
+        onClick={handleOk}
+        {...okButtonProps}
+      >
+        {okText}
+      </Button>
+    );
+
+  return (
+    <ModalBase
+      {...modalProps}
+      open={open}
+      onClose={close}
+      onCancel={close}
+      footer={mergedFooter}
+      maskClosable={maskClosable ?? false}
+      escClosable={escClosable ?? true}
+      className={`modal-static-overlay ${className}`}
+    >
+      <div className="modal-static-body">
+        {icon !== false && (
+          <span className={`modal-static-icon ${kind}`}>
+            {icon ?? <Icon name={staticIconName[kind]} size={20} />}
+          </span>
+        )}
+        <div className="modal-static-content">{content ?? children}</div>
+      </div>
+    </ModalBase>
+  );
+};
+
+const createStaticModal = (
+  kind: ModalStaticKind,
+  config: ModalStaticConfig
+): ModalStaticHandle => {
+  if (typeof document === "undefined") {
+    return { destroy: () => {}, update: () => {} };
+  }
+
+  const div = document.createElement("div");
+  document.body.appendChild(div);
+  let root: Root | null = createRoot(div);
+  let current: ModalStaticConfig = { ...config };
+  let open = true;
+
+  const render = () => {
+    root?.render(
+      <StaticModalHost
+        kind={kind}
+        config={current}
+        open={open}
+        destroy={handle.destroy}
+      />
+    );
+  };
+
+  const handle: ModalStaticHandle = {
+    destroy: () => {
+      if (!root) return;
+      open = false;
+      render();
+      staticHandles.delete(handle);
+      window.setTimeout(() => {
+        root?.unmount();
+        root = null;
+        div.remove();
+      }, ANIM_MS);
+    },
+    update: (next) => {
+      if (!root) return;
+      current = {
+        ...current,
+        ...(typeof next === "function" ? next(current) : next),
+      };
+      render();
+    },
+  };
+
+  staticHandles.add(handle);
+  render();
+  return handle;
+};
+
+export const Modal = ModalBase as ModalComponent;
+Modal.confirm = (config) => createStaticModal("confirm", config);
+Modal.info = (config) => createStaticModal("info", config);
+Modal.success = (config) => createStaticModal("success", config);
+Modal.warning = (config) => createStaticModal("warning", config);
+Modal.warn = Modal.warning;
+Modal.error = (config) => createStaticModal("error", config);
+Modal.destroyAll = () => {
+  Array.from(staticHandles).forEach((handle) => handle.destroy());
+};

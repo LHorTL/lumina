@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Icon, toast } from "lumina";
+import { Icon, message } from "lumina";
 import { DocPage } from "../docs";
 import { Row } from "./_shared";
 import { defineSection, type SectionCtx } from "./_types";
@@ -54,7 +54,7 @@ const SectionIcon: React.FC<SectionCtx> = () => (
                 type="button"
                 onClick={() => {
                   navigator.clipboard?.writeText(n);
-                  toast.success(`已复制 "${n}"`);
+                  message.success(`已复制 "${n}"`);
                 }}
                 style={{
                   display: "flex",

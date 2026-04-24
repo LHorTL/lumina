@@ -6,8 +6,7 @@
 
 | 组件 | 说明 |
 |---|---|
-| [`Button`](./api.md#button) | 按钮，支持 4 种变体 × 3 种尺寸 |
-| [`IconButton`](./api.md#iconbutton) | 方形图标按钮，自带 tooltip 支持 |
+| [`Button`](./api.md#button) | 按钮，支持 4 种变体、3 种尺寸与纯图标模式 |
 | [`Icon`](./api.md#icon) | 49 个内置线性图标 |
 
 ## 布局 Layout
@@ -17,8 +16,7 @@
 | [`AppShell`](./api.md#appshell) | Electron 应用三区布局：标题栏 + 侧边栏 + 主内容 |
 | [`TitleBar`](./api.md#titlebar) | Electron 窗口标题栏（mac/windows 风格） |
 | [`Sidebar`](./api.md#sidebar) | 侧边导航栏，支持折叠模式 |
-| [`Card`](./api.md#card) | 容器卡片，raised / sunken / flat 三种变体 |
-| [`Panel`](./api.md#panel) | 带标题的卡片 |
+| [`Card`](./api.md#card) | 容器卡片，支持标题、操作区与 raised / sunken / flat 三种变体 |
 | [`Divider`](./api.md#divider) | 分割线（横/竖） |
 
 ## 表单 Forms
@@ -29,17 +27,16 @@
 | [`Textarea`](./api.md#textarea) | 多行文本框 |
 | [`Switch`](./api.md#switch) | 开关 |
 | [`Checkbox`](./api.md#checkbox) | 复选框，支持半选 |
-| [`RadioGroup`](./api.md#radiogroup) | 单选组 |
+| [`Radio`](./api.md#radio--radiogroup) | 单选控件 / 单选组 |
 | [`Select`](./api.md#select) | 下拉选择器 |
 | [`Slider`](./api.md#slider) | 滑块 |
-| [`Segmented`](./api.md#segmented) | 分段选择 |
 
 ## 导航 Navigation
 
 | 组件 | 说明 |
 |---|---|
 | [`Tabs`](./api.md#tabs) | 标签页，line / pill / segmented 三种样式 |
-| [`Accordion`](./api.md#accordion) | 折叠面板，支持多开 |
+| [`Collapse`](./api.md#collapse) | 折叠面板，支持多开 |
 | [`Pagination`](./api.md#pagination) | 分页 |
 
 ## 反馈 Feedback
@@ -51,9 +48,9 @@
 | [`Tooltip`](./api.md#tooltip) | 悬浮提示 |
 | [`Popover`](./api.md#popover) | 富内容气泡 |
 | [`Alert`](./api.md#alert) | 内联警告条 |
-| [`toast`](./api.md#toast) | 消息提示（命令式 API） |
+| [`message`](./api.md#message) | 消息提示（命令式 API） |
 | [`Progress`](./api.md#progress) | 横向进度条 |
-| [`Spinner`](./api.md#spinner) | 加载指示器 |
+| [`Spin`](./api.md#spin) | 加载指示器 |
 | [`Skeleton`](./api.md#skeleton) | 骨架屏 |
 
 ## 数据展示 Data Display

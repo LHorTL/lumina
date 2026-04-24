@@ -3,7 +3,7 @@
 > 拟态风格的 React 18 组件库,目标是 Electron 桌面应用。**写给 AI 编程助手**的按需文档 —— 每个组件单独一个 `.md`,避免一次性读取全部。示例源自 playground 的 demo,可直接复制运行。
 
 - **包名**: `@fangxinyan/lumina`
-- **版本**: `0.6.1`
+- **版本**: `0.6.2`
 - **React 最低版本**: 18
 - **环境**: 带打包器的 React 工程(Vite / Next.js / Webpack / Remix / Electron + Vite 等)
 - **零运行时依赖**: 只依赖 `react` / `react-dom` (peer deps)
@@ -62,7 +62,7 @@
 - [AutoComplete 自动补全](./llms/autocomplete.md) — 输入时展示建议下拉,不限定必须从候选中选。
 - [Cascader 级联选择](./llms/cascader.md) — 层级关联数据集合中的多级选择。
 - [ColorPicker 颜色选择](./llms/colorpicker.md) — 拟态风格的颜色选择器:HSV 色域、色相、hex 输入、预设调色板。
-- [Form 表单](./llms/form.md) — 受控表单,字段绑定 + 校验,API 对齐 antd。
+- [Form 表单](./llms/form.md) — 受控表单,字段绑定 + 校验。
 
 ### 数据展示
 
@@ -79,19 +79,19 @@
 - [Table Pro](./llms/tablepro.md) — 带工具栏 / 搜索 / 筛选 / 排序 / 多选 / 分页的全功能表格。
 - [Pagination 分页](./llms/pagination.md) — 分页控件,支持快速跳转与每页条数切换。
 - [Tabs 选项卡](./llms/tabs.md) — 同一层级的内容分组,通过标签切换。
-- [Accordion 折叠面板](./llms/accordion.md) — 纵向折叠面板。
+- [Collapse 折叠面板](./llms/collapse.md) — 纵向折叠面板。
 - [Calendar 日历](./llms/calendar.md) — 查看与选择日期。
 
 ### 反馈
 
 - [Modal 对话框](./llms/modal.md) — 在不离开当前页面的前提下处理事务。
 - [Drawer 抽屉](./llms/drawer.md) — 从屏幕边缘滑出的浮层。
-- [Toast 通知](./llms/toast.md) — 全局轻量提示,4 种语义。
+- [Message 全局消息](./llms/message.md) — 全局轻量提示,支持函数调用与对象配置。
 - [Tooltip 文字提示](./llms/tooltip.md) — 鼠标悬浮触发的简短说明。
 - [Popover 气泡卡片](./llms/popover.md) — 比 Tooltip 更丰富，可承载交互内容。
 - [Alert 警告提示](./llms/alert.md) — 页面中嵌入的警告/提示。
 - [Empty 空状态](./llms/empty.md) — 列表、页面或容器无数据时的占位。
-- [Spinner 加载](./llms/spinner.md) — 表示任务正在进行,提示用户等待。
+- [Spin 加载](./llms/spin.md) — 表示任务正在进行,提示用户等待。
 - [Skeleton 骨架屏](./llms/skeleton.md) — 数据加载前展示页面结构轮廓。
 
 ### Electron

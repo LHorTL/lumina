@@ -1,0 +1,97 @@
+/* ============ Radio ============ */
+.radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 13px;
+  color: var(--fg);
+}
+.radio.disabled { opacity: 0.5; cursor: not-allowed; }
+
+.radio-dot {
+  width: 20px; height: 20px;
+  border: none;
+  padding: 0;
+  border-radius: 999px;
+  background: var(--bg);
+  box-shadow: var(--neu-in-sm);
+  cursor: inherit;
+  position: relative;
+  flex-shrink: 0;
+  transition: all var(--dur) var(--ease);
+}
+.radio.checked .radio-dot {
+  background: var(--accent);
+  box-shadow: var(--neu-out-sm), 0 2px 8px var(--accent-glow);
+}
+.radio.checked .radio-dot::after {
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px; height: 8px;
+  border-radius: 999px;
+  background: var(--bg);
+}
+
+.radio-group { display: flex; gap: 14px; }
+.radio-group.vertical { flex-direction: column; gap: 10px; }
+.radio-group.horizontal { flex-direction: row; flex-wrap: wrap; }
+
+.radio-group.segmented {
+  position: relative;
+  display: inline-flex;
+  padding: 4px;
+  border-radius: var(--r-md);
+  background: var(--bg);
+  box-shadow: var(--neu-in-sm);
+  gap: 2px;
+  flex-wrap: nowrap;
+}
+
+.radio-group.segmented .radio {
+  position: relative;
+  z-index: 1;
+  height: 32px;
+  padding: 6px 14px;
+  border-radius: calc(var(--r-md) - 4px);
+  color: var(--fg-muted);
+  font-size: 12px;
+  gap: 6px;
+  transition: all var(--dur-fast) var(--ease);
+}
+
+.radio-group.segmented .radio:hover { color: var(--fg); }
+.radio-group.segmented .radio.checked {
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+.radio-group.segmented .radio-dot { display: none; }
+.radio-group.segmented .radio-label { line-height: 1; }
+.radio-group.segmented .radio.disabled { opacity: 0.4; }
+.radio-group.segmented.sm .radio { height: 26px; padding: 4px 10px; font-size: 11px; }
+.radio-group.segmented.lg .radio { height: 38px; padding: 8px 18px; font-size: 13px; }
+
+.radio-segment-thumb {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+  border-radius: calc(var(--r-md) - 4px);
+  background: var(--bg);
+  box-shadow: var(--neu-out-sm);
+  pointer-events: none;
+  transition:
+    transform var(--dur-slow) var(--ease),
+    width var(--dur-slow) var(--ease),
+    opacity var(--dur-fast) var(--ease);
+  will-change: transform, width;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .radio-segment-thumb {
+    transition: none;
+  }
+}

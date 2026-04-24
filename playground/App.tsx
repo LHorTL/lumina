@@ -1,7 +1,7 @@
 import * as React from "react";
 import {
   TitleBar,
-  ToastContainer,
+  MessageContainer,
   Icon,
   Slider,
   Tooltip,
@@ -233,7 +233,7 @@ const AppInner: React.FC = () => {
       </button>
       {tweaksOpen && <TweaksPanel />}
 
-      <ToastContainer />
+      <MessageContainer />
     </div>
   );
 };

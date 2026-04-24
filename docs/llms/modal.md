@@ -16,6 +16,24 @@ import { Modal } from "@fangxinyan/lumina";
 <Modal open={m} onClose={...} title="标题">...</Modal>
 ```
 
+### 静态确认框
+
+通过 Modal.confirm / warning / error / success / info 直接创建一次性对话框。
+
+```tsx
+Modal.confirm({
+  title: "覆盖当前配置?",
+  content: "保存后会立即生效。",
+  okText: "覆盖",
+  onOk: async () => {
+    await save();
+    message.success("已覆盖");
+  },
+});
+
+Modal.warning({ title: "容量不足", content: "请先清理缓存。" });
+```
+
 ### 确认操作 (footer 自定义)
 
 用 footer 自定义底部按钮。传 null 可以去掉 footer。
@@ -83,6 +101,18 @@ closable={false} 隐藏右上角 ×,closeIcon 可自定义。
 | destroyOnClose | `boolean` | `false` | 关闭时卸载子树 |
 | afterOpenChange | `(open: boolean) => void` | — | 动画结束后回调 |
 | zIndex | `number` | — | 覆盖遮罩 z-index |
+
+
+**Modal 静态 API**
+
+| Prop | 类型 | 默认 | 说明 |
+| --- | --- | --- | --- |
+| Modal.confirm(config) | `(config) => { destroy, update }` | — | 确认框,默认显示取消/确定 |
+| Modal.info / success / warning / error(config) | `(config) => { destroy, update }` | — | 单按钮提示框 |
+| Modal.destroyAll() | `() => void` | — | 关闭全部静态弹窗 |
+| config.content | `ReactNode` | — | 正文内容 |
+| config.okCancel | `boolean` | — | 是否显示取消按钮 |
+| config.onOk | `() => void | Promise<void>` | — | 确定回调,返回 Promise 时自动显示 loading |
 
 
 ---

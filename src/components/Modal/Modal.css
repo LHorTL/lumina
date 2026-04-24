@@ -70,3 +70,30 @@
   background: var(--bg);
   box-shadow: var(--neu-flat);
 }
+
+.modal-static-body {
+  display: flex;
+  gap: var(--gap-3);
+  align-items: flex-start;
+}
+
+.modal-static-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r-md);
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: var(--bg);
+  box-shadow: var(--neu-in-sm);
+  color: var(--accent);
+}
+
+.modal-static-icon.success { color: var(--success); }
+.modal-static-icon.warning { color: var(--warning); }
+.modal-static-icon.error { color: var(--danger); }
+
+.modal-static-content {
+  min-width: 0;
+  color: var(--fg-muted);
+}

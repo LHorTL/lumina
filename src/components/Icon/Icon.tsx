@@ -59,11 +59,35 @@ export type IconName =
   | "swap"
   | "camera"
   | "qq"
-  | "code";
+  | "code"
+  | "appstore"
+  | "barChart"
+  | "block"
+  | "border"
+  | "caretDown"
+  | "caretUp"
+  | "checkCircle"
+  | "checkCircleFilled"
+  | "clockCircleFilled"
+  | "closeCircle"
+  | "dashboard"
+  | "environment"
+  | "exclamationCircle"
+  | "folderOpen"
+  | "loading"
+  | "minusCircle"
+  | "picture"
+  | "reload"
+  | "robot"
+  | "swapRight"
+  | "sync"
+  | "translate"
+  | "unorderedList"
+  | "starFilled";
 
 export interface IconProps extends Omit<React.SVGAttributes<SVGSVGElement>, "stroke"> {
   name: IconName;
-  size?: number;
+  size?: number | string;
   stroke?: number;
 }
 
@@ -84,6 +108,7 @@ search:    <><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></>,
     mail:      <><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></>,
     heart:     <><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></>,
     star:      <><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></>,
+    starFilled:<><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor" stroke="none"/></>,
     home:      <><path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2h-4v-7h-6v7H5a2 2 0 0 1-2-2z"/></>,
     folder:    <><path d="M3 7a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></>,
     file:      <><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></>,
@@ -122,6 +147,29 @@ search:    <><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></>,
     camera:    <><path d="M3 7h4l2-3h6l2 3h4a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="4"/></>,
     qq:        <><path d="M12 2c-3 0-5 2.1-5 5 0 1.3.4 2.6.9 3.6-1.8 1-3.4 3-3.4 5.9 0 .8.7 1.5 1.5 1.5 0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2 .8 0 1.5-.7 1.5-1.5 0-2.9-1.6-4.9-3.4-5.9.5-1 .9-2.3.9-3.6 0-2.9-2-5-5-5z"/><circle cx="10" cy="9" r="0.8" fill="currentColor" stroke="none"/><circle cx="14" cy="9" r="0.8" fill="currentColor" stroke="none"/></>,
     code:      <><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/></>,
+    appstore:  <><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></>,
+    barChart:  <><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></>,
+    block:     <><path d="M7 7h10v10H7z"/><path d="M4 4h10v10H4z"/></>,
+    border:    <><rect x="4" y="4" width="16" height="16" rx="1.5"/></>,
+    caretDown: <><path d="m7 9 5 6 5-6z" fill="currentColor" stroke="none"/></>,
+    caretUp:   <><path d="m7 15 5-6 5 6z" fill="currentColor" stroke="none"/></>,
+    checkCircle:<><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></>,
+    checkCircleFilled:<><circle cx="12" cy="12" r="10" fill="currentColor" stroke="none"/><path d="m7.8 12.2 2.7 2.7 5.8-6" stroke="var(--bg)" strokeWidth="2.2" fill="none"/></>,
+    clockCircleFilled:<><circle cx="12" cy="12" r="10" fill="currentColor" stroke="none"/><path d="M12 6.5v5.7l3.6 2.1" stroke="var(--bg)" strokeWidth="2.1" fill="none"/></>,
+    closeCircle:<><circle cx="12" cy="12" r="10"/><path d="M8 8l8 8M16 8l-8 8"/></>,
+    dashboard: <><path d="M4 13a8 8 0 1 1 16 0"/><path d="M12 13l4-4"/><path d="M7 17h10"/></>,
+    environment:<><path d="M12 22s7-5.2 7-12a7 7 0 0 0-14 0c0 6.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></>,
+    exclamationCircle:<><circle cx="12" cy="12" r="10"/><path d="M12 7v6M12 17h.01"/></>,
+    folderOpen:<><path d="M3 8a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v1"/><path d="M3 18.5 5.2 11h17L20 20H5a2 2 0 0 1-2-1.5z"/></>,
+    loading:   <><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></>,
+    minusCircle:<><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></>,
+    picture:   <><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.7"/><path d="m21 15-4.5-4.5L9 18"/></>,
+    reload:    <><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></>,
+    robot:     <><rect x="5" y="8" width="14" height="11" rx="3"/><path d="M12 8V4M9 4h6M3 13h2M19 13h2"/><circle cx="9.5" cy="13" r="1" fill="currentColor" stroke="none"/><circle cx="14.5" cy="13" r="1" fill="currentColor" stroke="none"/><path d="M9 16h6"/></>,
+    swapRight: <><path d="M5 7h10M12 4l3 3-3 3M19 17H9M12 14l-3 3 3 3"/></>,
+    sync:      <><path d="M20 7h-5V2"/><path d="M4 17h5v5"/><path d="M20 12a8 8 0 0 0-13.7-5.7L4 8"/><path d="M4 12a8 8 0 0 0 13.7 5.7L20 16"/></>,
+    translate: <><path d="M4 5h8M8 3v2M6 9c1.4 2.6 3.4 4.4 6 5.5"/><path d="M11 5c-.7 4-2.8 7-7 9"/><path d="M14 20l4-10 4 10M15.4 16h5.2"/></>,
+    unorderedList:<><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="4" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1" fill="currentColor" stroke="none"/></>,
 };
 
 /**
@@ -152,4 +200,148 @@ export const Icon = React.forwardRef<SVGSVGElement, IconProps>(
 );
 Icon.displayName = "Icon";
 
-export const ICON_NAMES: IconName[] = ["search", "plus", "minus", "check", "x", "chevDown", "chevRight", "chevLeft", "chevUp", "arrowRight", "settings", "user", "bell", "mail", "heart", "star", "home", "folder", "file", "image", "play", "pause", "volume", "trash", "edit", "copy", "download", "upload", "info", "alert", "check2", "eye", "eyeOff", "sparkle", "moon", "sun", "palette", "layers", "grid", "list", "zap", "filter", "mic", "send", "calendar", "clock", "menu", "more", "sliders", "aim", "swap", "camera", "qq", "code"];
+export const ICON_NAMES = Object.keys(paths) as IconName[];
+
+export const NAMED_ICON_MAP = {
+  AimOutlined: "aim",
+  AppstoreOutlined: "appstore",
+  BarChartOutlined: "barChart",
+  BlockOutlined: "block",
+  BorderOutlined: "border",
+  CameraOutlined: "camera",
+  CaretDownOutlined: "caretDown",
+  CaretUpOutlined: "caretUp",
+  CheckCircleFilled: "checkCircleFilled",
+  CheckCircleOutlined: "checkCircle",
+  CheckOutlined: "check",
+  ClockCircleFilled: "clockCircleFilled",
+  CloseCircleOutlined: "closeCircle",
+  CloseOutlined: "x",
+  CopyOutlined: "copy",
+  DashboardOutlined: "dashboard",
+  DeleteOutlined: "trash",
+  DownOutlined: "chevDown",
+  EnvironmentOutlined: "environment",
+  ExclamationCircleOutlined: "exclamationCircle",
+  FolderOpenOutlined: "folderOpen",
+  LeftOutlined: "chevLeft",
+  LoadingOutlined: "loading",
+  MinusCircleOutlined: "minusCircle",
+  MinusOutlined: "minus",
+  PictureOutlined: "picture",
+  PlusOutlined: "plus",
+  QqOutlined: "qq",
+  ReloadOutlined: "reload",
+  RightOutlined: "chevRight",
+  RobotOutlined: "robot",
+  SearchOutlined: "search",
+  SettingOutlined: "settings",
+  StarFilled: "starFilled",
+  StarOutlined: "star",
+  SwapOutlined: "swap",
+  SwapRightOutlined: "swapRight",
+  SyncOutlined: "sync",
+  ThunderboltOutlined: "zap",
+  TranslationOutlined: "translate",
+  UnorderedListOutlined: "unorderedList",
+  UserOutlined: "user",
+} as const satisfies Record<string, IconName>;
+
+export type NamedIconComponentName = keyof typeof NAMED_ICON_MAP;
+
+export const resolveIconName = (
+  name: string,
+  fallback: IconName = "appstore"
+): IconName =>
+  (NAMED_ICON_MAP as Record<string, IconName | undefined>)[name] ?? fallback;
+
+export interface NamedIconProps
+  extends Omit<React.HTMLAttributes<HTMLSpanElement>, "children"> {
+  spin?: boolean;
+  rotate?: number;
+  size?: number | string;
+}
+
+const createNamedIcon = (
+  displayName: NamedIconComponentName,
+  defaultSpin = false
+) => {
+  const iconName = NAMED_ICON_MAP[displayName];
+  const Component = React.forwardRef<HTMLSpanElement, NamedIconProps>(
+    ({ spin, rotate, size = "1em", className = "", style, ...rest }, ref) => {
+      const shouldSpin = spin ?? defaultSpin;
+      const transform = rotate
+        ? `${style?.transform ? `${style.transform} ` : ""}rotate(${rotate}deg)`
+        : style?.transform;
+      return (
+        <span
+          ref={ref}
+          role="img"
+          aria-label={displayName}
+          className={className}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            lineHeight: 0,
+            verticalAlign: "-0.125em",
+            ...style,
+            ...(transform ? { transform } : {}),
+          }}
+          {...rest}
+        >
+          <Icon
+            name={iconName}
+            size={size}
+            style={shouldSpin ? { animation: "spin 0.9s linear infinite" } : undefined}
+          />
+        </span>
+      );
+    }
+  );
+  Component.displayName = displayName;
+  return Component;
+};
+
+export const AimOutlined = createNamedIcon("AimOutlined");
+export const AppstoreOutlined = createNamedIcon("AppstoreOutlined");
+export const BarChartOutlined = createNamedIcon("BarChartOutlined");
+export const BlockOutlined = createNamedIcon("BlockOutlined");
+export const BorderOutlined = createNamedIcon("BorderOutlined");
+export const CameraOutlined = createNamedIcon("CameraOutlined");
+export const CaretDownOutlined = createNamedIcon("CaretDownOutlined");
+export const CaretUpOutlined = createNamedIcon("CaretUpOutlined");
+export const CheckCircleFilled = createNamedIcon("CheckCircleFilled");
+export const CheckCircleOutlined = createNamedIcon("CheckCircleOutlined");
+export const CheckOutlined = createNamedIcon("CheckOutlined");
+export const ClockCircleFilled = createNamedIcon("ClockCircleFilled");
+export const CloseCircleOutlined = createNamedIcon("CloseCircleOutlined");
+export const CloseOutlined = createNamedIcon("CloseOutlined");
+export const CopyOutlined = createNamedIcon("CopyOutlined");
+export const DashboardOutlined = createNamedIcon("DashboardOutlined");
+export const DeleteOutlined = createNamedIcon("DeleteOutlined");
+export const DownOutlined = createNamedIcon("DownOutlined");
+export const EnvironmentOutlined = createNamedIcon("EnvironmentOutlined");
+export const ExclamationCircleOutlined = createNamedIcon("ExclamationCircleOutlined");
+export const FolderOpenOutlined = createNamedIcon("FolderOpenOutlined");
+export const LeftOutlined = createNamedIcon("LeftOutlined");
+export const LoadingOutlined = createNamedIcon("LoadingOutlined", true);
+export const MinusCircleOutlined = createNamedIcon("MinusCircleOutlined");
+export const MinusOutlined = createNamedIcon("MinusOutlined");
+export const PictureOutlined = createNamedIcon("PictureOutlined");
+export const PlusOutlined = createNamedIcon("PlusOutlined");
+export const QqOutlined = createNamedIcon("QqOutlined");
+export const ReloadOutlined = createNamedIcon("ReloadOutlined");
+export const RightOutlined = createNamedIcon("RightOutlined");
+export const RobotOutlined = createNamedIcon("RobotOutlined");
+export const SearchOutlined = createNamedIcon("SearchOutlined");
+export const SettingOutlined = createNamedIcon("SettingOutlined");
+export const StarFilled = createNamedIcon("StarFilled");
+export const StarOutlined = createNamedIcon("StarOutlined");
+export const SwapOutlined = createNamedIcon("SwapOutlined");
+export const SwapRightOutlined = createNamedIcon("SwapRightOutlined");
+export const SyncOutlined = createNamedIcon("SyncOutlined");
+export const ThunderboltOutlined = createNamedIcon("ThunderboltOutlined");
+export const TranslationOutlined = createNamedIcon("TranslationOutlined");
+export const UnorderedListOutlined = createNamedIcon("UnorderedListOutlined");
+export const UserOutlined = createNamedIcon("UserOutlined");

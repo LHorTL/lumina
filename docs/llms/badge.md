@@ -13,8 +13,8 @@ import { Badge } from "@fangxinyan/lumina";
 ### 数字徽标
 
 ```tsx
-<Badge count={3}><IconButton icon="bell" /></Badge>
-<Badge count={128} max={99}><IconButton icon="mail" /></Badge>
+<Badge count={3}><Button icon="bell" /></Badge>
+<Badge count={128} max={99}><Button icon="mail" /></Badge>
 ```
 
 ### 圆点
@@ -22,7 +22,7 @@ import { Badge } from "@fangxinyan/lumina";
 dot 模式不显示数字,只是状态指示。
 
 ```tsx
-<Badge dot><IconButton icon="user" /></Badge>
+<Badge dot><Button icon="user" /></Badge>
 ```
 
 ## API

@@ -128,32 +128,12 @@
 
 /* Menu search — flush with menu, single subtle separator (no nested frame) */
 .menu-search {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 32px;
-  padding: 0 6px;
+  display: block;
+  padding: 4px 2px 8px;
   margin: -2px -2px 4px;
   border-bottom: 1px solid var(--divider);
-  color: var(--fg-subtle);
-  transition: color var(--dur) var(--ease);
 }
-.menu-search:focus-within { color: var(--accent); }
-.menu-search input {
-  flex: 1;
-  min-width: 0;
-  border: none;
-  outline: none;
-  background: transparent;
-  color: var(--fg);
-  font-size: 13px;
-  font-family: inherit;
-  height: 100%;
-  padding: 0;
-}
-.menu-search input::placeholder { color: var(--fg-subtle); }
-.menu-search input:focus,
-.menu-search input:focus-visible { box-shadow: none; }
+.menu-search .input-wrap { width: 100%; }
 
 /* Menu state (loading / empty) */
 .menu-state {
@@ -179,8 +159,12 @@
 .menu-state .menu-state-ico .spinner {
   width: 16px;
   height: 16px;
+  display: inline-block;
+  border-radius: 999px;
+  border: 2px solid var(--accent);
   border-color: var(--accent);
   border-right-color: transparent;
+  animation: spin 0.8s linear infinite;
 }
 
 /* Option body — supports description line under label */

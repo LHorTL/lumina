@@ -3,7 +3,7 @@ import {
   Button,
   Input,
   Tag,
-  Spinner,
+  Spin,
   ThemeProvider,
   useTheme,
   ACCENT_PRESETS,
@@ -60,7 +60,7 @@ const ThemePreviewControls: React.FC = () => (
     </Button>
     <Button variant="ghost">次按钮</Button>
     <Tag solid>标签</Tag>
-    <Spinner size={18} />
+    <Spin size={18} />
   </Row>
 );
 
@@ -94,7 +94,7 @@ const ThemeCustomDemo: React.FC = () => {
       <ThemePreviewBox label="ink / soft / glow 自动从主色推导">
         <Input
           value={color}
-          onChange={(v) => setColor(v)}
+          onValueChange={(v) => setColor(v)}
           placeholder="oklch(70% 0.18 180) 或 #00b894"
         />
         <Row gap={8}>

@@ -2,7 +2,7 @@ import "../../styles/tokens.css";
 import "../../styles/shared.css";
 import "./Timeline.css";
 import * as React from "react";
-import { Spinner } from "../Empty";
+import { Spin } from "../Spin";
 
 export interface TimelineItemConfig {
   /** Unique key for the item */
@@ -23,7 +23,7 @@ export interface TimelineProps
   items: TimelineItemConfig[];
   /**
    * Show a pending (loading) item at the end.
-   * `true` renders a default spinner; a ReactNode renders custom content.
+   * `true` renders a default Spin indicator; a ReactNode renders custom content.
    */
   pending?: boolean | React.ReactNode;
   /** Text shown as the pending item's content */
@@ -127,7 +127,7 @@ const TimelineItem: React.FC<TimelineItemInternalProps> = ({
       <div className="timeline-item-label">{item.label}</div>
       <div className="timeline-item-head">
         <div className={`timeline-item-dot ${color} ${isPending ? "pending" : ""}`}>
-          {item.dot ?? (isPending && <Spinner size={14} />)}
+          {item.dot ?? (isPending && <Spin size={14} />)}
         </div>
         {!isLast && <div className="timeline-item-tail" />}
       </div>

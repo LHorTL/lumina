@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Button, Alert, Icon, IconButton, Tooltip, toast } from "lumina";
+import { Button, Alert, Icon, Tooltip, message } from "lumina";
 import { CodeEditor } from "./CodeEditor";
 import { compileLiveDemo, getCurrentSectionId, getLiveDemoSource } from "./live-demo";
 
@@ -190,14 +190,14 @@ export const Demo: React.FC<DemoProps> = ({ id, title, description, code, span =
         <div className="doc-demo-actions">
           {source && (
             <Tooltip content="复制当前代码">
-              <IconButton
+              <Button
                 icon="copy"
                 size="sm"
                 variant="ghost"
                 onClick={() => {
                   if (typeof navigator !== "undefined" && navigator.clipboard) {
                     navigator.clipboard.writeText(draft);
-                    toast.success("代码已复制");
+                    message.success("代码已复制");
                   }
                 }}
               />
@@ -205,7 +205,7 @@ export const Demo: React.FC<DemoProps> = ({ id, title, description, code, span =
           )}
           {source && hasPreview && (
             <Tooltip content={open ? "收起代码" : "展开代码"}>
-              <IconButton
+              <Button
                 icon="code"
                 size="sm"
                 variant="ghost"

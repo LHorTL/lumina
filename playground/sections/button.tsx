@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Button, IconButton, Segmented, toast } from "lumina";
+import { Button, message } from "lumina";
 import { DocPage, type ApiRow, type DocDemoSpec } from "../docs";
 import { Row } from "./_shared";
 import { defineSection, type SectionCtx } from "./_types";
@@ -9,22 +9,12 @@ const buttonApi: ApiRow[] = [
   { prop: "size", description: "按钮尺寸", type: `"sm" | "md" | "lg"`, default: `"md"` },
   { prop: "icon", description: "前置图标", type: "IconName" },
   { prop: "trailingIcon", description: "后置图标", type: "IconName" },
+  { prop: "iconOnly", description: "渲染为纯图标方形按钮", type: "boolean", default: "自动" },
+  { prop: "tip", description: "原生悬浮提示,常用于纯图标按钮", type: "string" },
   { prop: "loading", description: "加载态", type: "boolean", default: "false" },
   { prop: "block", description: "撑满父容器宽度", type: "boolean", default: "false" },
   { prop: "disabled", description: "禁用", type: "boolean", default: "false" },
   { prop: "onClick", description: "点击回调", type: "(e: MouseEvent) => void" },
-];
-
-const iconButtonApi: ApiRow[] = [
-  { prop: "icon", description: "图标名", type: "IconName", required: true },
-  { prop: "tip", description: "悬浮提示", type: "string" },
-  { prop: "size / variant", description: "继承自 Button", type: "—" },
-];
-
-const segmentedApi: ApiRow[] = [
-  { prop: "options", description: "选项数组", type: "{ value, label, disabled? }[]", required: true },
-  { prop: "value / defaultValue", description: "受控/初始选中值", type: "T" },
-  { prop: "onChange", description: "切换回调", type: "(value: T) => void" },
 ];
 
 const SectionButton: React.FC<SectionCtx> = () => {
@@ -77,7 +67,7 @@ const SectionButton: React.FC<SectionCtx> = () => {
               setLoading(true);
               setTimeout(() => {
                 setLoading(false);
-                toast.success("操作完成");
+                message.success("操作完成");
               }, 1400);
             }}
           >
@@ -121,39 +111,16 @@ const SectionButton: React.FC<SectionCtx> = () => {
     {
       id: "icon-only",
       title: "纯图标按钮",
-      description: "IconButton 是只含图标的方形按钮,常配合 tip 使用。",
-      code: `<IconButton icon="heart" tip="收藏" />
-<IconButton icon="bell" tip="通知" />
-<IconButton icon="settings" tip="设置" />`,
+      description: "Button 在只有 icon 时自动呈现为方形按钮,常配合 tip 使用。",
+      code: `<Button icon="heart" tip="收藏" />
+<Button icon="bell" tip="通知" />
+<Button icon="settings" tip="设置" />`,
       render: () => (
         <Row>
-          <IconButton icon="heart" size="sm" tip="收藏" />
-          <IconButton icon="bell" tip="通知" />
-          <IconButton icon="settings" tip="设置" />
+          <Button icon="heart" size="sm" tip="收藏" />
+          <Button icon="bell" tip="通知" />
+          <Button icon="settings" tip="设置" />
         </Row>
-      ),
-    },
-    {
-      id: "segmented",
-      title: "分段控制器",
-      description: "互斥多选项切换。",
-      code: `<Segmented
-  options={[
-    { value: "grid", label: "网格" },
-    { value: "list", label: "列表" },
-    { value: "card", label: "卡片" },
-  ]}
-  defaultValue="grid"
-/>`,
-      render: () => (
-        <Segmented
-          options={[
-            { value: "grid", label: "网格" },
-            { value: "list", label: "列表" },
-            { value: "card", label: "卡片" },
-          ]}
-          defaultValue="grid"
-        />
       ),
     },
   ];
@@ -173,8 +140,6 @@ const SectionButton: React.FC<SectionCtx> = () => {
       demos={demos}
       api={[
         { title: "Button", rows: buttonApi },
-        { title: "IconButton", rows: iconButtonApi },
-        { title: "Segmented", rows: segmentedApi },
       ]}
     />
   );

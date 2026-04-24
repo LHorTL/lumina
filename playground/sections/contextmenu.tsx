@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ContextMenu, Icon, toast } from "lumina";
+import { ContextMenu, Icon, message } from "lumina";
 import { DocPage } from "../docs";
 import { defineSection, type SectionCtx } from "./_types";
 
@@ -78,11 +78,11 @@ const SectionContextMenu: React.FC<SectionCtx> = () => (
         render: () => (
           <ContextMenu
             items={[
-              { key: "copy", label: "复制", icon: <Icon name="copy" size={14} />, shortcut: "⌘C", onSelect: () => toast.success("已复制") },
-              { key: "cut",  label: "剪切", icon: <Icon name="x" size={14} />,   shortcut: "⌘X", onSelect: () => toast.success("已剪切") },
+              { key: "copy", label: "复制", icon: <Icon name="copy" size={14} />, shortcut: "⌘C", onSelect: () => message.success("已复制") },
+              { key: "cut",  label: "剪切", icon: <Icon name="x" size={14} />,   shortcut: "⌘X", onSelect: () => message.success("已剪切") },
               { key: "paste", label: "粘贴", icon: <Icon name="plus" size={14} />, shortcut: "⌘V", disabled: true },
               { key: "d1",   type: "divider" },
-              { key: "del",  label: "删除", icon: <Icon name="trash" size={14} />, danger: true, onSelect: () => toast.error("已删除") },
+              { key: "del",  label: "删除", icon: <Icon name="trash" size={14} />, danger: true, onSelect: () => message.error("已删除") },
             ]}
           >
             <Dropzone />
@@ -98,7 +98,7 @@ const SectionContextMenu: React.FC<SectionCtx> = () => (
         render: () => (
           <ContextMenu
             items={[
-              { key: "open",    label: "打开", icon: <Icon name="folder" size={14} />, shortcut: "⏎", onSelect: () => toast.info("打开") },
+              { key: "open",    label: "打开", icon: <Icon name="folder" size={14} />, shortcut: "⏎", onSelect: () => message.info("打开") },
               { key: "open-in", label: "在新窗口打开", icon: <Icon name="eye" size={14} />, shortcut: "⌘⇧O" },
               { key: "d1",      type: "divider" },
               { key: "rename",  label: "重命名", icon: <Icon name="edit" size={14} />, shortcut: "⏎" },
@@ -106,7 +106,7 @@ const SectionContextMenu: React.FC<SectionCtx> = () => (
               { key: "d2",      type: "divider" },
               { key: "info",    label: "显示简介", icon: <Icon name="info" size={14} />, shortcut: "⌘I" },
               { key: "d3",      type: "divider" },
-              { key: "trash",   label: "移到废纸篓", icon: <Icon name="trash" size={14} />, shortcut: "⌘⌫", danger: true, onSelect: () => toast.error("已丢到废纸篓") },
+              { key: "trash",   label: "移到废纸篓", icon: <Icon name="trash" size={14} />, shortcut: "⌘⌫", danger: true, onSelect: () => message.error("已丢到废纸篓") },
             ]}
           >
             <Dropzone>

@@ -65,35 +65,3 @@ export const Tag = React.forwardRef<HTMLSpanElement, TagProps>(({
   );
 });
 Tag.displayName = "Tag";
-
-export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
-  /** Numeric count — renders as "99+" if > 99. */
-  count?: number;
-  /** Show a tiny dot instead of a number. */
-  dot?: boolean;
-  tone?: TagTone;
-  children?: React.ReactNode;
-}
-
-/** `Badge` — notification dot / count. Wrap around another element. */
-export const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(({
-  count,
-  dot,
-  tone = "danger",
-  children,
-  className = "",
-  ...rest
-}, ref) => {
-  const show = dot || (typeof count === "number" && count > 0);
-  return (
-    <span ref={ref} className={`badge-wrap ${className}`} {...rest}>
-      {children}
-      {show && (
-        <span className={`badge ${tone} ${dot ? "dot" : ""}`}>
-          {!dot && (count! > 99 ? "99+" : count)}
-        </span>
-      )}
-    </span>
-  );
-});
-Badge.displayName = "Badge";

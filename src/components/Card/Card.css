@@ -1,4 +1,4 @@
-/* ============ Card & Panel ============ */
+/* ============ Card ============ */
 .card {
   background: var(--bg);
   border-radius: var(--r-lg);
@@ -22,18 +22,12 @@
 .card.hoverable.flat:hover { box-shadow: var(--neu-out-sm); }
 .card.hoverable.sunken:hover { box-shadow: var(--neu-out); }
 
-.panel {
-  background: var(--bg);
-  border-radius: var(--r-lg);
-  box-shadow: var(--neu-out);
-  padding: var(--gap-5);
-}
-.panel-head {
+.card-head {
   display: flex; align-items: flex-start; justify-content: space-between;
   gap: var(--gap-3); margin-bottom: var(--gap-4);
 }
-.panel-titles { display: flex; flex-direction: column; gap: 2px; }
-.panel-title { font-size: 15px; font-weight: 600; }
-.panel-desc  { font-size: 12px; color: var(--fg-muted); }
-.panel-actions { display: flex; gap: 6px; }
-.panel-body { font-size: 13px; }
+.card-titles { display: flex; flex-direction: column; gap: 2px; }
+.card-title { font-size: 15px; font-weight: 600; }
+.card-desc  { font-size: 12px; color: var(--fg-muted); }
+.card-actions { display: flex; gap: 6px; }
+.card-body { font-size: 13px; }

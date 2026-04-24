@@ -18,7 +18,7 @@ export interface InputNumberProps
   onChange?: (value: number | null) => void;
   onBlur?: React.FocusEventHandler<HTMLInputElement>;
   onFocus?: React.FocusEventHandler<HTMLInputElement>;
-  /** Fires when the Enter key is pressed (matches antd's `onPressEnter`). */
+  /** Fires when the Enter key is pressed. */
   onPressEnter?: React.KeyboardEventHandler<HTMLInputElement>;
   min?: number;
   max?: number;
@@ -180,7 +180,7 @@ export const InputNumber = React.forwardRef<HTMLInputElement, InputNumberProps>(
         suffix={finalSuffix}
         className={`input-number ${className}`}
         inputMode="decimal"
-        onChange={handleInput}
+        onValueChange={handleInput}
         onKeyDown={handleKeyDown}
         onBlur={handleBlur}
         onFocus={onFocus}

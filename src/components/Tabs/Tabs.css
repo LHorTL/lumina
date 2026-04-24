@@ -66,37 +66,3 @@
 .tabs.centered.underline .tabs-nav .tab { margin-right: 11px; margin-left: 11px; }
 
 .tabs-content { padding: var(--gap-2) 0; }
-
-/* Segmented (owned by Tabs.tsx — Segmented is co-exported) */
-.segmented {
-  display: inline-flex;
-  padding: 4px;
-  border-radius: var(--r-md);
-  background: var(--bg);
-  box-shadow: var(--neu-in-sm);
-  gap: 2px;
-}
-.segmented .seg {
-  padding: 6px 14px;
-  height: 32px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: none;
-  background: transparent;
-  border-radius: calc(var(--r-md) - 4px);
-  font-size: 12px;
-  font-family: inherit;
-  color: var(--fg-muted);
-  cursor: pointer;
-  transition: all var(--dur-fast) var(--ease);
-}
-.segmented .seg:hover { color: var(--fg); }
-.segmented .seg.active {
-  color: var(--accent-ink);
-  background: var(--bg);
-  box-shadow: var(--neu-out-sm);
-  font-weight: 600;
-}
-.segmented.sm .seg { height: 26px; padding: 4px 10px; font-size: 11px; }
-.segmented.lg .seg { height: 38px; padding: 8px 18px; font-size: 13px; }

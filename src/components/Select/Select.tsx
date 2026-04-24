@@ -4,6 +4,7 @@ import "./Select.css";
 import * as React from "react";
 import { createPortal } from "react-dom";
 import { Icon, type IconName } from "../Icon";
+import { Input } from "../Input";
 import { Tag } from "../Tag";
 import { useFloating } from "../../utils/useFloating";
 
@@ -29,6 +30,18 @@ export type SelectItem<T extends string | number = string> =
   | SelectOption<T>
   | SelectOptionGroup<T>;
 
+export type SelectFilterOption<T extends string | number = string> =
+  | boolean
+  | ((input: string, option: SelectOption<T>) => boolean);
+
+export type SelectSingleChangeHandler<T extends string | number = string> = {
+  bivarianceHack(value: any): void;
+}["bivarianceHack"];
+
+export type SelectMultiChangeHandler<T extends string | number = string> = {
+  bivarianceHack(value: T[]): void;
+}["bivarianceHack"];
+
 const isGroup = <T extends string | number>(
   it: SelectItem<T>
 ): it is SelectOptionGroup<T> => Array.isArray((it as SelectOptionGroup<T>).options);
@@ -44,10 +57,16 @@ interface BaseSelectProps<T extends string | number = string>
   invalid?: boolean;
   /** Show a small × to clear the selection (single mode) or all selections (multi). */
   clearable?: boolean;
+  /** Alias for `clearable`. */
+  allowClear?: boolean | { clearIcon?: React.ReactNode };
   /** Add a search input at the top of the menu. */
   searchable?: boolean;
+  /** Alias for `searchable`. */
+  showSearch?: boolean;
   /** Custom filter — defaults to label/text/value substring match. */
-  filterOption?: (input: string, option: SelectOption<T>) => boolean;
+  filterOption?: SelectFilterOption<T>;
+  /** Field used by the default filter. */
+  optionFilterProp?: "label" | "value" | "text" | string;
   /** Show spinner instead of options. */
   loading?: boolean;
   /** Custom empty content when no options match. */
@@ -59,13 +78,17 @@ interface BaseSelectProps<T extends string | number = string>
   className?: string;
   /** Class for the popped-out menu. */
   menuClassName?: string;
+  /** Alias for `menuClassName`. */
+  popupClassName?: string;
+  /** Additional alias for `menuClassName`. */
+  dropdownClassName?: string;
 }
 
 export interface SingleSelectProps<T extends string | number = string> extends BaseSelectProps<T> {
   multiple?: false;
   value?: T;
   defaultValue?: T;
-  onChange?: (value: T) => void;
+  onChange?: SelectSingleChangeHandler<T>;
   /** Fired when user clears the selection via the × button. */
   onClear?: () => void;
 }
@@ -74,7 +97,9 @@ export interface MultiSelectProps<T extends string | number = string> extends Ba
   multiple: true;
   value?: T[];
   defaultValue?: T[];
-  onChange?: (value: T[]) => void;
+  onChange?: SelectMultiChangeHandler<T>;
+  /** Fired when user clears all selections via the × button. */
+  onClear?: () => void;
   /** Max selected items shown as tags before collapsing to "+N". */
   maxTagCount?: number;
 }
@@ -86,10 +111,19 @@ export type SelectProps<T extends string | number = string> =
 const flatten = <T extends string | number>(items: SelectItem<T>[]): SelectOption<T>[] =>
   items.flatMap((it) => (isGroup(it) ? it.options : [it]));
 
-const defaultFilter = <T extends string | number>(input: string, opt: SelectOption<T>): boolean => {
+const defaultFilter = <T extends string | number>(
+  input: string,
+  opt: SelectOption<T>,
+  optionFilterProp?: string
+): boolean => {
   const q = input.toLowerCase();
+  const propValue = optionFilterProp
+    ? (opt as unknown as Record<string, unknown>)[optionFilterProp]
+    : undefined;
   const txt =
-    opt.text ?? (typeof opt.label === "string" ? opt.label : String(opt.value));
+    propValue != null
+      ? String(propValue)
+      : opt.text ?? (typeof opt.label === "string" ? opt.label : String(opt.value));
   return txt.toLowerCase().includes(q);
 };
 
@@ -109,8 +143,11 @@ const SelectInner = <T extends string | number = string>(
     size = "md",
     invalid,
     clearable,
+    allowClear,
     searchable,
+    showSearch,
     filterOption,
+    optionFilterProp,
     loading,
     emptyContent,
     open: openProp,
@@ -118,6 +155,8 @@ const SelectInner = <T extends string | number = string>(
     onOpenChange,
     className = "",
     menuClassName = "",
+    popupClassName = "",
+    dropdownClassName = "",
     onKeyDown: onRootKeyDown,
     multiple,
     value: _value,
@@ -131,6 +170,11 @@ const SelectInner = <T extends string | number = string>(
     maxTagCount?: number;
   };
   const isMulti = multiple === true;
+  const mergedClearable = clearable ?? !!allowClear;
+  const mergedSearchable = searchable ?? !!showSearch;
+  const mergedMenuClassName = [menuClassName, popupClassName, dropdownClassName]
+    .filter(Boolean)
+    .join(" ");
 
   const [innerSingle, setInnerSingle] = React.useState<T | undefined>(
     !isMulti ? (props as SingleSelectProps<T>).defaultValue : undefined
@@ -189,19 +233,24 @@ const SelectInner = <T extends string | number = string>(
 
   // Auto-focus search input when opened
   React.useEffect(() => {
-    if (open && searchable) {
+    if (open && mergedSearchable) {
       requestAnimationFrame(() => searchRef.current?.focus());
     }
     if (!open) setActiveIdx(-1);
-  }, [open, searchable]);
+  }, [open, mergedSearchable]);
 
   // Filter options
   const allFlat = React.useMemo(() => flatten(options), [options]);
   const filteredFlat = React.useMemo(() => {
     if (!query.trim()) return allFlat;
-    const f = filterOption ?? defaultFilter;
+    if (filterOption === false) return allFlat;
+    const f =
+      typeof filterOption === "function"
+        ? filterOption
+        : (input: string, option: SelectOption<T>) =>
+            defaultFilter(input, option, optionFilterProp);
     return allFlat.filter((o) => f(query, o));
-  }, [allFlat, query, filterOption]);
+  }, [allFlat, query, filterOption, optionFilterProp]);
 
   // Re-bucket into groups respecting filter (for menu rendering)
   const filteredItems = React.useMemo<SelectItem<T>[]>(() => {
@@ -241,8 +290,10 @@ const SelectInner = <T extends string | number = string>(
     if (isMulti) {
       if (!multiControlled) setInnerMulti([]);
       (props as MultiSelectProps<T>).onChange?.([]);
+      (props as MultiSelectProps<T>).onClear?.();
     } else {
       if (!singleControlled) setInnerSingle(undefined);
+      (props as SingleSelectProps<T>).onChange?.(undefined);
       (props as SingleSelectProps<T>).onClear?.();
     }
   };
@@ -328,7 +379,7 @@ const SelectInner = <T extends string | number = string>(
   };
 
   const hasSelection = isMulti ? (multiValue?.length ?? 0) > 0 : singleValue !== undefined;
-  const showClear = clearable && hasSelection && !disabled;
+  const showClear = mergedClearable && hasSelection && !disabled;
 
   // Render an option button
   let renderIdx = -1;
@@ -396,20 +447,20 @@ const SelectInner = <T extends string | number = string>(
         createPortal(
           <div
             ref={menuRef}
-            className={`menu ${menuClassName}`}
+            className={`menu ${mergedMenuClassName}`}
             role="listbox"
             aria-multiselectable={isMulti || undefined}
             style={floatingStyle}
           >
-            {searchable && (
+            {mergedSearchable && (
             <div className="menu-search">
-              <Icon name="search" size={13} />
-              <input
+              <Input
                 ref={searchRef}
-                type="text"
+                size="sm"
+                leadingIcon="search"
                 value={query}
                 placeholder="搜索..."
-                onChange={(e) => setQuery(e.target.value)}
+                onValueChange={setQuery}
                 onKeyDown={(e) => {
                   if (e.key === "Escape" || e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Enter") {
                     e.preventDefault();

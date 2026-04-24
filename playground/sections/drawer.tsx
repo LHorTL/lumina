@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Button, Drawer, IconButton, Input, Switch, toast } from "lumina";
+import { Button, Drawer, Input, Switch, message } from "lumina";
 import { DocPage } from "../docs";
 import { Field, Row } from "./_shared";
 import { defineSection, type SectionCtx } from "./_types";
@@ -38,7 +38,7 @@ const SectionDrawer: React.FC<SectionCtx> = () => {
                       variant="primary"
                       onClick={() => {
                         setD(false);
-                        toast.success("已创建");
+                        message.success("已创建");
                       }}
                     >
                       创建
@@ -55,7 +55,7 @@ const SectionDrawer: React.FC<SectionCtx> = () => {
           description: "extra 渲染到标题右边,常用来放刷新 / 更多 / 保存按钮。",
           code: `<Drawer
   title="订单详情"
-  extra={<><IconButton icon="edit" tip="编辑" /><Button variant="primary">保存</Button></>}
+  extra={<><Button icon="edit" tip="编辑" /><Button variant="primary">保存</Button></>}
 />`,
           render: () => {
             const [open, setOpen] = React.useState(false);
@@ -68,8 +68,8 @@ const SectionDrawer: React.FC<SectionCtx> = () => {
                   title="订单 #L-24108"
                   extra={
                     <>
-                      <IconButton icon="copy" tip="复制订单号" />
-                      <IconButton icon="download" tip="导出" />
+                      <Button icon="copy" size="sm" tip="复制订单号" />
+                      <Button icon="download" size="sm" tip="导出" />
                       <Button size="sm" variant="primary">
                         保存
                       </Button>

@@ -5,7 +5,7 @@
 ## 导入
 
 ```tsx
-import { Button, IconButton, Segmented } from "@fangxinyan/lumina";
+import { Button } from "@fangxinyan/lumina";
 ```
 
 ## 示例
@@ -61,27 +61,12 @@ block 让按钮撑满容器宽度,常用于底部主操作或表单提交。
 
 ### 纯图标按钮
 
-IconButton 是只含图标的方形按钮,常配合 tip 使用。
+Button 在只有 icon 时自动呈现为方形按钮,常配合 tip 使用。
 
 ```tsx
-<IconButton icon="heart" tip="收藏" />
-<IconButton icon="bell" tip="通知" />
-<IconButton icon="settings" tip="设置" />
-```
-
-### 分段控制器
-
-互斥多选项切换。
-
-```tsx
-<Segmented
-  options={[
-    { value: "grid", label: "网格" },
-    { value: "list", label: "列表" },
-    { value: "card", label: "卡片" },
-  ]}
-  defaultValue="grid"
-/>
+<Button icon="heart" tip="收藏" />
+<Button icon="bell" tip="通知" />
+<Button icon="settings" tip="设置" />
 ```
 
 ## API
@@ -94,28 +79,12 @@ IconButton 是只含图标的方形按钮,常配合 tip 使用。
 | size | `"sm" | "md" | "lg"` | `"md"` | 按钮尺寸 |
 | icon | `IconName` | — | 前置图标 |
 | trailingIcon | `IconName` | — | 后置图标 |
+| iconOnly | `boolean` | `自动` | 渲染为纯图标方形按钮 |
+| tip | `string` | — | 原生悬浮提示,常用于纯图标按钮 |
 | loading | `boolean` | `false` | 加载态 |
 | block | `boolean` | `false` | 撑满父容器宽度 |
 | disabled | `boolean` | `false` | 禁用 |
 | onClick | `(e: MouseEvent) => void` | — | 点击回调 |
-
-
-**IconButton**
-
-| Prop | 类型 | 默认 | 说明 |
-| --- | --- | --- | --- |
-| icon \* | `IconName` | — | 图标名 |
-| tip | `string` | — | 悬浮提示 |
-| size / variant | `—` | — | 继承自 Button |
-
-
-**Segmented**
-
-| Prop | 类型 | 默认 | 说明 |
-| --- | --- | --- | --- |
-| options \* | `{ value, label, disabled? }[]` | — | 选项数组 |
-| value / defaultValue | `T` | — | 受控/初始选中值 |
-| onChange | `(value: T) => void` | — | 切换回调 |
 
 
 ---

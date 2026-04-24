@@ -18,6 +18,10 @@ export interface ButtonProps
   icon?: IconName;
   /** Trailing icon. */
   trailingIcon?: IconName;
+  /** Render as a square icon-only button. Automatically enabled when `icon` is set and no children are provided. */
+  iconOnly?: boolean;
+  /** Native tooltip/title for compact icon-only buttons. */
+  tip?: string;
   /** Show spinner + disable interaction. */
   loading?: boolean;
   /** Make the button fill the container's width. */
@@ -44,19 +48,25 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       size = "md",
       icon,
       trailingIcon,
+      iconOnly,
+      tip,
       loading,
       block,
       disabled,
       className = "",
       type = "button",
+      "aria-label": ariaLabel,
       ...rest
     },
     ref
   ) => {
+    const onlyIcon = iconOnly || (!!icon && children == null);
+    const content = onlyIcon ? null : children;
     const cls = [
       "btn",
       variant,
       size !== "md" && size,
+      onlyIcon && "icon",
       loading && "loading",
       block && "block",
       disabled && "disabled",
@@ -71,6 +81,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         type={type}
         className={cls}
         disabled={disabled || loading}
+        title={tip}
+        aria-label={ariaLabel ?? (onlyIcon ? tip ?? icon : undefined)}
         {...rest}
       >
         {loading ? (
@@ -78,35 +90,10 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ) : icon ? (
           <Icon name={icon} size={15} />
         ) : null}
-        {children}
+        {content}
         {trailingIcon && <Icon name={trailingIcon} size={15} />}
       </button>
     );
   }
 );
 Button.displayName = "Button";
-
-export interface IconButtonProps
-  extends Omit<ButtonProps, "icon" | "children"> {
-  icon: IconName;
-  tip?: string;
-  "aria-label"?: string;
-}
-
-/**
- * `IconButton` — square button containing just an icon. Pair with a tooltip.
- */
-export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
-  ({ icon, tip, className = "", ...rest }, ref) => (
-    <Button
-      ref={ref}
-      className={`icon ${className}`}
-      aria-label={tip || rest["aria-label"] || icon}
-      title={tip}
-      {...rest}
-    >
-      <Icon name={icon} size={16} />
-    </Button>
-  )
-);
-IconButton.displayName = "IconButton";

@@ -50,7 +50,7 @@ const DEFAULT_FILTER = (input: string, option: AutoCompleteOption) => {
 
 /**
  * `AutoComplete` — text input with a filtered suggestion dropdown.
- * Follows antd's API shape (value / onChange / onSelect / options / filterOption).
+ * Uses value / onChange / onSelect / options / filterOption for predictable field binding.
  *
  * @example
  * ```tsx
@@ -222,7 +222,7 @@ export const AutoComplete = React.forwardRef<HTMLInputElement, AutoCompleteProps
           disabled={disabled}
           allowClear={allowClear}
           autoFocus={autoFocus}
-          onChange={handleInput}
+          onValueChange={handleInput}
           onFocus={(event) => {
             onFocus?.(event);
             if (!disabled) setOpen(true);

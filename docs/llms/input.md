@@ -14,7 +14,12 @@ import { Input, Textarea } from "@fangxinyan/lumina";
 
 ```tsx
 const [v, setV] = useState("");
-<Input placeholder="输入用户名" value={v} onChange={setV} leadingIcon="user" />
+<Input
+  placeholder="输入用户名"
+  value={v}
+  onChange={(e) => setV(e.target.value)}
+  leadingIcon="user"
+/>
 ```
 
 ### 前后置图标
@@ -25,15 +30,15 @@ leadingIcon / trailingIcon。
 <Input placeholder="搜索..." leadingIcon="search" />
 ```
 
-### 密码切换
+### Input.Password
 
-trailingIcon 可点击切换密码可见性。
+密码输入框,内置显隐切换。
 
 ```tsx
-<Input
-  type={showPw ? "text" : "password"}
-  trailingIcon={showPw ? "eyeOff" : "eye"}
-  onTrailingIconClick={() => setShowPw(s => !s)}
+<Input.Password
+  value={pw}
+  onChange={(e) => setPw(e.target.value)}
+  allowClear
 />
 ```
 
@@ -50,7 +55,7 @@ invalid 触发红色凹槽。
 allowClear 在值非空时显示 × 按钮,点击即清空。
 
 ```tsx
-<Input value={v} onChange={setV} allowClear placeholder="输入后右侧会出现 ×" />
+<Input value={v} onValueChange={setV} allowClear placeholder="输入后右侧会出现 ×" />
 ```
 
 ### 前缀 / 后缀
@@ -69,22 +74,22 @@ showCount 显示当前字数,配合 maxLength 显示 N / max。
 ```tsx
 <Input
   value={v}
-  onChange={setV}
+  onValueChange={setV}
   maxLength={20}
   showCount
   placeholder="最多输入 20 个字"
 />
 ```
 
-### 多行文本
+### Input.TextArea 多行文本
 
-Textarea 与 Input 共享同款凹槽,也支持 allowClear / maxLength / showCount。
+Input.TextArea 与 Textarea 使用同一套多行输入能力,也支持 allowClear / maxLength / showCount。
 
 ```tsx
-<Textarea
+<Input.TextArea
   placeholder="..."
   value={msg}
-  onChange={setMsg}
+  onChange={(e) => setMsg(e.target.value)}
   allowClear
   maxLength={300}
   showCount
@@ -98,7 +103,8 @@ Textarea 与 Input 共享同款凹槽,也支持 allowClear / maxLength / showCou
 | Prop | 类型 | 默认 | 说明 |
 | --- | --- | --- | --- |
 | value / defaultValue | `string` | — | 受控值 / 初值 |
-| onChange | `(value: string, e) => void` | — | 变更回调 |
+| onChange | `(event) => void` | — | 变更回调,传入 React 原生事件 |
+| onValueChange | `(value: string, event) => void` | — | 值回调便捷写法 |
 | placeholder | `string` | — | 占位文案 |
 | leadingIcon / trailingIcon | `IconName` | — | 前/后置图标 |
 | prefix | `ReactNode` | — | 左侧内嵌内容(在 leadingIcon 之后) |
@@ -106,17 +112,20 @@ Textarea 与 Input 共享同款凹槽,也支持 allowClear / maxLength / showCou
 | allowClear | `boolean` | `false` | 显示内置的清除按钮 |
 | maxLength | `number` | — | 最大字符数,透传至原生 input |
 | showCount | `boolean` | `false` | 在输入框下方显示字数统计 |
+| Input.Password | `Component` | — | 密码输入框,内置显隐切换 |
+| Input.TextArea | `typeof Textarea` | — | 多行文本别名 |
 | size | `"sm" | "md" | "lg"` | `"md"` | 尺寸 |
 | invalid | `boolean` | `false` | 错误态 |
 | disabled | `boolean` | `false` | 禁用 |
 
 
-**Textarea**
+**Input.TextArea / Textarea**
 
 | Prop | 类型 | 默认 | 说明 |
 | --- | --- | --- | --- |
 | value / defaultValue | `string` | — | 受控值 / 初值 |
-| onChange | `(value: string, e) => void` | — | 变更回调 |
+| onChange | `(event) => void` | — | 变更回调,传入 React 原生事件 |
+| onValueChange | `(value: string, event) => void` | — | 值回调便捷写法 |
 | allowClear | `boolean` | `false` | 右上角显示清除按钮 |
 | maxLength | `number` | — | 最大字符数 |
 | showCount | `boolean` | `false` | 显示字数统计 |

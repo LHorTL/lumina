@@ -1,0 +1,40 @@
+/* ============ Skeleton ============ */
+.skeleton {
+  display: block;
+  background: color-mix(in oklch, var(--accent-soft) 55%, var(--bg-sunken));
+  border-radius: var(--r-sm);
+}
+.skeleton.wave {
+  background: linear-gradient(90deg,
+    color-mix(in oklch, var(--accent-soft) 35%, var(--bg-sunken)),
+    color-mix(in oklch, var(--accent-soft) 75%, var(--bg-sunken)),
+    color-mix(in oklch, var(--accent-soft) 35%, var(--bg-sunken)));
+  background-size: 200% 100%;
+  animation: skel-wave 1.4s ease-in-out infinite;
+}
+.skeleton.pulse { animation: skel-pulse 1.4s ease-in-out infinite; }
+.skeleton.none  { animation: none; }
+.skeleton.circle { border-radius: 999px; }
+@keyframes skel-wave  { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+@keyframes skel-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+.skeleton-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  width: 100%;
+}
+.skeleton-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.skeleton-box .skeleton-title {
+  display: block;
+  margin-bottom: 4px;
+}
+.skeleton-box .skeleton-row {
+  display: block;
+}

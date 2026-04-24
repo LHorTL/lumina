@@ -114,7 +114,7 @@ export interface TableProps<Row = any>
   onSort?: (key: string) => void;
 
   /**
-   * Row selection config — preferred API (antd-style).
+   * Row selection config — preferred API.
    * When provided, takes precedence over `selectable` / `selected` / `onSelect`.
    */
   rowSelection?: RowSelectionConfig<Row>;
@@ -698,48 +698,5 @@ function ColumnFilterButton<Row>({
           document.body
         )}
     </>
-  );
-}
-
-/* ============ TablePro ============ */
-
-export interface TableProProps<Row = any> extends Omit<TableProps<Row>, "title"> {
-  /** Toolbar slot — search input, filter, etc. */
-  toolbar?: React.ReactNode;
-  /** Right-aligned actions slot in toolbar. */
-  actions?: React.ReactNode;
-  /** Footer slot — usually <Pagination />. Optional now that `pagination` is built-in. */
-  footer?: React.ReactNode;
-  /** Title shown above the toolbar. */
-  title?: React.ReactNode;
-}
-
-/**
- * `TablePro` — full-featured table card with toolbar, sortable/selectable rows,
- * variants, and a footer slot for pagination.
- *
- * Prefer the built-in `pagination` prop over rendering a `<Pagination />` in the
- * `footer` slot; `footer` still works for custom footers.
- */
-export function TablePro<Row extends Record<string, any> = any>({
-  toolbar,
-  actions,
-  footer,
-  title,
-  className = "",
-  ...tableProps
-}: TableProProps<Row>) {
-  return (
-    <div className={`table-card ${className}`}>
-      {(title || toolbar || actions) && (
-        <div className="table-toolbar">
-          {title && <div className="table-title">{title}</div>}
-          <div className="table-toolbar-main">{toolbar}</div>
-          {actions && <div className="table-toolbar-actions">{actions}</div>}
-        </div>
-      )}
-      <Table {...tableProps} className="joined" />
-      {footer && <div className="table-footer">{footer}</div>}
-    </div>
   );
 }

@@ -1,6 +1,6 @@
 {
   "name": "@fangxinyan/lumina",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "Lumina — Neumorphic component library for Electron & React apps",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -17,51 +17,6 @@
     "./llms.md": "./docs/llms.md",
     "./llms/*": "./docs/llms/*",
     "./package.json": "./package.json",
-    "./IconButton": {
-      "types": "./dist/Button.d.ts",
-      "import": "./dist/Button.js",
-      "require": "./dist/Button.cjs"
-    },
-    "./Textarea": {
-      "types": "./dist/Input.d.ts",
-      "import": "./dist/Input.js",
-      "require": "./dist/Input.cjs"
-    },
-    "./RadioGroup": {
-      "types": "./dist/Checkbox.d.ts",
-      "import": "./dist/Checkbox.js",
-      "require": "./dist/Checkbox.cjs"
-    },
-    "./Segmented": {
-      "types": "./dist/Tabs.d.ts",
-      "import": "./dist/Tabs.js",
-      "require": "./dist/Tabs.cjs"
-    },
-    "./Badge": {
-      "types": "./dist/Tag.d.ts",
-      "import": "./dist/Tag.js",
-      "require": "./dist/Tag.cjs"
-    },
-    "./Panel": {
-      "types": "./dist/Card.d.ts",
-      "import": "./dist/Card.js",
-      "require": "./dist/Card.cjs"
-    },
-    "./Spinner": {
-      "types": "./dist/Empty.d.ts",
-      "import": "./dist/Empty.js",
-      "require": "./dist/Empty.cjs"
-    },
-    "./Skeleton": {
-      "types": "./dist/Empty.d.ts",
-      "import": "./dist/Empty.js",
-      "require": "./dist/Empty.cjs"
-    },
-    "./TablePro": {
-      "types": "./dist/Table.d.ts",
-      "import": "./dist/Table.js",
-      "require": "./dist/Table.cjs"
-    },
     "./TitleBar": {
       "types": "./dist/AppShell.d.ts",
       "import": "./dist/AppShell.js",
@@ -82,15 +37,25 @@
       "import": "./dist/StatusBar.js",
       "require": "./dist/StatusBar.cjs"
     },
+    "./MessageContainer": {
+      "types": "./dist/Message.d.ts",
+      "import": "./dist/Message.js",
+      "require": "./dist/Message.cjs"
+    },
+    "./message": {
+      "types": "./dist/Message.d.ts",
+      "import": "./dist/Message.js",
+      "require": "./dist/Message.cjs"
+    },
     "./ToastContainer": {
-      "types": "./dist/Toast.d.ts",
-      "import": "./dist/Toast.js",
-      "require": "./dist/Toast.cjs"
+      "types": "./dist/Message.d.ts",
+      "import": "./dist/Message.js",
+      "require": "./dist/Message.cjs"
     },
     "./toast": {
-      "types": "./dist/Toast.d.ts",
-      "import": "./dist/Toast.js",
-      "require": "./dist/Toast.cjs"
+      "types": "./dist/Message.d.ts",
+      "import": "./dist/Message.js",
+      "require": "./dist/Message.cjs"
     },
     "./*": {
       "types": "./dist/*.d.ts",

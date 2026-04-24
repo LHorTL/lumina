@@ -8,6 +8,7 @@ const SectionSelect: React.FC<SectionCtx> = () => {
   const [lang, setLang] = React.useState("zh");
   const [tags, setTags] = React.useState<string[]>(["design", "ui"]);
   const [city, setCity] = React.useState<string | undefined>("sh");
+  const [aliasValue, setAliasValue] = React.useState<string | undefined>();
   const [framework, setFramework] = React.useState("");
   const [loading, setLoading] = React.useState(false);
   const [asyncOpts, setAsyncOpts] = React.useState<{ value: string; label: string }[]>([]);
@@ -109,6 +110,39 @@ const SectionSelect: React.FC<SectionCtx> = () => {
           ),
         },
         {
+          id: "prop-aliases",
+          title: "常用 prop 别名",
+          description: "allowClear / showSearch / popupClassName / optionFilterProp 可直接使用。",
+          code: `<Select
+  allowClear
+  showSearch
+  popupClassName="my-select-popup"
+  optionFilterProp="label"
+  value={value}
+  onChange={setValue}
+  options={options}
+/>`,
+          render: () => (
+            <Field label="别名写法">
+              <Select
+                allowClear
+                showSearch
+                popupClassName="demo-select-popup"
+                optionFilterProp="label"
+                value={aliasValue}
+                onChange={setAliasValue}
+                placeholder="搜索组件..."
+                options={[
+                  { value: "modal", label: "Modal 对话框" },
+                  { value: "message", label: "Message 消息" },
+                  { value: "cascader", label: "Cascader 级联" },
+                  { value: "popover", label: "Popover 气泡卡片" },
+                ]}
+              />
+            </Field>
+          ),
+        },
+        {
           id: "group",
           title: "分组",
           description: "options 接受 { label, options } 表示分组。",
@@ -201,8 +235,12 @@ const SectionSelect: React.FC<SectionCtx> = () => {
             { prop: "multiple", description: "多选", type: "boolean", default: "false" },
             { prop: "maxTagCount", description: "多选时显示的标签数(超出折叠 +N)", type: "number" },
             { prop: "searchable", description: "可搜索", type: "boolean", default: "false" },
+            { prop: "showSearch", description: "searchable 的等价别名", type: "boolean", default: "false" },
             { prop: "filterOption", description: "自定义过滤", type: "(input, option) => boolean" },
+            { prop: "optionFilterProp", description: "默认过滤使用的 option 字段", type: `"label" | "value" | "text" | string` },
             { prop: "clearable", description: "可清除", type: "boolean", default: "false" },
+            { prop: "allowClear", description: "clearable 的等价别名", type: "boolean | { clearIcon? }", default: "false" },
+            { prop: "menuClassName / popupClassName", description: "浮层菜单 className", type: "string" },
             { prop: "loading", description: "加载态", type: "boolean", default: "false" },
             { prop: "emptyContent", description: "空态文案", type: "ReactNode" },
             { prop: "size", description: "尺寸", type: `"sm" | "md" | "lg"`, default: `"md"` },

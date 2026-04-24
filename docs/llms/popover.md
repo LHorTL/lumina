@@ -71,6 +71,21 @@ import { Popover } from "@fangxinyan/lumina";
 </div>
 ```
 
+### 细分位置与浮层 class
+
+placement 支持 bottomLeft 等细分方向,overlayClassName 可标记浮层节点。
+
+```tsx
+<Popover
+  placement="bottomLeft"
+  overlayClassName="settings-popover"
+  title="快捷设置"
+  content={<div>显示在触发器左下方。</div>}
+>
+  <Button icon="settings">设置</Button>
+</Popover>
+```
+
 ### 箭头
 
 arrow 属性添加指向触发元素的小箭头
@@ -152,7 +167,7 @@ trigger="hover" 鼠标悬停触发
 | --- | --- | --- | --- |
 | content \* | `ReactNode` | — | 浮层内容 |
 | title | `ReactNode` | — | 标题 |
-| placement | `"top" | "bottom" | "left" | "right"` | `"bottom"` | 弹出位置 |
+| placement | `"top" | "bottom" | "left" | "right" | ...` | `"bottom"` | 弹出位置,支持 bottomLeft 等细分方向 |
 | trigger | `"click" | "hover"` | `"click"` | 触发方式 |
 | arrow | `boolean` | `false` | 显示箭头 |
 | closable | `boolean` | `false` | 显示关闭按钮 |
@@ -160,6 +175,8 @@ trigger="hover" 鼠标悬停触发
 | open | `boolean` | — | 受控显示状态 |
 | defaultOpen | `boolean` | `false` | 非受控初始状态 |
 | onOpenChange | `(open: boolean) => void` | — | 显示状态变化回调 |
+| visible / onVisibleChange | `boolean / (visible) => void` | — | 受控显示状态别名 |
+| overlayClassName / popupClassName | `string` | — | 浮层 className |
 
 
 ---

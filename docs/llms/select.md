@@ -37,6 +37,22 @@ searchable + clearable + 选项 icon/description。
 />
 ```
 
+### 常用 prop 别名
+
+allowClear / showSearch / popupClassName / optionFilterProp 可直接使用。
+
+```tsx
+<Select
+  allowClear
+  showSearch
+  popupClassName="my-select-popup"
+  optionFilterProp="label"
+  value={value}
+  onChange={setValue}
+  options={options}
+/>
+```
+
 ### 分组
 
 options 接受 { label, options } 表示分组。
@@ -75,8 +91,12 @@ loading 时显示 spinner,emptyContent 自定义空态。
 | multiple | `boolean` | `false` | 多选 |
 | maxTagCount | `number` | — | 多选时显示的标签数(超出折叠 +N) |
 | searchable | `boolean` | `false` | 可搜索 |
+| showSearch | `boolean` | `false` | searchable 的等价别名 |
 | filterOption | `(input, option) => boolean` | — | 自定义过滤 |
+| optionFilterProp | `"label" | "value" | "text" | string` | — | 默认过滤使用的 option 字段 |
 | clearable | `boolean` | `false` | 可清除 |
+| allowClear | `boolean | { clearIcon? }` | `false` | clearable 的等价别名 |
+| menuClassName / popupClassName | `string` | — | 浮层菜单 className |
 | loading | `boolean` | `false` | 加载态 |
 | emptyContent | `ReactNode` | — | 空态文案 |
 | size | `"sm" | "md" | "lg"` | `"md"` | 尺寸 |

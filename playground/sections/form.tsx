@@ -7,7 +7,7 @@ import {
   InputNumber,
   Select,
   Switch,
-  toast,
+  message,
 } from "lumina";
 import { DocPage } from "../docs";
 import { Row } from "./_shared";
@@ -17,7 +17,7 @@ const SectionForm: React.FC<SectionCtx> = () => (
   <DocPage
     whenToUse={
       <>
-        <p>受控表单,封装字段绑定、校验规则、错误展示。API 对齐 antd Form(scope 有裁剪,详见下方 API)。</p>
+        <p>受控表单,封装字段绑定、校验规则、错误展示,适合中小型配置表单与提交流程。</p>
         <ul className="doc-usecase-list">
           <li>用 <code>Form.useForm()</code> 拿到实例,通过 <code>validateFields</code> / <code>setFieldsValue</code> / <code>resetFields</code> 操作表单</li>
           <li><code>Form.Item</code> 包裹输入控件,自动注入 value / onChange</li>
@@ -50,8 +50,8 @@ const SectionForm: React.FC<SectionCtx> = () => (
               <Form
                 form={form}
                 layout="vertical"
-                onFinish={(values) => toast.success(`提交:${JSON.stringify(values)}`)}
-                onFinishFailed={() => toast.error("校验未通过")}
+                onFinish={(values) => message.success(`提交:${JSON.stringify(values)}`)}
+                onFinishFailed={() => message.error("校验未通过")}
               >
                 <Form.Item
                   name="username"
@@ -101,7 +101,7 @@ const SectionForm: React.FC<SectionCtx> = () => (
                 form={form}
                 layout="vertical"
                 initialValues={{ port: 8080 }}
-                onFinish={(v) => toast.success(`OK: ${JSON.stringify(v)}`)}
+                onFinish={(v) => message.success(`OK: ${JSON.stringify(v)}`)}
               >
                 <Form.Item
                   name="handle"
@@ -155,7 +155,7 @@ const SectionForm: React.FC<SectionCtx> = () => (
                 form={form}
                 layout="vertical"
                 initialValues={{ agree: false, notify: true, plan: "pro" }}
-                onFinish={(v) => toast.success(JSON.stringify(v))}
+                onFinish={(v) => message.success(JSON.stringify(v))}
               >
                 <Form.Item
                   name="agree"
@@ -325,9 +325,9 @@ form.resetFields()`,
                   <Button onClick={async () => {
                     try {
                       const v = await form.validateFields();
-                      toast.success(`validate ok: ${JSON.stringify(v)}`);
+                      message.success(`validate ok: ${JSON.stringify(v)}`);
                     } catch {
-                      toast.error("validate 失败");
+                      message.error("validate 失败");
                     }
                   }}>Validate</Button>
                   <Button variant="ghost" onClick={() => form.resetFields()}>Reset</Button>
@@ -400,6 +400,6 @@ export default defineSection({
   label: "Form 表单",
   eyebrow: "FORM",
   title: "Form 表单",
-  desc: "受控表单,字段绑定 + 校验,API 对齐 antd。",
+  desc: "受控表单,字段绑定 + 校验。",
   Component: SectionForm,
 });

@@ -6,7 +6,7 @@ import { defineSection, type SectionCtx } from "./_types";
 
 const SectionAutoComplete: React.FC<SectionCtx> = () => (
   <DocPage
-    whenToUse={<p>输入时展示建议下拉。不强制从选项中选,用户仍可自由输入。API 对齐 antd AutoComplete。</p>}
+    whenToUse={<p>输入时展示建议下拉。不强制从选项中选,用户仍可自由输入。</p>}
     demos={[
       {
         id: "basic",

@@ -16,6 +16,21 @@ import { Cascader } from "@fangxinyan/lumina";
 <Cascader options={regions} value={addr} onChange={setAddr} />
 ```
 
+### 搜索与清除
+
+showSearch 开启路径搜索,allowClear 提供一键清空,popupClassName 可标记浮层。
+
+```tsx
+<Cascader
+  showSearch={{ limit: 8 }}
+  allowClear
+  popupClassName="my-cascader-popup"
+  options={regions}
+  value={addr}
+  onChange={setAddr}
+/>
+```
+
 ## API
 
 **Cascader**
@@ -27,6 +42,10 @@ import { Cascader } from "@fangxinyan/lumina";
 | onChange | `(path: string[]) => void` | — | 选择叶子时触发 |
 | placeholder | `string` | — | 占位文案 |
 | disabled | `boolean` | `false` | 禁用 |
+| allowClear | `boolean` | `false` | 显示清除按钮 |
+| showSearch | `boolean | { filter?, render?, limit? }` | — | 搜索路径,支持 boolean / 对象配置 |
+| popupClassName / dropdownClassName | `string` | — | 浮层面板 className |
+| changeOnSelect | `boolean` | `false` | 允许选中非叶子节点 |
 
 
 ---

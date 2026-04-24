@@ -1,0 +1,53 @@
+/* ============ Collapse ============ */
+.collapse { display: flex; flex-direction: column; gap: 10px; }
+.collapse-item {
+  background: var(--bg);
+  border-radius: var(--r-md);
+  box-shadow: var(--neu-out-sm);
+  overflow: hidden;
+}
+.collapse.ghost .collapse-item {
+  background: transparent;
+  box-shadow: none;
+  border-radius: var(--r-sm);
+}
+.collapse-item.disabled { opacity: 0.5; }
+.collapse-head {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  color: var(--fg);
+  text-align: left;
+}
+.collapse.small .collapse-head { padding: 10px 14px; font-size: 12px; }
+.collapse.large .collapse-head { padding: 18px 22px; font-size: 14px; }
+.collapse-item.disabled .collapse-head { cursor: not-allowed; }
+.collapse-item.icon-only .collapse-head:not(:disabled) { cursor: default; }
+.collapse-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height var(--dur) var(--ease);
+  color: var(--fg-muted);
+  font-size: 13px;
+}
+.collapse-body-inner { padding: 0 18px 16px; }
+.collapse.small .collapse-body-inner { padding: 0 14px 12px; }
+.collapse.large .collapse-body-inner { padding: 0 22px 20px; }
+.collapse-chev {
+  transition: transform var(--dur) var(--ease), color var(--dur) var(--ease);
+  color: var(--fg-subtle);
+  display: inline-flex;
+  border-radius: var(--r-xs);
+  padding: 2px;
+}
+.collapse-chev.clickable { cursor: pointer; }
+.collapse-chev.clickable:hover { color: var(--fg); background: var(--bg); box-shadow: var(--neu-flat); }
+.collapse-item.open .collapse-chev { transform: rotate(180deg); color: var(--accent); }
