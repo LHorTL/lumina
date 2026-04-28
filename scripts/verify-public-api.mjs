@@ -92,6 +92,7 @@ import {
   type TagProps,
   type TableProProps,
   type TextareaProps,
+  type ThemePanelCreateThemePayload,
   type ThemePanelPresetOption,
   type ThemePanelProps,
   type TooltipProps,
@@ -271,6 +272,12 @@ const themePanelProps: ThemePanelProps = {
   sections: ["mode", "accent", "intensity", "radius"],
   presetOptions: [...THEME_PANEL_DEFAULT_PRESET_OPTIONS, ...themePanelPresetOptions],
   defaultCustomAccent: "#845ef7",
+  allowCreateTheme: true,
+  defaultCreateThemeName: "Custom",
+  createThemeKeyPrefix: "user",
+  onCreateTheme: (payload: ThemePanelCreateThemePayload) => {
+    void payload.preset;
+  },
   showReset: false,
   className: "theme-panel-check",
   style: { width: 320 },

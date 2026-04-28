@@ -67,11 +67,12 @@ const SectionThemePanel: React.FC<SectionCtx> = () => (
       <>
         <p>
           ThemePanel 是可直接放进应用的主题快速控制面板。它读取最近的 ThemeProvider,
-          并通过 useTheme 修改 mode、命名主题、强调色、阴影、圆角、字体和密度。
+          并通过 useTheme 修改 mode、命名主题、强调色、阴影、圆角、字体和密度,也可以把当前草稿保存成新的命名主题。
         </p>
         <ul className="doc-usecase-list">
           <li>开发期/内部工具想快速调试主题</li>
           <li>桌面应用想把主题设置作为偏好面板的一部分</li>
+          <li>需要让用户基于当前外观快速保存自己的主题预设</li>
           <li>需要给某个局部 ThemeProvider 提供即时可视化调节</li>
         </ul>
       </>
@@ -80,7 +81,7 @@ const SectionThemePanel: React.FC<SectionCtx> = () => (
       {
         id: "basic",
         title: "完整面板",
-        description: "默认包含浅色、深色、瓷白、助手四个主题卡片;其余控制项直接驱动 useTheme。",
+        description: "默认包含浅色、深色、瓷白、助手四个主题卡片,并提供新建主题入口;其余控制项直接驱动 useTheme。",
         span: 2,
         code: `<ThemeProvider>
   <ThemePanel />
@@ -112,6 +113,10 @@ const SectionThemePanel: React.FC<SectionCtx> = () => (
           { prop: "modeOptions", description: "模式切换项", type: "ThemePanelModeOption[]" },
           { prop: "presetOptions", description: "命名主题预设卡片;不传时使用浅色/深色/瓷白/助手 + theme.themes", type: "ThemePanelPresetOption[]" },
           { prop: "defaultCustomAccent", description: "自定义强调色初始值", type: "string", default: `"#845ef7"` },
+          { prop: "allowCreateTheme", description: "在预设区显示新建主题流程", type: "boolean", default: "true" },
+          { prop: "defaultCreateThemeName", description: "新建主题的默认名称", type: "string", default: `"我的主题"` },
+          { prop: "createThemeKeyPrefix", description: "生成自建主题 mode key 时使用的前缀", type: "string", default: `"user"` },
+          { prop: "onCreateTheme", description: "保存自建主题后的回调,可用于业务侧持久化 label / preset", type: "(payload: ThemePanelCreateThemePayload) => void" },
           { prop: "showReset", description: "显示重置按钮", type: "boolean", default: "true" },
           { prop: "compact", description: "紧凑布局", type: "boolean", default: "false" },
         ],
@@ -130,6 +135,15 @@ const SectionThemePanel: React.FC<SectionCtx> = () => (
           { prop: "label", description: "卡片标题", type: "ReactNode", required: true },
           { prop: "description", description: "卡片说明", type: "ReactNode" },
           { prop: "preset", description: "可选 preset;点击时会注册并应用", type: "ThemePreset" },
+        ],
+      },
+      {
+        title: "ThemePanelCreateThemePayload",
+        rows: [
+          { prop: "key", description: "保存后注册到 ThemeProvider 的 mode key", type: "ThemeMode" },
+          { prop: "label", description: "用户输入的主题名称", type: "string" },
+          { prop: "description", description: "ThemePanel 生成的说明文案,如自建亮/自建暗", type: "string" },
+          { prop: "preset", description: "最终保存到 theme.themes 的主题配置", type: "ThemePreset" },
         ],
       },
     ]}

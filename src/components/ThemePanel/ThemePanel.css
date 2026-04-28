@@ -203,3 +203,124 @@
 .theme-panel .btn.block {
   margin-top: var(--gap-1);
 }
+
+.theme-panel-create {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  border-radius: var(--r-md);
+  background: var(--bg);
+  box-shadow: var(--neu-in-sm);
+}
+
+.theme-panel-create-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.theme-panel-create-head > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.theme-panel-create-head span {
+  color: var(--fg);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.theme-panel-create-head small {
+  min-width: 0;
+  color: var(--fg-subtle);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.theme-panel-create-field {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--fg-subtle);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+.theme-panel-create-field .radio-group.segmented {
+  width: 100%;
+}
+
+.theme-panel-create-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.theme-panel-create-grid .cp-trigger,
+.theme-panel-create-grid .cp-custom-trigger {
+  width: 100%;
+}
+
+.theme-panel-create-sliders {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 2px 0;
+}
+
+.theme-panel-create-preview {
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 7px 9px;
+  border-radius: var(--preview-radius, var(--r-md));
+  color: var(--preview-fg, var(--fg));
+  background: var(--preview-bg, var(--bg));
+  box-shadow:
+    calc(var(--shadow-offset) * 0.45) calc(var(--shadow-offset) * 0.45) calc(var(--shadow-blur) * 0.55) var(--preview-shadow-dark, var(--shadow-dark)),
+    calc(var(--shadow-offset) * -0.45) calc(var(--shadow-offset) * -0.45) calc(var(--shadow-blur) * 0.55) var(--preview-shadow-light, var(--shadow-light));
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.theme-panel-create-preview-label {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: inherit;
+}
+
+.theme-panel-create-preview-label > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.theme-panel-create-preview i {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--r-pill);
+  background: var(--preview-accent, var(--accent));
+  box-shadow:
+    inset 1px 1px 2px color-mix(in oklch, var(--preview-accent, var(--accent)) 50%, white),
+    0 0 0 4px var(--preview-accent-glow, var(--accent-glow));
+}
+
+.theme-panel-create-actions {
+  display: grid;
+  grid-template-columns: 0.85fr 1fr;
+  gap: 8px;
+}

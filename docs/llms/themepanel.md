@@ -12,7 +12,7 @@ import { ThemeProvider, ThemePanel, THEME_PANEL_DEFAULT_PRESET_OPTIONS, THEME_PA
 
 ### 完整面板
 
-默认包含浅色、深色、瓷白、助手四个主题卡片;其余控制项直接驱动 useTheme。
+默认包含浅色、深色、瓷白、助手四个主题卡片,并提供新建主题入口;其余控制项直接驱动 useTheme。
 
 ```tsx
 <ThemeProvider>
@@ -46,6 +46,10 @@ import { ThemeProvider, ThemePanel, THEME_PANEL_DEFAULT_PRESET_OPTIONS, THEME_PA
 | modeOptions | `ThemePanelModeOption[]` | — | 模式切换项 |
 | presetOptions | `ThemePanelPresetOption[]` | — | 命名主题预设卡片;不传时使用浅色/深色/瓷白/助手 + theme.themes |
 | defaultCustomAccent | `string` | `"#845ef7"` | 自定义强调色初始值 |
+| allowCreateTheme | `boolean` | `true` | 在预设区显示新建主题流程 |
+| defaultCreateThemeName | `string` | `"我的主题"` | 新建主题的默认名称 |
+| createThemeKeyPrefix | `string` | `"user"` | 生成自建主题 mode key 时使用的前缀 |
+| onCreateTheme | `(payload: ThemePanelCreateThemePayload) => void` | — | 保存自建主题后的回调,可用于业务侧持久化 label / preset |
 | showReset | `boolean` | `true` | 显示重置按钮 |
 | compact | `boolean` | `false` | 紧凑布局 |
 
@@ -66,6 +70,16 @@ import { ThemeProvider, ThemePanel, THEME_PANEL_DEFAULT_PRESET_OPTIONS, THEME_PA
 | label \* | `ReactNode` | — | 卡片标题 |
 | description | `ReactNode` | — | 卡片说明 |
 | preset | `ThemePreset` | — | 可选 preset;点击时会注册并应用 |
+
+
+**ThemePanelCreateThemePayload**
+
+| Prop | 类型 | 默认 | 说明 |
+| --- | --- | --- | --- |
+| key | `ThemeMode` | — | 保存后注册到 ThemeProvider 的 mode key |
+| label | `string` | — | 用户输入的主题名称 |
+| description | `string` | — | ThemePanel 生成的说明文案,如自建亮/自建暗 |
+| preset | `ThemePreset` | — | 最终保存到 theme.themes 的主题配置 |
 
 
 ---
