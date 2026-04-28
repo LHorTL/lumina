@@ -47,4 +47,4 @@ export * from "./components/Theme";
 export * from "./components/Timeline";
 
 /** Package version — bumped by release scripts. */
-export const VERSION = "0.6.2";
+export const VERSION = "0.6.3";
