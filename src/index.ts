@@ -12,6 +12,7 @@ export * from "./components/Select";
 export * from "./components/Tabs";
 export * from "./components/Collapse";
 export * from "./components/Card";
+export * from "./components/Surface";
 export * from "./components/Tag";
 export * from "./components/Badge";
 export * from "./components/Avatar";
@@ -44,6 +45,7 @@ export * from "./components/Typography";
 export * from "./components/ColorPicker";
 export * from "./components/Drawer";
 export * from "./components/Theme";
+export * from "./components/ThemePanel";
 export * from "./components/Timeline";
 
 /** Package version — bumped by release scripts. */

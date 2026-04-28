@@ -17,6 +17,7 @@
 @import "../components/Avatar/Avatar.css";
 @import "../components/Divider/Divider.css";
 @import "../components/Card/Card.css";
+@import "../components/Surface/Surface.css";
 @import "../components/Tabs/Tabs.css";
 @import "../components/Collapse/Collapse.css";
 @import "../components/Select/Select.css";
@@ -39,3 +40,4 @@
 @import "../components/Typography/Typography.css";
 @import "../components/ColorPicker/ColorPicker.css";
 @import "../components/AppShell/AppShell.css";
+@import "../components/ThemePanel/ThemePanel.css";

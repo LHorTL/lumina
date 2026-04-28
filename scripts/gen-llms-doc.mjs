@@ -198,6 +198,8 @@ const COMPONENT_ALIAS = {
   cascader: ["Cascader"],
   colorpicker: ["ColorPicker"],
   card: ["Card"],
+  surface: ["Surface", "SURFACE_THEME_PRESETS"],
+  themepanel: ["ThemeProvider", "ThemePanel", "THEME_PANEL_DEFAULT_PRESET_OPTIONS", "THEME_PANEL_DEFAULT_THEME_PRESETS"],
   tag: ["Tag"],
   badge: ["Badge"],
   avatar: ["Avatar"],

@@ -43,6 +43,8 @@
 
 - [Lumina](./llms/intro.md) — 为 Electron 应用定制的拟态风格 React 组件库。
 - [Theme 主题](./llms/theme.md) — ThemeProvider + useTheme,覆盖深浅色、自定义模式、强调色、密度、圆角、字体、阴影强度。
+- [Surface 背景面](./llms/surface.md) — 主题感知的背景承载容器,用于给特殊色调内容提供正确的拟态 token 语境。
+- [ThemePanel 主题面板](./llms/themepanel.md) — 可复用的主题快速调节面板,直接驱动最近的 ThemeProvider。
 
 ### 通用
 

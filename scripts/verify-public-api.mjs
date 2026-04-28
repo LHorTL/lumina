@@ -64,9 +64,13 @@ import {
   SpriteImage,
   Skeleton,
   Spin,
+  Surface,
   Tag,
   TablePro,
   Textarea,
+  ThemePanel,
+  THEME_PANEL_DEFAULT_PRESET_OPTIONS,
+  THEME_PANEL_DEFAULT_THEME_PRESETS,
   Tooltip,
   ThemeProvider,
   type BadgeProps,
@@ -84,9 +88,12 @@ import {
   type SpriteImageProps,
   type SkeletonProps,
   type SpinProps,
+  type SurfaceProps,
   type TagProps,
   type TableProProps,
   type TextareaProps,
+  type ThemePanelPresetOption,
+  type ThemePanelProps,
   type TooltipProps,
 } from "@fangxinyan/lumina";
 import {
@@ -229,14 +236,70 @@ const statusBarItemProps: StatusBarItemProps = {
   tone: "accent",
 };
 
+const surfaceProps: SurfaceProps = {
+  preset: "graphite",
+  tone: "base",
+  variant: "raised",
+  padding: "lg",
+  radius: "xl",
+  height: "content",
+  bordered: true,
+  accent: "mint",
+  themeRadius: 18,
+  tokens: { bg: "#171d20" },
+  className: "surface-check",
+  style: { minHeight: 160 },
+};
+
+const themePanelPresetOptions: ThemePanelPresetOption[] = [
+  {
+    key: "graphite",
+    label: "Graphite",
+    description: "Dark",
+    preset: {
+      base: "dark",
+      accent: "mint",
+      tokens: { bg: "#181b22" },
+    },
+  },
+];
+
+const themePanelProps: ThemePanelProps = {
+  compact: true,
+  title: "Theme",
+  description: "Tune",
+  sections: ["mode", "accent", "intensity", "radius"],
+  presetOptions: [...THEME_PANEL_DEFAULT_PRESET_OPTIONS, ...themePanelPresetOptions],
+  defaultCustomAccent: "#845ef7",
+  showReset: false,
+  className: "theme-panel-check",
+  style: { width: 320 },
+};
+
 const Example = () => {
   const buttonRef = React.useRef<HTMLButtonElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const surfaceRef = React.useRef<HTMLDivElement>(null);
+  const themePanelRef = React.useRef<HTMLDivElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   return (
     <ThemeProvider>
       <MessageContainer />
+      <ThemePanel
+        ref={themePanelRef}
+        {...themePanelProps}
+        data-testid="theme-panel"
+        aria-label="theme panel"
+      />
+      <Surface
+        ref={surfaceRef}
+        {...surfaceProps}
+        data-testid="surface"
+        aria-label="surface"
+      >
+        <Button>surface child</Button>
+      </Surface>
       <Button
         ref={buttonRef}
         {...buttonProps}
@@ -318,6 +381,7 @@ const modalHandle: ModalStaticHandle = Modal.confirm({ title: "Confirm", content
 modalHandle.update({ content: "Updated" });
 modalHandle.destroy();
 void resolveIconName("RobotOutlined");
+void THEME_PANEL_DEFAULT_THEME_PRESETS.assistant;
 `;
 
   fs.writeFileSync(smokeFile, smokeSource, "utf8");
