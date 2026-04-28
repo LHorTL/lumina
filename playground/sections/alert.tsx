@@ -42,10 +42,11 @@ const SectionAlert: React.FC<SectionCtx> = () => (
       },
       {
         id: "no-icon",
-        title: "隐藏图标",
+        title: "图标控制",
         span: 2,
-        description: "showIcon={false} 可隐藏左侧语义图标,文本更紧凑。",
-        code: `<Alert tone="info" showIcon={false}>纯文本提示</Alert>`,
+        description: "showIcon={false} 可隐藏左侧语义图标；icon 可传 IconName 或 ReactNode。",
+        code: `<Alert tone="info" showIcon={false}>纯文本提示</Alert>
+<Alert icon={<img src={iconUrl} alt="" />}>自定义图标</Alert>`,
         render: () => (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <Alert tone="info" showIcon={false}>
@@ -53,6 +54,21 @@ const SectionAlert: React.FC<SectionCtx> = () => (
             </Alert>
             <Alert tone="success" showIcon={false} title="保存成功">
               你的修改已生效。
+            </Alert>
+            <Alert
+              tone="info"
+              icon={
+                <span
+                  style={{
+                    width: 16,
+                    height: 16,
+                    borderRadius: 5,
+                    background: "var(--accent)",
+                  }}
+                />
+              }
+            >
+              这是一条带自定义图标的提示。
             </Alert>
           </div>
         ),
@@ -109,7 +125,7 @@ const SectionAlert: React.FC<SectionCtx> = () => (
         rows: [
           { prop: "tone", description: "语气", type: `"info" | "success" | "warning" | "danger"`, default: `"info"` },
           { prop: "title", description: "标题", type: "ReactNode" },
-          { prop: "icon", description: "自定义图标", type: "IconName" },
+          { prop: "icon", description: "自定义图标,可传内置图标名或自定义节点", type: "IconName | ReactNode" },
           { prop: "showIcon", description: "是否显示语义图标", type: "boolean", default: "true" },
           { prop: "action", description: "右侧操作区(如按钮)", type: "ReactNode" },
           { prop: "closable", description: "可关闭", type: "boolean", default: "false" },

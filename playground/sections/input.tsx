@@ -9,7 +9,7 @@ const inputApi: ApiRow[] = [
   { prop: "onChange", description: "变更回调,传入 React 原生事件", type: "(event) => void" },
   { prop: "onValueChange", description: "值回调便捷写法", type: "(value: string, event) => void" },
   { prop: "placeholder", description: "占位文案", type: "string" },
-  { prop: "leadingIcon / trailingIcon", description: "前/后置图标", type: "IconName" },
+  { prop: "leadingIcon / trailingIcon", description: "前/后置图标,可传内置图标名或自定义节点", type: "IconName | ReactNode" },
   { prop: "prefix", description: "左侧内嵌内容(在 leadingIcon 之后)", type: "ReactNode" },
   { prop: "suffix", description: "右侧内嵌内容(在 trailingIcon 之前)", type: "ReactNode" },
   { prop: "allowClear", description: "显示内置的清除按钮", type: "boolean", default: "false" },
@@ -39,6 +39,16 @@ const SectionInput: React.FC<SectionCtx> = () => {
   const [email, setEmail] = React.useState("invalid");
   const [clearable, setClearable] = React.useState("可以清空的输入");
   const [counted, setCounted] = React.useState("");
+  const itemIcon = (
+    <span
+      style={{
+        width: 14,
+        height: 14,
+        borderRadius: 4,
+        background: "var(--accent)",
+      }}
+    />
+  );
   return (
     <DocPage
       whenToUse={<p>用户输入文本时使用,提供单行 Input 与多行 Textarea 两种形态,均支持前后置图标、错误态、禁用态。</p>}
@@ -67,12 +77,18 @@ const SectionInput: React.FC<SectionCtx> = () => {
         {
           id: "icon",
           title: "前后置图标",
-          description: "leadingIcon / trailingIcon。",
-          code: `<Input placeholder="搜索..." leadingIcon="search" />`,
+          description: "leadingIcon / trailingIcon 支持内置 IconName 或外部 ReactNode。",
+          code: `<Input placeholder="搜索..." leadingIcon="search" />
+<Input placeholder="物品名" leadingIcon={<img src={iconUrl} alt="" />} />`,
           render: () => (
-            <Field label="搜索">
-              <Input placeholder="搜索组件、图标..." leadingIcon="search" />
-            </Field>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <Field label="搜索">
+                <Input placeholder="搜索组件、图标..." leadingIcon="search" />
+              </Field>
+              <Field label="物品名">
+                <Input placeholder="搜索外部资源..." leadingIcon={itemIcon} />
+              </Field>
+            </div>
           ),
         },
         {

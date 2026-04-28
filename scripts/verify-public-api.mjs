@@ -53,13 +53,18 @@ import {
   Collapse,
   Cascader,
   Input,
+  Image,
+  ImageGrid,
+  LayeredImage,
   Modal,
   Popover,
   Radio,
   RadioGroup,
   Select,
+  SpriteImage,
   Skeleton,
   Spin,
+  Tag,
   TablePro,
   Textarea,
   Tooltip,
@@ -67,6 +72,8 @@ import {
   type BadgeProps,
   type ButtonProps,
   type CascaderProps,
+  type ImageProps,
+  type LayeredImageProps,
   type CollapseProps,
   type InputProps,
   type ModalStaticHandle,
@@ -74,8 +81,10 @@ import {
   type RadioGroupProps,
   type RadioProps,
   type SelectProps,
+  type SpriteImageProps,
   type SkeletonProps,
   type SpinProps,
+  type TagProps,
   type TableProProps,
   type TextareaProps,
   type TooltipProps,
@@ -100,17 +109,23 @@ const iconButtonProps: ButtonProps = {
   tip: "Add item",
 };
 
+const customIconButtonProps: ButtonProps = {
+  icon: <img src="/icon.png" alt="" />,
+  trailingIcon: <span aria-hidden>!</span>,
+};
+
 const inputProps: InputProps = {
   className: "input-check",
   style: { width: 240 },
   placeholder: "Search",
+  leadingIcon: <img src="/search.png" alt="" />,
   onChange: (event) => {
     void event.target.value;
   },
 };
 
 const selectProps: SelectProps<string> = {
-  options: [{ value: "a", label: "A" }],
+  options: [{ value: "a", label: "A", icon: <img src="/a.png" alt="" /> }],
   allowClear: true,
   showSearch: true,
   popupClassName: "popup-check",
@@ -118,10 +133,38 @@ const selectProps: SelectProps<string> = {
 };
 
 const cascaderProps: CascaderProps = {
-  options: [{ value: "root", label: "Root", children: [{ value: "leaf", label: "Leaf" }] }],
+  options: [{ value: "root", label: "Root", icon: <img src="/root.png" alt="" />, children: [{ value: "leaf", label: "Leaf" }] }],
   showSearch: { limit: 8 },
   allowClear: true,
   popupClassName: "cascader-check",
+};
+
+const imageProps: ImageProps = {
+  variant: "icon",
+  src: "/asset.png",
+  width: 48,
+  height: 48,
+  preview: false,
+  objectFit: "contain",
+};
+
+const spriteImageProps: SpriteImageProps = {
+  src: "/sheet.png",
+  sprite: { x: 16, y: 32, width: 32, height: 32 },
+  alt: "Sprite",
+};
+
+const layeredImageProps: LayeredImageProps = {
+  layers: [
+    { src: "/head.png", alt: "", fit: "cover" },
+    { src: "/frame.png", alt: "" },
+  ],
+  width: 48,
+  height: 48,
+};
+
+const tagProps: TagProps = {
+  icon: <img src="/tag.png" alt="" />,
 };
 
 const tooltipProps: Omit<TooltipProps, "children"> = {
@@ -206,6 +249,10 @@ const Example = () => {
         {...iconButtonProps}
         data-testid="icon-btn"
       />
+      <Button
+        {...customIconButtonProps}
+        data-testid="custom-icon-btn"
+      />
       <Input
         ref={inputRef}
         {...inputProps}
@@ -224,6 +271,13 @@ const Example = () => {
       <Collapse {...collapseProps} data-testid="collapse" />
       <Select {...selectProps} data-testid="select" />
       <Cascader {...cascaderProps} data-testid="cascader" />
+      <Image {...imageProps} data-testid="image" />
+      <ImageGrid images={[{ src: "/one.png", alt: "One", variant: "icon" }]} data-testid="image-grid" />
+      <SpriteImage {...spriteImageProps} data-testid="sprite-image" />
+      <LayeredImage {...layeredImageProps} data-testid="layered-image" />
+      <Tag {...tagProps} data-testid="tag">
+        custom
+      </Tag>
       <Tooltip {...tooltipProps}>
         <Button>tip</Button>
       </Tooltip>

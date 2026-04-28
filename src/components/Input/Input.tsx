@@ -2,7 +2,7 @@ import "../../styles/tokens.css";
 import "../../styles/shared.css";
 import "./Input.css";
 import * as React from "react";
-import { Icon, type IconName } from "../Icon";
+import { Icon, isIconName, renderIconSlot, type IconSlot } from "../Icon";
 import { Textarea, type TextareaProps } from "../Textarea";
 
 export interface InputProps
@@ -17,8 +17,8 @@ export interface InputProps
   /** Convenience value callback for Lumina-style code. */
   onValueChange?: (value: string, event: React.ChangeEvent<HTMLInputElement>) => void;
   placeholder?: string;
-  leadingIcon?: IconName;
-  trailingIcon?: IconName;
+  leadingIcon?: IconSlot;
+  trailingIcon?: IconSlot;
   /** Click handler for the leading icon (stops propagation so the input isn't focused). */
   onLeadingIconClick?: (e: React.MouseEvent<SVGSVGElement>) => void;
   /** Click handler for the trailing icon — e.g. password visibility toggle. */
@@ -115,6 +115,40 @@ const InputBase = React.forwardRef<HTMLInputElement, InputProps>(
           }
         : undefined;
 
+    const renderAffixIcon = (
+      icon: IconSlot,
+      side: "lead" | "trail",
+      handler: ((e: React.MouseEvent<SVGSVGElement>) => void) | undefined
+    ) => {
+      if (icon == null || icon === false) return null;
+      const className = `${side}${handler ? " interactive" : ""}`;
+      if (isIconName(icon)) {
+        return (
+          <Icon
+            name={icon}
+            size={14}
+            className={className}
+            onClick={handleIconClick(handler)}
+          />
+        );
+      }
+      return (
+        <span
+          className={className}
+          onClick={
+            handler
+              ? (e) => {
+                  e.stopPropagation();
+                  if (!disabled) handler(e as unknown as React.MouseEvent<SVGSVGElement>);
+                }
+              : undefined
+          }
+        >
+          {renderIconSlot(icon)}
+        </span>
+      );
+    };
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (!isControlled) setInner(e.target.value);
       onChange?.(e);
@@ -140,14 +174,7 @@ const InputBase = React.forwardRef<HTMLInputElement, InputProps>(
 
     const inputElement = (
       <div className={wrapCls}>
-        {leadingIcon && (
-          <Icon
-            name={leadingIcon}
-            size={14}
-            className={`lead${onLeadingIconClick ? " interactive" : ""}`}
-            onClick={handleIconClick(onLeadingIconClick)}
-          />
-        )}
+        {renderAffixIcon(leadingIcon, "lead", onLeadingIconClick)}
         {prefix && <span className="input-affix prefix">{prefix}</span>}
         <input
           ref={setInputRef}
@@ -173,14 +200,7 @@ const InputBase = React.forwardRef<HTMLInputElement, InputProps>(
             <Icon name="x" size={12} />
           </span>
         )}
-        {trailingIcon && (
-          <Icon
-            name={trailingIcon}
-            size={14}
-            className={`trail${onTrailingIconClick ? " interactive" : ""}`}
-            onClick={handleIconClick(onTrailingIconClick)}
-          />
-        )}
+        {renderAffixIcon(trailingIcon, "trail", onTrailingIconClick)}
       </div>
     );
 

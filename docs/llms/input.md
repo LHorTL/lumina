@@ -24,10 +24,11 @@ const [v, setV] = useState("");
 
 ### 前后置图标
 
-leadingIcon / trailingIcon。
+leadingIcon / trailingIcon 支持内置 IconName 或外部 ReactNode。
 
 ```tsx
 <Input placeholder="搜索..." leadingIcon="search" />
+<Input placeholder="物品名" leadingIcon={<img src={iconUrl} alt="" />} />
 ```
 
 ### Input.Password
@@ -106,7 +107,7 @@ Input.TextArea 与 Textarea 使用同一套多行输入能力,也支持 allowCle
 | onChange | `(event) => void` | — | 变更回调,传入 React 原生事件 |
 | onValueChange | `(value: string, event) => void` | — | 值回调便捷写法 |
 | placeholder | `string` | — | 占位文案 |
-| leadingIcon / trailingIcon | `IconName` | — | 前/后置图标 |
+| leadingIcon / trailingIcon | `IconName | ReactNode` | — | 前/后置图标,可传内置图标名或自定义节点 |
 | prefix | `ReactNode` | — | 左侧内嵌内容(在 leadingIcon 之后) |
 | suffix | `ReactNode` | — | 右侧内嵌内容(在 trailingIcon 之前) |
 | allowClear | `boolean` | `false` | 显示内置的清除按钮 |

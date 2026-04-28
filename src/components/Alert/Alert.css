@@ -14,6 +14,13 @@
   display: grid; place-items: center;
   flex-shrink: 0;
   margin-top: 1px;
+  line-height: 0;
+}
+.alert-ico img {
+  display: block;
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
 }
 .alert.info    .alert-ico { color: var(--info); }
 .alert.success .alert-ico { color: var(--success); }

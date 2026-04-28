@@ -126,6 +126,19 @@
   width: 100%;
   text-align: left;
 }
+.cascader-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  flex-shrink: 0;
+}
+.cascader-icon img {
+  display: block;
+  width: 15px;
+  height: 15px;
+  object-fit: contain;
+}
 .cascader-item:hover { background: var(--bg); box-shadow: var(--neu-flat); color: var(--accent-ink); }
 .cascader-item.active {
   background: var(--bg);

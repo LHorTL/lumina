@@ -2,7 +2,7 @@ import "../../styles/tokens.css";
 import "../../styles/shared.css";
 import "./Tag.css";
 import * as React from "react";
-import { Icon, type IconName } from "../Icon";
+import { Icon, renderIconSlot, type IconSlot } from "../Icon";
 
 export type TagTone = "neutral" | "accent" | "info" | "success" | "warning" | "danger";
 
@@ -11,8 +11,8 @@ export interface TagProps extends React.HTMLAttributes<HTMLSpanElement> {
   solid?: boolean;
   /** Render a leading colored dot. */
   dot?: boolean;
-  /** Leading icon (uses the built-in `Icon` component). */
-  icon?: IconName;
+  /** Leading icon. Accepts a built-in icon name or custom React node. */
+  icon?: IconSlot;
   /** Show a close button. */
   removable?: boolean;
   onRemove?: () => void;
@@ -46,7 +46,7 @@ export const Tag = React.forwardRef<HTMLSpanElement, TagProps>(({
   return (
     <span ref={ref} className={cls} {...rest}>
       {dot && <span className="dot" />}
-      {icon && <Icon name={icon} size={11} className="tag-ico" />}
+      {renderIconSlot(icon, { size: 11, className: "tag-ico" })}
       {children}
       {removable && (
         <span

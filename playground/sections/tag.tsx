@@ -96,9 +96,10 @@ const SectionTag: React.FC<SectionCtx> = () => (
       {
         id: "icon",
         title: "前置图标",
-        description: "icon 使用内置 Icon 组件,颜色随语气自动适配。",
+        description: "icon 可传内置 IconName 或自定义 ReactNode,颜色随语气自动适配。",
         code: `<Tag tone="success" icon="check2">已完成</Tag>
-<Tag tone="info" icon="star">推荐</Tag>`,
+<Tag tone="info" icon="star">推荐</Tag>
+<Tag icon={<img src={iconUrl} alt="" />}>物品</Tag>`,
         render: () => (
           <Row>
             <Tag tone="success" icon="check2">已完成</Tag>
@@ -106,6 +107,20 @@ const SectionTag: React.FC<SectionCtx> = () => (
             <Tag tone="warning" icon="alert">警告</Tag>
             <Tag tone="danger" icon="bell">提醒</Tag>
             <Tag tone="accent" icon="sparkle" solid>AI</Tag>
+            <Tag
+              icon={
+                <span
+                  style={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: 3,
+                    background: "var(--accent)",
+                  }}
+                />
+              }
+            >
+              物品
+            </Tag>
           </Row>
         ),
       },
@@ -139,7 +154,7 @@ const SectionTag: React.FC<SectionCtx> = () => (
           { prop: "tone", description: "色调", type: `"neutral" | "accent" | "info" | "success" | "warning" | "danger"`, default: `"neutral"` },
           { prop: "solid", description: "实心填充", type: "boolean", default: "false" },
           { prop: "dot", description: "前置圆点", type: "boolean", default: "false" },
-          { prop: "icon", description: "前置图标", type: "IconName" },
+          { prop: "icon", description: "前置图标,可传内置图标名或自定义节点", type: "IconName | ReactNode" },
           { prop: "bordered", description: "是否显示外框 flat 阴影", type: "boolean", default: "true" },
           { prop: "removable", description: "显示 ×", type: "boolean", default: "false" },
           { prop: "onRemove", description: "关闭回调", type: "() => void" },

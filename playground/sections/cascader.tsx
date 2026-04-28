@@ -6,6 +6,17 @@ import { defineSection, type SectionCtx } from "./_types";
 
 const SectionCascader: React.FC<SectionCtx> = () => {
   const [addr, setAddr] = React.useState<string[]>(["asia", "cn", "shanghai"]);
+  const regionIcon = (color: string) => (
+    <span
+      style={{
+        width: 14,
+        height: 14,
+        borderRadius: 4,
+        background: color,
+        boxShadow: "var(--neu-flat)",
+      }}
+    />
+  );
   const regions = [
     {
       value: "asia",
@@ -15,6 +26,7 @@ const SectionCascader: React.FC<SectionCtx> = () => {
         {
           value: "cn",
           label: "中国",
+          icon: regionIcon("var(--accent)"),
           children: [
             { value: "beijing", label: "北京" },
             { value: "shanghai", label: "上海" },
@@ -24,6 +36,7 @@ const SectionCascader: React.FC<SectionCtx> = () => {
         {
           value: "jp",
           label: "日本",
+          icon: regionIcon("var(--success)"),
           children: [
             { value: "tokyo", label: "东京" },
             { value: "osaka", label: "大阪" },
@@ -34,7 +47,7 @@ const SectionCascader: React.FC<SectionCtx> = () => {
     {
       value: "europe",
       label: "欧洲",
-      icon: "layers" as const,
+      icon: regionIcon("var(--info)"),
       children: [
         { value: "de", label: "德国", children: [{ value: "berlin", label: "柏林" }] },
         { value: "fr", label: "法国", children: [{ value: "paris", label: "巴黎" }] },
@@ -49,6 +62,7 @@ const SectionCascader: React.FC<SectionCtx> = () => {
           id: "basic",
           title: "基础用法",
           span: 2,
+          description: "option.icon 支持 IconName 或 ReactNode。",
           code: `<Cascader options={regions} value={addr} onChange={setAddr} />`,
           render: () => (
             <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
@@ -96,6 +110,7 @@ const SectionCascader: React.FC<SectionCtx> = () => {
           title: "Cascader",
           rows: [
             { prop: "options", description: "层级选项树", type: "CascaderOption[]", required: true },
+            { prop: "options[].icon", description: "选项前置图标,可传内置图标名或自定义节点", type: "IconName | ReactNode" },
             { prop: "value / defaultValue", description: "受控/初始路径", type: "string[]" },
             { prop: "onChange", description: "选择叶子时触发", type: "(path: string[]) => void" },
             { prop: "placeholder", description: "占位文案", type: "string" },

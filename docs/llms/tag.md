@@ -34,11 +34,12 @@ dot 渲染前置色块。
 
 ### 前置图标
 
-icon 使用内置 Icon 组件,颜色随语气自动适配。
+icon 可传内置 IconName 或自定义 ReactNode,颜色随语气自动适配。
 
 ```tsx
 <Tag tone="success" icon="check2">已完成</Tag>
 <Tag tone="info" icon="star">推荐</Tag>
+<Tag icon={<img src={iconUrl} alt="" />}>物品</Tag>
 ```
 
 ### 无边框
@@ -67,7 +68,7 @@ removable + onRemove 实现关闭按钮。
 | tone | `"neutral" | "accent" | "info" | "success" | "warning" | "danger"` | `"neutral"` | 色调 |
 | solid | `boolean` | `false` | 实心填充 |
 | dot | `boolean` | `false` | 前置圆点 |
-| icon | `IconName` | — | 前置图标 |
+| icon | `IconName | ReactNode` | — | 前置图标,可传内置图标名或自定义节点 |
 | bordered | `boolean` | `true` | 是否显示外框 flat 阴影 |
 | removable | `boolean` | `false` | 显示 × |
 | onRemove | `() => void` | — | 关闭回调 |

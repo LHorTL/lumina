@@ -3,14 +3,15 @@ import "../../styles/shared.css";
 import "./Cascader.css";
 import * as React from "react";
 import { createPortal } from "react-dom";
-import { Icon, type IconName } from "../Icon";
+import { Icon, renderIconSlot, type IconSlot } from "../Icon";
 import { Input } from "../Input";
 import { useFloating } from "../../utils/useFloating";
 
 export interface CascaderOption {
   value: string;
   label: React.ReactNode;
-  icon?: IconName;
+  /** Leading icon. Accepts a built-in icon name or custom React node. */
+  icon?: IconSlot;
   children?: CascaderOption[];
   disabled?: boolean;
 }
@@ -279,7 +280,7 @@ export const Cascader = React.forwardRef<HTMLDivElement, CascaderProps>(({
                           disabled={o.disabled}
                           onClick={() => pick(depth, o.value, hasChildren)}
                         >
-                          {o.icon && <Icon name={o.icon} size={13} />}
+                          {renderIconSlot(o.icon, { size: 13, className: "cascader-icon" })}
                           <span>{o.label}</span>
                           {hasChildren && (
                             <span className="chev">

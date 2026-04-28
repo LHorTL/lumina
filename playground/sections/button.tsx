@@ -7,8 +7,8 @@ import { defineSection, type SectionCtx } from "./_types";
 const buttonApi: ApiRow[] = [
   { prop: "variant", description: "按钮风格", type: `"default" | "primary" | "ghost" | "danger"`, default: `"default"` },
   { prop: "size", description: "按钮尺寸", type: `"sm" | "md" | "lg"`, default: `"md"` },
-  { prop: "icon", description: "前置图标", type: "IconName" },
-  { prop: "trailingIcon", description: "后置图标", type: "IconName" },
+  { prop: "icon", description: "前置图标,可传内置图标名或自定义节点", type: "IconName | ReactNode" },
+  { prop: "trailingIcon", description: "后置图标,可传内置图标名或自定义节点", type: "IconName | ReactNode" },
   { prop: "iconOnly", description: "渲染为纯图标方形按钮", type: "boolean", default: "自动" },
   { prop: "tip", description: "原生悬浮提示,常用于纯图标按钮", type: "string" },
   { prop: "loading", description: "加载态", type: "boolean", default: "false" },
@@ -19,6 +19,17 @@ const buttonApi: ApiRow[] = [
 
 const SectionButton: React.FC<SectionCtx> = () => {
   const [loading, setLoading] = React.useState(false);
+  const itemIcon = (
+    <span
+      style={{
+        width: 14,
+        height: 14,
+        borderRadius: 4,
+        background: "linear-gradient(135deg, var(--accent), var(--success))",
+        boxShadow: "0 0 8px var(--accent-glow)",
+      }}
+    />
+  );
   const demos: DocDemoSpec[] = [
     {
       id: "basic",
@@ -40,15 +51,17 @@ const SectionButton: React.FC<SectionCtx> = () => {
     {
       id: "icon",
       title: "图标按钮",
-      description: "icon 在前,trailingIcon 在后。",
+      description: "icon 在前,trailingIcon 在后,既支持内置 IconName,也支持外部 ReactNode。",
       code: `<Button variant="primary" icon="sparkle">新建</Button>
 <Button icon="download">下载</Button>
-<Button trailingIcon="arrowRight">下一步</Button>`,
+<Button trailingIcon="arrowRight">下一步</Button>
+<Button icon={<img src={iconUrl} alt="" />}>外部图标</Button>`,
       render: () => (
         <Row>
           <Button variant="primary" icon="sparkle">新建</Button>
           <Button icon="download">下载</Button>
           <Button trailingIcon="arrowRight">下一步</Button>
+          <Button icon={itemIcon}>外部图标</Button>
         </Row>
       ),
     },

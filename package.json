@@ -57,6 +57,21 @@
       "import": "./dist/Message.js",
       "require": "./dist/Message.cjs"
     },
+    "./ImageGrid": {
+      "types": "./dist/Image.d.ts",
+      "import": "./dist/Image.js",
+      "require": "./dist/Image.cjs"
+    },
+    "./SpriteImage": {
+      "types": "./dist/Image.d.ts",
+      "import": "./dist/Image.js",
+      "require": "./dist/Image.cjs"
+    },
+    "./LayeredImage": {
+      "types": "./dist/Image.d.ts",
+      "import": "./dist/Image.js",
+      "require": "./dist/Image.cjs"
+    },
     "./*": {
       "types": "./dist/*.d.ts",
       "import": "./dist/*.js",

@@ -23,12 +23,13 @@ import { Button } from "@fangxinyan/lumina";
 
 ### 图标按钮
 
-icon 在前,trailingIcon 在后。
+icon 在前,trailingIcon 在后,既支持内置 IconName,也支持外部 ReactNode。
 
 ```tsx
 <Button variant="primary" icon="sparkle">新建</Button>
 <Button icon="download">下载</Button>
 <Button trailingIcon="arrowRight">下一步</Button>
+<Button icon={<img src={iconUrl} alt="" />}>外部图标</Button>
 ```
 
 ### 加载与禁用
@@ -77,8 +78,8 @@ Button 在只有 icon 时自动呈现为方形按钮,常配合 tip 使用。
 | --- | --- | --- | --- |
 | variant | `"default" | "primary" | "ghost" | "danger"` | `"default"` | 按钮风格 |
 | size | `"sm" | "md" | "lg"` | `"md"` | 按钮尺寸 |
-| icon | `IconName` | — | 前置图标 |
-| trailingIcon | `IconName` | — | 后置图标 |
+| icon | `IconName | ReactNode` | — | 前置图标,可传内置图标名或自定义节点 |
+| trailingIcon | `IconName | ReactNode` | — | 后置图标,可传内置图标名或自定义节点 |
 | iconOnly | `boolean` | `自动` | 渲染为纯图标方形按钮 |
 | tip | `string` | — | 原生悬浮提示,常用于纯图标按钮 |
 | loading | `boolean` | `false` | 加载态 |

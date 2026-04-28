@@ -12,6 +12,17 @@ const SectionSelect: React.FC<SectionCtx> = () => {
   const [framework, setFramework] = React.useState("");
   const [loading, setLoading] = React.useState(false);
   const [asyncOpts, setAsyncOpts] = React.useState<{ value: string; label: string }[]>([]);
+  const itemIcon = (tone: string) => (
+    <span
+      style={{
+        width: 16,
+        height: 16,
+        borderRadius: 5,
+        background: tone,
+        boxShadow: "var(--neu-flat)",
+      }}
+    />
+  );
   const triggerLoad = () => {
     setLoading(true);
     setAsyncOpts([]);
@@ -85,7 +96,7 @@ const SectionSelect: React.FC<SectionCtx> = () => {
         {
           id: "search",
           title: "搜索过滤",
-          description: "searchable + clearable + 选项 icon/description。",
+          description: "searchable + clearable + 选项 icon/description。icon 支持 IconName 或 ReactNode。",
           code: `<Select searchable clearable
   options={[{ value, label, icon, description }]}
 />`,
@@ -100,8 +111,8 @@ const SectionSelect: React.FC<SectionCtx> = () => {
                 placeholder="搜索城市..."
                 options={[
                   { value: "bj", label: "北京", icon: "home", description: "中国 · 首都" },
-                  { value: "sh", label: "上海", icon: "home", description: "中国 · 直辖市" },
-                  { value: "tk", label: "东京", icon: "home", description: "日本" },
+                  { value: "sh", label: "上海", icon: itemIcon("var(--accent)"), description: "中国 · 直辖市" },
+                  { value: "tk", label: "东京", icon: itemIcon("var(--success)"), description: "日本" },
                   { value: "ld", label: "伦敦", icon: "home", description: "英国" },
                   { value: "pa", label: "巴黎", icon: "home", description: "法国" },
                 ]}
@@ -253,7 +264,7 @@ const SectionSelect: React.FC<SectionCtx> = () => {
           rows: [
             { prop: "value", description: "值", type: "T", required: true },
             { prop: "label", description: "显示", type: "ReactNode" },
-            { prop: "icon", description: "前置图标", type: "IconName" },
+            { prop: "icon", description: "前置图标,可传内置图标名或自定义节点", type: "IconName | ReactNode" },
             { prop: "description", description: "次要描述", type: "ReactNode" },
             { prop: "disabled", description: "禁用项", type: "boolean", default: "false" },
           ],

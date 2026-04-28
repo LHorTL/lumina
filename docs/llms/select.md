@@ -29,7 +29,7 @@ multiple + Tag 形式呈现已选项。
 
 ### 搜索过滤
 
-searchable + clearable + 选项 icon/description。
+searchable + clearable + 选项 icon/description。icon 支持 IconName 或 ReactNode。
 
 ```tsx
 <Select searchable clearable
@@ -110,7 +110,7 @@ loading 时显示 spinner,emptyContent 自定义空态。
 | --- | --- | --- | --- |
 | value \* | `T` | — | 值 |
 | label | `ReactNode` | — | 显示 |
-| icon | `IconName` | — | 前置图标 |
+| icon | `IconName | ReactNode` | — | 前置图标,可传内置图标名或自定义节点 |
 | description | `ReactNode` | — | 次要描述 |
 | disabled | `boolean` | `false` | 禁用项 |
 

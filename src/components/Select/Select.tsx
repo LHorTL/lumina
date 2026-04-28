@@ -3,7 +3,7 @@ import "../../styles/shared.css";
 import "./Select.css";
 import * as React from "react";
 import { createPortal } from "react-dom";
-import { Icon, type IconName } from "../Icon";
+import { Icon, renderIconSlot, type IconSlot } from "../Icon";
 import { Input } from "../Input";
 import { Tag } from "../Tag";
 import { useFloating } from "../../utils/useFloating";
@@ -15,8 +15,8 @@ export interface SelectOption<T extends string | number = string> {
   text?: string;
   /** Secondary line shown beneath the label. */
   description?: React.ReactNode;
-  /** Leading icon. */
-  icon?: IconName;
+  /** Leading icon. Accepts a built-in icon name or custom React node. */
+  icon?: IconSlot;
   disabled?: boolean;
 }
 
@@ -372,8 +372,8 @@ const SelectInner = <T extends string | number = string>(
     if (!current) return <span className="placeholder">{placeholder}</span>;
     return (
       <span className="select-value">
-        {current.icon && <Icon name={current.icon} size={14} />}
-        <span>{current.label}</span>
+        {renderIconSlot(current.icon, { size: 14, className: "select-icon" })}
+        <span className="select-value-label">{current.label}</span>
       </span>
     );
   };
@@ -404,7 +404,7 @@ const SelectInner = <T extends string | number = string>(
             {sel && <Icon name="check" size={11} stroke={3} />}
           </span>
         )}
-        {o.icon && <Icon name={o.icon} size={14} />}
+        {renderIconSlot(o.icon, { size: 14, className: "menu-item-icon" })}
         <span className="menu-item-body">
           <span className="menu-item-label">{o.label}</span>
           {o.description && <span className="menu-item-desc">{o.description}</span>}

@@ -91,6 +91,8 @@ export interface IconProps extends Omit<React.SVGAttributes<SVGSVGElement>, "str
   stroke?: number;
 }
 
+export type IconSlot = IconName | React.ReactNode;
+
 const paths: Record<IconName, React.ReactNode> = {
 search:    <><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></>,
     plus:      <><path d="M12 5v14M5 12h14"/></>,
@@ -199,6 +201,26 @@ export const Icon = React.forwardRef<SVGSVGElement, IconProps>(
   )
 );
 Icon.displayName = "Icon";
+
+export const isIconName = (value: IconSlot): value is IconName =>
+  typeof value === "string" &&
+  Object.prototype.hasOwnProperty.call(paths, value);
+
+export interface RenderIconSlotOptions {
+  size?: number | string;
+  className?: string;
+}
+
+export const renderIconSlot = (
+  icon: IconSlot,
+  { size = 14, className }: RenderIconSlotOptions = {}
+) => {
+  if (icon == null || icon === false) return null;
+  if (isIconName(icon)) {
+    return <Icon name={icon} size={size} className={className} />;
+  }
+  return <span className={className}>{icon}</span>;
+};
 
 export const ICON_NAMES = Object.keys(paths) as IconName[];
 

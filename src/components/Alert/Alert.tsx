@@ -2,7 +2,7 @@ import "../../styles/tokens.css";
 import "../../styles/shared.css";
 import "./Alert.css";
 import * as React from "react";
-import { Icon, type IconName } from "../Icon";
+import { Icon, renderIconSlot, type IconSlot } from "../Icon";
 
 export type AlertTone = "info" | "success" | "warning" | "danger";
 
@@ -11,7 +11,7 @@ export interface AlertProps
   tone?: AlertTone;
   title?: React.ReactNode;
   children?: React.ReactNode;
-  icon?: IconName;
+  icon?: IconSlot;
   /** Controls the leading semantic icon. Defaults to `true`. */
   showIcon?: boolean;
   closable?: boolean;
@@ -34,7 +34,7 @@ export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(({
   className = "",
   ...rest
 }, ref) => {
-  const iconName: IconName =
+  const iconNode: IconSlot =
     icon ?? (tone === "success" ? "check2" : tone === "warning" || tone === "danger" ? "alert" : "info");
   return (
     <div
@@ -45,7 +45,7 @@ export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(({
     >
       {showIcon && (
         <span className="alert-ico">
-          <Icon name={iconName} size={14} />
+          {renderIconSlot(iconNode, { size: 14 })}
         </span>
       )}
       <div className="alert-body">

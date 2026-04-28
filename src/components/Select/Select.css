@@ -33,10 +33,35 @@
   flex: 1;
   min-width: 0;
 }
-.select-value > span {
+.select-value-label {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.select-icon,
+.menu-item-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  flex-shrink: 0;
+}
+.select-icon img,
+.menu-item-icon img {
+  display: block;
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+.select.sm .select-icon img,
+.select.sm .menu-item-icon img {
+  width: 14px;
+  height: 14px;
+}
+.select.lg .select-icon img,
+.select.lg .menu-item-icon img {
+  width: 18px;
+  height: 18px;
 }
 .select.invalid .select-trigger {
   box-shadow: var(--neu-out-sm), 0 0 0 2px color-mix(in oklch, var(--danger) 30%, transparent);

@@ -22,12 +22,13 @@ import { Alert } from "@fangxinyan/lumina";
 <Alert tone="info" closable>仅一行的简短提示</Alert>
 ```
 
-### 隐藏图标
+### 图标控制
 
-showIcon={false} 可隐藏左侧语义图标,文本更紧凑。
+showIcon={false} 可隐藏左侧语义图标；icon 可传 IconName 或 ReactNode。
 
 ```tsx
 <Alert tone="info" showIcon={false}>纯文本提示</Alert>
+<Alert icon={<img src={iconUrl} alt="" />}>自定义图标</Alert>
 ```
 
 ### 自定义操作区
@@ -53,7 +54,7 @@ action 插槽可以放置按钮等操作元素,位于内容与关闭按钮之间
 | --- | --- | --- | --- |
 | tone | `"info" | "success" | "warning" | "danger"` | `"info"` | 语气 |
 | title | `ReactNode` | — | 标题 |
-| icon | `IconName` | — | 自定义图标 |
+| icon | `IconName | ReactNode` | — | 自定义图标,可传内置图标名或自定义节点 |
 | showIcon | `boolean` | `true` | 是否显示语义图标 |
 | action | `ReactNode` | — | 右侧操作区(如按钮) |
 | closable | `boolean` | `false` | 可关闭 |

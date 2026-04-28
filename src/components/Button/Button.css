@@ -23,7 +23,22 @@
     box-shadow var(--dur-fast) var(--ease),
     color var(--dur-fast) var(--ease);
 }
-.btn > svg { flex-shrink: 0; }
+.btn > svg,
+.btn-icon-slot {
+  flex-shrink: 0;
+}
+.btn-icon-slot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+.btn-icon-slot img {
+  display: block;
+  max-width: 1.25em;
+  max-height: 1.25em;
+  object-fit: contain;
+}
 .btn.icon {
   flex-shrink: 0;
   overflow: visible;
