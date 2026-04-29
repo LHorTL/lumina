@@ -598,23 +598,28 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = (props) => {
         Object.prototype.hasOwnProperty.call(changedProps, "mode")
           ? (configProps.mode ?? DEFAULT_CONFIG.mode)
           : (c.mode ?? DEFAULT_CONFIG.mode);
-      const nextFromMode = Object.prototype.hasOwnProperty.call(changedProps, "mode")
+      const shouldApplyPreset =
+        Object.prototype.hasOwnProperty.call(changedProps, "mode") ||
+        (Object.prototype.hasOwnProperty.call(changedProps, "themes") && !isBuiltInThemeMode(mode));
+      const shouldUseProp = <K extends keyof ThemeConfig>(key: K) =>
+        Object.prototype.hasOwnProperty.call(changedProps, key) || configProps[key] !== undefined;
+      const nextFromMode = shouldApplyPreset
         ? applyThemePreset(base, mode)
         : base;
       const next: ThemeConfig = {
         ...nextFromMode,
         mode,
-        ...(Object.prototype.hasOwnProperty.call(changedProps, "colorScheme")
+        ...(shouldUseProp("colorScheme")
           ? { colorScheme: configProps.colorScheme }
           : null),
-        ...(Object.prototype.hasOwnProperty.call(changedProps, "accent") ? { accent: configProps.accent } : null),
-        ...(Object.prototype.hasOwnProperty.call(changedProps, "density") ? { density: configProps.density } : null),
-        ...(Object.prototype.hasOwnProperty.call(changedProps, "intensity")
+        ...(shouldUseProp("accent") ? { accent: configProps.accent } : null),
+        ...(shouldUseProp("density") ? { density: configProps.density } : null),
+        ...(shouldUseProp("intensity")
           ? { intensity: configProps.intensity }
           : null),
-        ...(Object.prototype.hasOwnProperty.call(changedProps, "radius") ? { radius: configProps.radius } : null),
-        ...(Object.prototype.hasOwnProperty.call(changedProps, "font") ? { font: configProps.font } : null),
-        ...(Object.prototype.hasOwnProperty.call(changedProps, "tokens") ? { tokens: configProps.tokens } : null),
+        ...(shouldUseProp("radius") ? { radius: configProps.radius } : null),
+        ...(shouldUseProp("font") ? { font: configProps.font } : null),
+        ...(shouldUseProp("tokens") ? { tokens: configProps.tokens } : null),
       };
       if (
         next.mode === c.mode &&

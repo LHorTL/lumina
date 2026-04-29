@@ -180,7 +180,6 @@ export const Surface = React.forwardRef<HTMLDivElement, SurfaceProps>(
         radius={themeRadius ?? presetConfig?.radius ?? inherited?.radius ?? 20}
         font={font ?? presetConfig?.font ?? inherited?.font ?? "sf"}
         tokens={{
-          ...(inherited?.tokens ?? {}),
           ...(presetConfig?.tokens ?? {}),
           ...(tokens ?? {}),
         }}

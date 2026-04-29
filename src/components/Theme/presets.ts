@@ -109,6 +109,8 @@ export const LUMINA_THEME_PRESETS: BuiltInLuminaThemePresetMap = {
       divider: "rgba(255, 255, 255, 0.08)",
       "shadow-dark": "rgba(0, 0, 0, 0.58)",
       "shadow-light": "rgba(128, 146, 166, 0.07)",
+      "shadow-scale": "1",
+      "shadow-float-scale": "1",
     },
   },
   ember: {
@@ -132,6 +134,8 @@ export const LUMINA_THEME_PRESETS: BuiltInLuminaThemePresetMap = {
       divider: "rgba(255, 233, 212, 0.09)",
       "shadow-dark": "rgba(0, 0, 0, 0.54)",
       "shadow-light": "rgba(232, 172, 118, 0.07)",
+      "shadow-scale": "1",
+      "shadow-float-scale": "1",
     },
   },
   assistant: {

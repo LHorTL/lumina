@@ -631,11 +631,12 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
         return;
       }
       const isBuiltInMode = key === "light" || key === "dark" || key === "system";
+      const fallbackAccent = theme.accent === "custom" ? theme.accentPalette : theme.accent;
       theme.update({
         ...(!isBuiltInMode ? { themes: { ...theme.themes, [key]: preset } } : null),
         mode: option.key,
         colorScheme: preset.base ?? theme.colorScheme,
-        accent: preset.accent ?? theme.accentPalette,
+        accent: preset.accent ?? fallbackAccent,
         density: preset.density ?? theme.density,
         intensity: preset.intensity ?? theme.intensity,
         radius: preset.radius ?? theme.radius,
