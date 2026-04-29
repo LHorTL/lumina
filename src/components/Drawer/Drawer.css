@@ -19,6 +19,9 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  --drawer-shadow-offset: calc(var(--shadow-offset) * 4 * var(--shadow-float-scale));
+  --drawer-shadow-blur: calc(var(--shadow-blur) * 3.75 * var(--shadow-float-scale));
+  --drawer-shadow-spread: calc(var(--shadow-offset) * -3.3 * var(--shadow-float-scale));
 }
 .drawer.hidden {
   display: none;
@@ -28,25 +31,25 @@
   top: 0; right: 0; bottom: 0;
   width: min(420px, 92vw);
   animation: drawerInRight var(--dur-slow) var(--ease);
-  box-shadow: -24px 0 60px -20px rgba(40, 55, 80, 0.25);
+  box-shadow: calc(var(--drawer-shadow-offset) * -1) 0 var(--drawer-shadow-blur) var(--drawer-shadow-spread) var(--shadow-dark);
 }
 .drawer.left {
   top: 0; left: 0; bottom: 0;
   width: min(420px, 92vw);
   animation: drawerInLeft var(--dur-slow) var(--ease);
-  box-shadow: 24px 0 60px -20px rgba(40, 55, 80, 0.25);
+  box-shadow: var(--drawer-shadow-offset) 0 var(--drawer-shadow-blur) var(--drawer-shadow-spread) var(--shadow-dark);
 }
 .drawer.top {
   top: 0; left: 0; right: 0;
   height: min(320px, 80vh);
   animation: drawerInTop var(--dur-slow) var(--ease);
-  box-shadow: 0 24px 60px -20px rgba(40, 55, 80, 0.25);
+  box-shadow: 0 var(--drawer-shadow-offset) var(--drawer-shadow-blur) var(--drawer-shadow-spread) var(--shadow-dark);
 }
 .drawer.bottom {
   bottom: 0; left: 0; right: 0;
   height: min(320px, 80vh);
   animation: drawerInBottom var(--dur-slow) var(--ease);
-  box-shadow: 0 -24px 60px -20px rgba(40, 55, 80, 0.25);
+  box-shadow: 0 calc(var(--drawer-shadow-offset) * -1) var(--drawer-shadow-blur) var(--drawer-shadow-spread) var(--shadow-dark);
 }
 
 @keyframes drawerInRight  { from { transform: translateX( 20px); opacity: 0; } }

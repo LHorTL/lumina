@@ -46,13 +46,9 @@
 
 .statusbar-item.tone-muted   { color: var(--fg-subtle); }
 .statusbar-item.tone-accent  { color: var(--accent-ink); }
-.statusbar-item.tone-success { color: oklch(52% 0.14 150); }
-.statusbar-item.tone-warning { color: oklch(58% 0.14 75); }
-.statusbar-item.tone-danger  { color: oklch(56% 0.18 25); }
-
-[data-theme="dark"] .statusbar-item.tone-success { color: oklch(78% 0.14 150); }
-[data-theme="dark"] .statusbar-item.tone-warning { color: oklch(82% 0.14 75); }
-[data-theme="dark"] .statusbar-item.tone-danger  { color: oklch(76% 0.16 25); }
+.statusbar-item.tone-success { color: var(--success); }
+.statusbar-item.tone-warning { color: var(--warning); }
+.statusbar-item.tone-danger  { color: var(--danger); }
 
 .statusbar-item-icon { display: inline-flex; flex-shrink: 0; }
 .statusbar-item-label { overflow: hidden; text-overflow: ellipsis; }

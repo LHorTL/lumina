@@ -23,6 +23,7 @@ import {
   type ThemeMode,
   type ThemePreset,
 } from "../Theme";
+import { pickLuminaThemePresets } from "../Theme/presets";
 
 export type ThemePanelSection =
   | "mode"
@@ -64,133 +65,14 @@ export interface ThemePanelDeleteThemePayload extends ThemePanelCreatedThemeMeta
   preset?: ThemePreset;
 }
 
-export const THEME_PANEL_DEFAULT_THEME_PRESETS = {
-  light: {
-    base: "light",
-    accent: "sky",
-    density: "comfortable",
-    intensity: 5,
-    radius: 20,
-    font: "sf",
-    tokens: {
-      bg: "#e8eef5",
-      "bg-raised": "#edf2f8",
-      "bg-sunken": "#dde4ed",
-      fg: "#3a4558",
-      "fg-muted": "#7b8599",
-      "fg-subtle": "#9ca7ba",
-      border: "rgba(130, 148, 175, 0.14)",
-      divider: "rgba(130, 148, 175, 0.18)",
-      "shadow-dark": "rgba(163, 177, 198, 0.55)",
-      "shadow-light": "rgba(255, 255, 255, 0.95)",
-      "shadow-scale": "1",
-      "shadow-float-scale": "1",
-    },
-  },
-  dark: {
-    base: "dark",
-    accent: "sky",
-    density: "comfortable",
-    intensity: 5,
-    radius: 20,
-    font: "sf",
-    tokens: {
-      bg: "#1b2030",
-      "bg-raised": "#242a3c",
-      "bg-sunken": "#151a27",
-      fg: "#d8deeb",
-      "fg-muted": "#8b94ab",
-      "fg-subtle": "#5f6a82",
-      border: "rgba(0, 0, 0, 0.35)",
-      divider: "rgba(255, 255, 255, 0.06)",
-      "shadow-dark": "rgba(0, 0, 0, 0.55)",
-      "shadow-light": "rgba(130, 145, 180, 0.06)",
-      "shadow-scale": "1",
-      "shadow-float-scale": "1",
-    },
-  },
-  porcelain: {
-    base: "light",
-    accent: {
-      accent: "oklch(66% 0.14 175)",
-      ink: "oklch(39% 0.11 175)",
-      soft: "oklch(92% 0.04 175)",
-      glow: "oklch(66% 0.14 175 / 0.32)",
-    },
-    density: "comfortable",
-    intensity: 6,
-    radius: 24,
-    font: "sf",
-    tokens: {
-      bg: "#edf3f1",
-      "bg-raised": "#f5faf8",
-      "bg-sunken": "#dfe8e5",
-      fg: "#33434a",
-      "fg-muted": "#75868c",
-      "fg-subtle": "#9aa8ad",
-      border: "rgba(101, 134, 139, 0.13)",
-      divider: "rgba(101, 134, 139, 0.18)",
-      "shadow-dark": "rgba(143, 163, 168, 0.45)",
-      "shadow-light": "rgba(255, 255, 255, 0.96)",
-      "shadow-scale": "1",
-      "shadow-float-scale": "1",
-    },
-  },
-  assistant: {
-    base: "light",
-    accent: {
-      accent: "#646cff",
-      ink: "#4f56d8",
-      soft: "rgba(100, 108, 255, 0.12)",
-      glow: "rgba(100, 108, 255, 0.26)",
-    },
-    density: "comfortable",
-    intensity: 4,
-    radius: 16,
-    font: "system",
-    tokens: {
-      bg: "#e6eaf4",
-      "bg-raised": "#f9f9f9",
-      "bg-sunken": "#d7dce8",
-      fg: "#213547",
-      "fg-muted": "#68768a",
-      "fg-subtle": "#9aa6b8",
-      border: "rgba(240, 247, 255, 0.72)",
-      divider: "rgba(33, 53, 71, 0.12)",
-      "shadow-dark": "#d1d5de",
-      "shadow-light": "#fbffff",
-      "shadow-scale": "1",
-      "shadow-float-scale": "1",
-    },
-  },
-  assistantDark: {
-    base: "dark",
-    accent: {
-      accent: "#818cf8",
-      ink: "#c4c9ff",
-      soft: "rgba(129, 140, 248, 0.17)",
-      glow: "rgba(129, 140, 248, 0.18)",
-    },
-    density: "comfortable",
-    intensity: 4,
-    radius: 16,
-    font: "system",
-    tokens: {
-      bg: "#2a2a36",
-      "bg-raised": "#33333f",
-      "bg-sunken": "#20202b",
-      fg: "#d4d7e0",
-      "fg-muted": "#9ca1b0",
-      "fg-subtle": "#6f7484",
-      border: "#3e4455",
-      divider: "rgba(255, 255, 255, 0.08)",
-      "shadow-dark": "#1a1a24",
-      "shadow-light": "#3a3a46",
-      "shadow-scale": "1",
-      "shadow-float-scale": "1",
-    },
-  },
-} satisfies Record<string, ThemePreset>;
+type ThemePanelDefaultPresetKey = "light" | "dark" | "porcelain" | "assistant" | "assistantDark";
+type ThemePanelDefaultPreset = ThemePreset & {
+  base: ThemeBaseMode;
+  tokens: NonNullable<ThemePreset["tokens"]>;
+};
+
+export const THEME_PANEL_DEFAULT_THEME_PRESETS: Record<ThemePanelDefaultPresetKey, ThemePanelDefaultPreset> =
+  pickLuminaThemePresets(["light", "dark", "porcelain", "assistant", "assistantDark"]);
 
 export const THEME_PANEL_DEFAULT_PRESET_OPTIONS: ThemePanelPresetOption[] = [
   { key: "light", label: "浅色", description: "默认", preset: THEME_PANEL_DEFAULT_THEME_PRESETS.light },

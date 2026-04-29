@@ -20,12 +20,12 @@
 ### 表面 Surface
 | Token | Light | Dark |
 |---|---|---|
-| `--bg` | `#e7ebf3` | `#2a3142` |
-| `--bg-raised` | `#eef1f7` | `#313a4f` |
-| `--bg-sunken` | `#dde2ec` | `#232a38` |
-| `--fg` | `#2a3248` | `#e8ecf4` |
-| `--fg-muted` | `#6b7590` | `#a6b0c3` |
-| `--fg-subtle` | `#9ba4bc` | `#6c7892` |
+| `--bg` | `#e8eef5` | `#1b2030` |
+| `--bg-raised` | `#edf2f8` | `#242a3c` |
+| `--bg-sunken` | `#dde4ed` | `#151a27` |
+| `--fg` | `#3a4558` | `#d8deeb` |
+| `--fg-muted` | `#7b8599` | `#8b94ab` |
+| `--fg-subtle` | `#9ca7ba` | `#5f6a82` |
 
 ### 强调 Accent
 当前主题色族（随 `data-accent` 变化）：
@@ -35,12 +35,12 @@
 - `--accent-glow` — 发光变体（半透明）
 
 ### 语义
-| Token | 用途 |
-|---|---|
-| `--info` | 信息蓝 |
-| `--success` | 成功绿 |
-| `--warning` | 警告黄 |
-| `--danger` | 危险红 |
+| Token | Light | Dark | 用途 |
+|---|---|---|---|
+| `--info` | `oklch(68% 0.14 235)` | `oklch(78% 0.12 235)` | 信息蓝 |
+| `--success` | `oklch(68% 0.14 150)` | `oklch(78% 0.14 150)` | 成功绿 |
+| `--warning` | `oklch(75% 0.14 75)` | `oklch(82% 0.14 75)` | 警告黄 |
+| `--danger` | `oklch(64% 0.18 25)` | `oklch(76% 0.16 25)` | 危险红 |
 
 ## 阴影系统
 
@@ -79,30 +79,42 @@
 
 | Token | 值 |
 |---|---|
-| `--r-xs` | `6px` |
-| `--r-sm` | `10px` |
+| `--r-xs` | `8px` |
+| `--r-sm` | `12px` |
 | `--r-md` | `16px` |
-| `--r-lg` | `22px` |
-| `--r-xl` | `32px` |
+| `--r-lg` | `20px` |
+| `--r-xl` | `28px` |
+| `--r-pill` | `999px` |
 
 ## 间距 Spacing
 
-`--gap-1` (4) · `--gap-2` (8) · `--gap-3` (12) · `--gap-4` (20) · `--gap-5` (32)
+`--gap-1` (4) · `--gap-2` (8) · `--gap-3` (12) · `--gap-4` (16) · `--gap-5` (20) · `--gap-6` (24) · `--gap-8` (32) · `--gap-10` (40)
 
 ## 控件尺寸 Control Size
 
 | Token | Comfortable | Compact | Spacious |
 |---|---|---|---|
-| `--ctrl-h` | 40px | 32px | 48px |
+| `--ctrl-h` | 40px | 34px | 46px |
 | `--ctrl-pad-x` | 18px | 14px | 22px |
+
+固定尺寸变体也有独立 token,方便局部主题覆写：
+
+| Token | 默认值 | 用途 |
+|---|---|---|
+| `--ctrl-h-sm` | `30px` | 小号按钮 / Select |
+| `--ctrl-h-lg` | `52px` | 大号按钮 |
+| `--field-h-sm` | `32px` | 小号输入类控件 |
+| `--field-h-lg` | `48px` | 大号输入类控件 |
+| `--ctrl-pad-x-sm` | `12px` | 小号控件横向内边距 |
+| `--ctrl-pad-x-lg` | `24px` | 大号控件横向内边距 |
 
 ## 动效 Motion
 
 | Token | 值 |
 |---|---|
-| `--ease` | `cubic-bezier(.22, 1, .36, 1)` |
-| `--dur-fast` | `120ms` |
-| `--dur` | `200ms` |
+| `--ease` | `cubic-bezier(0.22, 0.61, 0.36, 1)` |
+| `--dur-fast` | `140ms` |
+| `--dur` | `220ms` |
 | `--dur-slow` | `360ms` |
 
 ## 字体 Typography
@@ -110,8 +122,13 @@
 | Token | 值 |
 |---|---|
 | `--font-sans` | 系统无衬线栈（SF Pro / Segoe UI …） |
-| `--font-mono` | `"SF Mono", "JetBrains Mono", Menlo, monospace` |
+| `--font-mono` | `ui-monospace, "SF Mono", "JetBrains Mono", Consolas, monospace` |
 | `--font-display` | SF Pro Display 或回退 sans |
+| `--fs-xs` | `11px` |
+| `--fs-sm` | `12px` |
+| `--fs-md` | `13px` |
+| `--fs-lg` | `14px` |
+| `--fs-xl` | `15px` |
 
 ## 自定义示例
 

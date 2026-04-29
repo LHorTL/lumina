@@ -15,6 +15,7 @@ import {
   type ThemePresets,
   type ThemeTokens,
 } from "../Theme";
+import { cloneLuminaThemePreset } from "../Theme/presets";
 
 export type SurfacePreset = "inherit" | "mist" | "porcelain" | "graphite" | "ember";
 export type SurfaceTone = "base" | "raised" | "sunken" | "accent";
@@ -23,94 +24,22 @@ export type SurfacePadding = "none" | "sm" | "md" | "lg" | "xl";
 export type SurfaceRadius = "none" | "sm" | "md" | "lg" | "xl";
 export type SurfaceHeight = "content" | "fill" | "screen";
 
+function createSurfaceThemePreset(
+  key: "light" | "porcelain" | "graphite" | "ember"
+): ThemePreset {
+  const preset = cloneLuminaThemePreset(key) as ThemePreset;
+  delete preset.density;
+  delete preset.font;
+  delete preset.label;
+  delete preset.description;
+  return preset;
+}
+
 export const SURFACE_THEME_PRESETS: Record<Exclude<SurfacePreset, "inherit">, ThemePreset> = {
-  mist: {
-    base: "light",
-    accent: "sky",
-    intensity: 5,
-    radius: 20,
-    tokens: {
-      bg: "#e8eef5",
-      "bg-raised": "#edf2f8",
-      "bg-sunken": "#dde4ed",
-      fg: "#3a4558",
-      "fg-muted": "#7b8599",
-      "fg-subtle": "#9ca7ba",
-      border: "rgba(130, 148, 175, 0.14)",
-      divider: "rgba(130, 148, 175, 0.18)",
-      "shadow-dark": "rgba(163, 177, 198, 0.55)",
-      "shadow-light": "rgba(255, 255, 255, 0.95)",
-    },
-  },
-  porcelain: {
-    base: "light",
-    accent: {
-      accent: "oklch(66% 0.14 175)",
-      ink: "oklch(39% 0.11 175)",
-      soft: "oklch(92% 0.04 175)",
-      glow: "oklch(66% 0.14 175 / 0.32)",
-    },
-    intensity: 6,
-    radius: 24,
-    tokens: {
-      bg: "#edf3f1",
-      "bg-raised": "#f5faf8",
-      "bg-sunken": "#dfe8e5",
-      fg: "#33434a",
-      "fg-muted": "#75868c",
-      "fg-subtle": "#9aa8ad",
-      border: "rgba(101, 134, 139, 0.13)",
-      divider: "rgba(101, 134, 139, 0.18)",
-      "shadow-dark": "rgba(143, 163, 168, 0.45)",
-      "shadow-light": "rgba(255, 255, 255, 0.96)",
-    },
-  },
-  graphite: {
-    base: "dark",
-    accent: {
-      accent: "oklch(72% 0.13 190)",
-      ink: "oklch(85% 0.1 190)",
-      soft: "oklch(31% 0.05 190)",
-      glow: "oklch(72% 0.13 190 / 0.18)",
-    },
-    intensity: 4,
-    radius: 18,
-    tokens: {
-      bg: "#181b22",
-      "bg-raised": "#20242d",
-      "bg-sunken": "#11141a",
-      fg: "#edf1f7",
-      "fg-muted": "#a3adbd",
-      "fg-subtle": "#667285",
-      border: "rgba(255, 255, 255, 0.07)",
-      divider: "rgba(255, 255, 255, 0.08)",
-      "shadow-dark": "rgba(0, 0, 0, 0.58)",
-      "shadow-light": "rgba(128, 146, 166, 0.07)",
-    },
-  },
-  ember: {
-    base: "dark",
-    accent: {
-      accent: "oklch(76% 0.15 62)",
-      ink: "oklch(86% 0.11 62)",
-      soft: "oklch(34% 0.07 62)",
-      glow: "oklch(76% 0.15 62 / 0.18)",
-    },
-    intensity: 5,
-    radius: 16,
-    tokens: {
-      bg: "#201a18",
-      "bg-raised": "#2a221f",
-      "bg-sunken": "#171211",
-      fg: "#f0e7df",
-      "fg-muted": "#b09f93",
-      "fg-subtle": "#78695f",
-      border: "rgba(255, 233, 212, 0.08)",
-      divider: "rgba(255, 233, 212, 0.09)",
-      "shadow-dark": "rgba(0, 0, 0, 0.54)",
-      "shadow-light": "rgba(232, 172, 118, 0.07)",
-    },
-  },
+  mist: createSurfaceThemePreset("light"),
+  porcelain: createSurfaceThemePreset("porcelain"),
+  graphite: createSurfaceThemePreset("graphite"),
+  ember: createSurfaceThemePreset("ember"),
 };
 
 const surfacePresetMap = SURFACE_THEME_PRESETS;

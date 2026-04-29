@@ -8,7 +8,7 @@
   padding: 0 var(--ctrl-pad-x);
   border: 1px solid transparent;
   border-radius: var(--r-md);
-  font-size: 13px;
+  font-size: var(--fs-md);
   font-weight: 500;
   font-family: inherit;
   color: var(--fg);
@@ -85,10 +85,10 @@
 }
 
 .btn.icon { width: var(--ctrl-h); padding: 0; }
-.btn.sm { height: 30px; padding: 0 12px; font-size: 12px; border-radius: var(--r-sm); }
-.btn.sm.icon { width: 30px; padding: 0; }
-.btn.lg { height: 52px; padding: 0 24px; font-size: 15px; border-radius: var(--r-lg); }
-.btn.lg.icon { width: 52px; padding: 0; }
+.btn.sm { height: var(--ctrl-h-sm); padding: 0 var(--ctrl-pad-x-sm); font-size: var(--fs-sm); border-radius: var(--r-sm); }
+.btn.sm.icon { width: var(--ctrl-h-sm); padding: 0; }
+.btn.lg { height: var(--ctrl-h-lg); padding: 0 var(--ctrl-pad-x-lg); font-size: var(--fs-xl); border-radius: var(--r-lg); }
+.btn.lg.icon { width: var(--ctrl-h-lg); padding: 0; }
 
 .btn.block { width: 100%; flex-shrink: 1; }
 
