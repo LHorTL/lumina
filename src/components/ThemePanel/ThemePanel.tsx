@@ -11,6 +11,7 @@ import { Slider } from "../Slider";
 import { Switch } from "../Switch";
 import {
   ACCENT_PRESETS,
+  FONT_STACKS,
   useTheme,
   type AccentPalette,
   type AccentKey,
@@ -54,6 +55,12 @@ export interface ThemePanelCreatedThemeMeta {
 
 export interface ThemePanelCreateThemePayload extends ThemePanelCreatedThemeMeta {
   preset: ThemePreset;
+  /** Ready-to-append preset option for callers that control `presetOptions`. */
+  presetOption: ThemePanelPresetOption;
+}
+
+export interface ThemePanelDeleteThemePayload extends ThemePanelCreatedThemeMeta {
+  preset?: ThemePreset;
 }
 
 export const THEME_PANEL_DEFAULT_THEME_PRESETS = {
@@ -147,6 +154,31 @@ export const THEME_PANEL_DEFAULT_THEME_PRESETS = {
       "shadow-light": "#fbffff",
     },
   },
+  assistantDark: {
+    base: "dark",
+    accent: {
+      accent: "#818cf8",
+      ink: "#c4c9ff",
+      soft: "rgba(129, 140, 248, 0.17)",
+      glow: "rgba(129, 140, 248, 0.18)",
+    },
+    density: "comfortable",
+    intensity: 4,
+    radius: 16,
+    font: "system",
+    tokens: {
+      bg: "#2a2a36",
+      "bg-raised": "#33333f",
+      "bg-sunken": "#20202b",
+      fg: "#d4d7e0",
+      "fg-muted": "#9ca1b0",
+      "fg-subtle": "#6f7484",
+      border: "#3e4455",
+      divider: "rgba(255, 255, 255, 0.08)",
+      "shadow-dark": "#1a1a24",
+      "shadow-light": "#3a3a46",
+    },
+  },
 } satisfies Record<string, ThemePreset>;
 
 export const THEME_PANEL_DEFAULT_PRESET_OPTIONS: ThemePanelPresetOption[] = [
@@ -154,6 +186,7 @@ export const THEME_PANEL_DEFAULT_PRESET_OPTIONS: ThemePanelPresetOption[] = [
   { key: "dark", label: "深色", description: "默认", preset: THEME_PANEL_DEFAULT_THEME_PRESETS.dark },
   { key: "porcelain", label: "瓷白", description: "清亮", preset: THEME_PANEL_DEFAULT_THEME_PRESETS.porcelain },
   { key: "assistant", label: "助手", description: "Soft", preset: THEME_PANEL_DEFAULT_THEME_PRESETS.assistant },
+  { key: "assistantDark", label: "助手暗", description: "Soft", preset: THEME_PANEL_DEFAULT_THEME_PRESETS.assistantDark },
 ];
 
 export interface ThemePanelProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
@@ -177,6 +210,10 @@ export interface ThemePanelProps extends Omit<React.HTMLAttributes<HTMLDivElemen
   createThemeKeyPrefix?: string;
   /** Called after a custom theme is saved into the nearest ThemeProvider. */
   onCreateTheme?: (payload: ThemePanelCreateThemePayload) => void;
+  /** Show delete actions for non-default named themes. */
+  allowDeleteTheme?: boolean;
+  /** Called after a non-default theme is removed from the nearest ThemeProvider. */
+  onDeleteTheme?: (payload: ThemePanelDeleteThemePayload) => void;
   /** Show the reset button. */
   showReset?: boolean;
   /** Compact typography and spacing. */
@@ -185,8 +222,8 @@ export interface ThemePanelProps extends Omit<React.HTMLAttributes<HTMLDivElemen
 
 const DRAFT_THEME_MODE = "__theme_panel_draft__";
 const DEFAULT_SURFACE_BY_BASE = {
-  light: "#e8eef5",
-  dark: "#1b2030",
+  light: THEME_PANEL_DEFAULT_THEME_PRESETS.light.tokens.bg,
+  dark: THEME_PANEL_DEFAULT_THEME_PRESETS.dark.tokens.bg,
 } satisfies Record<ThemeBaseMode, string>;
 
 const SURFACE_TOKEN_KEYS = [
@@ -201,6 +238,10 @@ const SURFACE_TOKEN_KEYS = [
   "shadow-dark",
   "shadow-light",
 ] as const;
+type SurfaceTokenKey = (typeof SURFACE_TOKEN_KEYS)[number];
+type AccentPaletteKey = keyof AccentPalette;
+type ThemeCreateMode = "simple" | "advanced";
+type AdvancedFontMode = "preset" | "custom";
 
 const DEFAULT_SECTIONS: ThemePanelSection[] = [
   "mode",
@@ -231,6 +272,36 @@ const FONT_OPTIONS = [
   { value: "mono", label: "等宽" },
 ] as const;
 
+const THEME_CREATE_MODE_OPTIONS = [
+  { value: "simple", label: "简洁" },
+  { value: "advanced", label: "深度" },
+] as const;
+
+const ADVANCED_FONT_MODE_OPTIONS = [
+  { value: "preset", label: "预设字体" },
+  { value: "custom", label: "自定义栈" },
+] as const;
+
+const SURFACE_TOKEN_FIELDS: { key: SurfaceTokenKey; label: string }[] = [
+  { key: "bg", label: "背景" },
+  { key: "bg-raised", label: "凸起面" },
+  { key: "bg-sunken", label: "凹陷面" },
+  { key: "fg", label: "正文" },
+  { key: "fg-muted", label: "次级文字" },
+  { key: "fg-subtle", label: "弱文字" },
+  { key: "border", label: "描边" },
+  { key: "divider", label: "分割线" },
+  { key: "shadow-dark", label: "暗阴影" },
+  { key: "shadow-light", label: "亮阴影" },
+];
+
+const ACCENT_PALETTE_FIELDS: { key: AccentPaletteKey; label: string }[] = [
+  { key: "accent", label: "主色" },
+  { key: "ink", label: "文字色" },
+  { key: "soft", label: "柔和底" },
+  { key: "glow", label: "光晕" },
+];
+
 function accentFromPreset(preset: ThemePreset | undefined): string {
   const accent = preset?.accent ?? "sky";
   if (typeof accent === "string") {
@@ -244,6 +315,12 @@ function fallbackPresetLabel(key: string): string {
     .replace(/^user-/, "")
     .replace(/[-_]+/g, " ")
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function nodeToText(node: React.ReactNode, fallback: string): string {
+  if (typeof node === "string") return node;
+  if (typeof node === "number") return String(node);
+  return fallback;
 }
 
 function createThemeKey(label: string, themes: Record<string, ThemePreset>, prefix: string): ThemeMode {
@@ -270,6 +347,13 @@ function normalizeHexColor(input: string): string | null {
   if (!/^([\da-f]{3}|[\da-f]{6})$/i.test(value)) return null;
   const hex = value.length === 3 ? value.split("").map((part) => part + part).join("") : value;
   return `#${hex.toLowerCase()}`;
+}
+
+function hexToRgbColor(hex: string): [number, number, number] | null {
+  const normalized = normalizeHexColor(hex);
+  if (!normalized) return null;
+  const value = Number.parseInt(normalized.slice(1), 16);
+  return [(value >> 16) & 255, (value >> 8) & 255, value & 255];
 }
 
 function rgbToHexColor(red: number, green: number, blue: number): string {
@@ -329,6 +413,19 @@ function cssColorToHex(value: string, fallback: string): string {
   return normalizeHexColor(value) ?? parseRgbColor(value) ?? parseOklchColor(value) ?? fallback;
 }
 
+function sameHexColor(a: string, b: string): boolean {
+  const left = normalizeHexColor(a);
+  const right = normalizeHexColor(b);
+  return !!left && left === right;
+}
+
+function shiftHexColor(value: string | undefined, delta: [number, number, number]): string | undefined {
+  if (!value) return undefined;
+  const rgb = hexToRgbColor(value);
+  if (!rgb) return value;
+  return rgbToHexColor(rgb[0] + delta[0], rgb[1] + delta[1], rgb[2] + delta[2]);
+}
+
 function createAccentPalette(accent: string, base: ThemeBaseMode): AccentPalette {
   return {
     accent,
@@ -350,7 +447,7 @@ function createSurfaceTokens(surface: string, base: ThemeBaseMode): NonNullable<
         border: "rgba(255, 255, 255, 0.08)",
         divider: "rgba(255, 255, 255, 0.08)",
         "shadow-dark": "rgba(0, 0, 0, 0.56)",
-        "shadow-light": `color-mix(in oklch, ${surface} 72%, white)`,
+        "shadow-light": "rgba(130, 145, 180, 0.06)",
       }
     : {
         bg: surface,
@@ -366,6 +463,43 @@ function createSurfaceTokens(surface: string, base: ThemeBaseMode): NonNullable<
       };
 }
 
+function defaultBaseTokens(base: ThemeBaseMode): NonNullable<ThemePreset["tokens"]> {
+  const tokens = THEME_PANEL_DEFAULT_THEME_PRESETS[base].tokens;
+  return { ...tokens };
+}
+
+function createDraftSurfaceTokens(
+  surface: string,
+  base: ThemeBaseMode,
+  sourceSurface: string,
+  sourceTokens: NonNullable<ThemePreset["tokens"]>
+): NonNullable<ThemePreset["tokens"]> {
+  if (sameHexColor(surface, sourceSurface)) return { ...sourceTokens };
+  const current = hexToRgbColor(surface);
+  const source = hexToRgbColor(sourceSurface);
+  if (!current || !source) return createSurfaceTokens(surface, base);
+  const delta: [number, number, number] = [
+    current[0] - source[0],
+    current[1] - source[1],
+    current[2] - source[2],
+  ];
+  return {
+    ...sourceTokens,
+    bg: normalizeHexColor(surface) ?? surface,
+    "bg-raised": shiftHexColor(sourceTokens["bg-raised"], delta) ?? sourceTokens["bg-raised"],
+    "bg-sunken": shiftHexColor(sourceTokens["bg-sunken"], delta) ?? sourceTokens["bg-sunken"],
+  };
+}
+
+function createDraftAccentPalette(
+  accent: string,
+  base: ThemeBaseMode,
+  sourceAccent: string,
+  sourcePalette: AccentPalette
+): AccentPalette {
+  return sameHexColor(accent, sourceAccent) ? { ...sourcePalette } : createAccentPalette(accent, base);
+}
+
 function readCssVar(element: HTMLElement | null, name: string, fallback: string): string {
   if (!element || typeof window === "undefined") return fallback;
   return getComputedStyle(element).getPropertyValue(name).trim() || fallback;
@@ -375,7 +509,7 @@ function readCurrentSurfaceTokens(
   element: HTMLElement | null,
   base: ThemeBaseMode
 ): NonNullable<ThemePreset["tokens"]> {
-  const fallbackTokens = createSurfaceTokens(DEFAULT_SURFACE_BY_BASE[base], base);
+  const fallbackTokens = defaultBaseTokens(base);
   return Object.fromEntries(
     SURFACE_TOKEN_KEYS.map((key) => [
       key,
@@ -384,10 +518,32 @@ function readCurrentSurfaceTokens(
   );
 }
 
+function readCurrentAccentPalette(element: HTMLElement | null, fallback: AccentPalette): AccentPalette {
+  return {
+    accent: readCssVar(element, "--accent", fallback.accent),
+    ink: readCssVar(element, "--accent-ink", fallback.ink),
+    soft: readCssVar(element, "--accent-soft", fallback.soft),
+    glow: readCssVar(element, "--accent-glow", fallback.glow),
+  };
+}
+
 function toFontKey(font: FontConfig): FontKey {
   return typeof font === "string" && FONT_OPTIONS.some((option) => option.value === font)
     ? (font as FontKey)
     : "system";
+}
+
+function fontConfigToText(font: FontConfig): string {
+  return typeof font === "string" ? font : JSON.stringify(font);
+}
+
+function fontToStack(font: FontConfig): string {
+  if (typeof font === "string") return FONT_STACKS[font as FontKey] ?? font;
+  return font.sans ?? font.display ?? FONT_STACKS.system;
+}
+
+function tokenPickerValue(value: string | undefined, fallback: string): string {
+  return cssColorToHex(value ?? fallback, fallback);
 }
 
 /**
@@ -414,6 +570,8 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
       defaultCreateThemeName = "我的主题",
       createThemeKeyPrefix = "user",
       onCreateTheme,
+      allowDeleteTheme = true,
+      onDeleteTheme,
       showReset = true,
       compact,
       className = "",
@@ -435,13 +593,34 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
     const [draftSurface, setDraftSurface] = React.useState(DEFAULT_SURFACE_BY_BASE.light);
     const [draftAccent, setDraftAccent] = React.useState(defaultCustomAccent);
     const [draftTokens, setDraftTokens] = React.useState<NonNullable<ThemePreset["tokens"]>>(() =>
-      createSurfaceTokens(DEFAULT_SURFACE_BY_BASE.light, "light")
+      defaultBaseTokens("light")
+    );
+    const [draftSourceSurface, setDraftSourceSurface] = React.useState(DEFAULT_SURFACE_BY_BASE.light);
+    const [draftSourceTokens, setDraftSourceTokens] = React.useState<NonNullable<ThemePreset["tokens"]>>(() =>
+      defaultBaseTokens("light")
+    );
+    const [draftAccentPalette, setDraftAccentPalette] = React.useState<AccentPalette>(() =>
+      createAccentPalette(defaultCustomAccent, "light")
+    );
+    const [draftSourceAccent, setDraftSourceAccent] = React.useState(defaultCustomAccent);
+    const [draftSourceAccentPalette, setDraftSourceAccentPalette] = React.useState<AccentPalette>(() =>
+      createAccentPalette(defaultCustomAccent, "light")
     );
     const [draftDensity, setDraftDensity] = React.useState<DensityMode>("comfortable");
     const [draftIntensity, setDraftIntensity] = React.useState(5);
     const [draftRadius, setDraftRadius] = React.useState(20);
-    const [draftFont, setDraftFont] = React.useState<FontKey>("sf");
+    const [draftFont, setDraftFont] = React.useState<NonNullable<ThemeConfig["font"]>>("sf");
+    const [createMode, setCreateMode] = React.useState<ThemeCreateMode>("simple");
+    const [advancedFontMode, setAdvancedFontMode] = React.useState<AdvancedFontMode>("preset");
+    const [draftBasePresets, setDraftBasePresets] = React.useState<Record<ThemeBaseMode, ThemePreset>>(() => ({
+      light: THEME_PANEL_DEFAULT_THEME_PRESETS.light,
+      dark: THEME_PANEL_DEFAULT_THEME_PRESETS.dark,
+    }));
     const modeValue = String(theme.mode);
+    const protectedPresetKeys = React.useMemo(
+      () => new Set(["system", ...THEME_PANEL_DEFAULT_PRESET_OPTIONS.map((option) => String(option.key))]),
+      []
+    );
 
     const setRootRef = React.useCallback(
       (node: HTMLDivElement | null) => {
@@ -452,10 +631,6 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
       [ref]
     );
 
-    const draftAccentPalette = React.useMemo(
-      () => createAccentPalette(draftAccent, draftBase),
-      [draftAccent, draftBase]
-    );
     const draftPreset = React.useMemo<ThemePreset>(
       () => ({
         base: draftBase,
@@ -482,11 +657,12 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
       const customOptions = Object.entries(theme.themes)
         .filter(([key]) => !defaultKeys.has(key))
         .map(([key, preset]) => ({
-        key,
-        label: createdThemeMeta[key]?.label ?? fallbackPresetLabel(key),
-        description: createdThemeMeta[key]?.description ?? (preset.base === "dark" ? "深色" : "浅色"),
-        preset,
-      }));
+          key,
+          label: createdThemeMeta[key]?.label ?? preset.label ?? fallbackPresetLabel(key),
+          description:
+            createdThemeMeta[key]?.description ?? preset.description ?? (preset.base === "dark" ? "深色" : "浅色"),
+          preset,
+        }));
       return [...builtIns, ...customOptions];
     }, [createdThemeMeta, presetOptions, theme.themes]);
 
@@ -550,6 +726,49 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
       });
     };
 
+    const deletePreset = (option: ThemePanelPresetOption) => {
+      clearCreateState();
+      const key = String(option.key);
+      if (protectedPresetKeys.has(key) || !(key in theme.themes)) return;
+
+      const preset = option.preset ?? theme.themes[key];
+      const { [key]: _removed, ...nextThemes } = theme.themes;
+      const active = modeValue === key;
+      const nextBase = theme.colorScheme === "dark" ? "dark" : "light";
+      const fallbackPreset = THEME_PANEL_DEFAULT_THEME_PRESETS[nextBase];
+      const nextConfig: Partial<ThemeConfig> = active
+        ? {
+            mode: nextBase,
+            colorScheme: fallbackPreset.base,
+            accent: fallbackPreset.accent,
+            density: fallbackPreset.density,
+            intensity: fallbackPreset.intensity,
+            radius: fallbackPreset.radius,
+            font: fallbackPreset.font,
+            tokens: fallbackPreset.tokens,
+          }
+        : {};
+
+      theme.update({
+        ...nextConfig,
+        themes: nextThemes,
+      });
+      setCreatedThemeMeta((current) => {
+        if (!(key in current)) return current;
+        const { [key]: _meta, ...next } = current;
+        return next;
+      });
+      onDeleteTheme?.({
+        key,
+        label: nodeToText(option.label, preset?.label ?? fallbackPresetLabel(key)),
+        description: nodeToText(
+          option.description,
+          preset?.description ?? (preset?.base === "dark" ? "深色" : "浅色")
+        ),
+        preset,
+      });
+    };
+
     const beginCreateTheme = () => {
       const root = rootRef.current;
       const base = theme.colorScheme;
@@ -557,8 +776,22 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
         readCssVar(root, "--bg", DEFAULT_SURFACE_BY_BASE[base]),
         DEFAULT_SURFACE_BY_BASE[base]
       );
-      const accent = cssColorToHex(readCssVar(root, "--accent", theme.accentPalette.accent), defaultCustomAccent);
+      const accentPalette = readCurrentAccentPalette(root, theme.accentPalette);
+      const accent = cssColorToHex(accentPalette.accent, defaultCustomAccent);
       const currentTokens = readCurrentSurfaceTokens(root, base);
+      const currentPreset: ThemePreset = {
+        base,
+        accent: accentPalette,
+        density: theme.density,
+        intensity: theme.intensity,
+        radius: theme.radius,
+        font: theme.font,
+        tokens: currentTokens,
+      };
+      const basePresets: Record<ThemeBaseMode, ThemePreset> = {
+        light: base === "light" ? currentPreset : THEME_PANEL_DEFAULT_THEME_PRESETS.light,
+        dark: base === "dark" ? currentPreset : THEME_PANEL_DEFAULT_THEME_PRESETS.dark,
+      };
 
       previewSnapshotRef.current = {
         mode: theme.mode,
@@ -571,15 +804,23 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
         tokens: theme.tokens,
         themes: theme.themes,
       };
+      setDraftBasePresets(basePresets);
       setDraftName(defaultCreateThemeName);
       setDraftBase(base);
       setDraftSurface(cssColorToHex(currentTokens.bg ?? surface, surface));
       setDraftTokens(currentTokens);
+      setDraftSourceSurface(cssColorToHex(currentTokens.bg ?? surface, surface));
+      setDraftSourceTokens(currentTokens);
       setDraftAccent(accent);
+      setDraftAccentPalette(accentPalette);
+      setDraftSourceAccent(accent);
+      setDraftSourceAccentPalette(accentPalette);
       setDraftDensity(theme.density);
       setDraftIntensity(theme.intensity);
       setDraftRadius(theme.radius);
-      setDraftFont(toFontKey(theme.font));
+      setDraftFont(theme.font ?? "sf");
+      setAdvancedFontMode(toFontKey(theme.font) === theme.font ? "preset" : "custom");
+      setCreateMode("simple");
       setCustomAccent(accent);
       setPreviewDraft(true);
       setIsCreatingTheme(true);
@@ -596,38 +837,69 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
     };
 
     const updateDraftBase = (base: ThemeBaseMode) => {
-      const surface = DEFAULT_SURFACE_BY_BASE[base];
+      const preset = draftBasePresets[base] ?? THEME_PANEL_DEFAULT_THEME_PRESETS[base];
+      const tokens = { ...(preset.tokens ?? defaultBaseTokens(base)) };
+      const surface = cssColorToHex(tokens.bg ?? DEFAULT_SURFACE_BY_BASE[base], DEFAULT_SURFACE_BY_BASE[base]);
       setDraftBase(base);
       setDraftSurface(surface);
-      setDraftTokens(createSurfaceTokens(surface, base));
-      setDraftAccent((current) => cssColorToHex(current, defaultCustomAccent));
+      setDraftTokens(tokens);
+      setDraftSourceSurface(surface);
+      setDraftSourceTokens(tokens);
+      const nextAccent = cssColorToHex(draftAccent, defaultCustomAccent);
+      const accentPalette = createAccentPalette(nextAccent, base);
+      setDraftAccent(nextAccent);
+      setDraftAccentPalette(accentPalette);
+      setDraftSourceAccent(nextAccent);
+      setDraftSourceAccentPalette(accentPalette);
     };
 
     const updateDraftSurface = (surface: string) => {
       setDraftSurface(surface);
-      setDraftTokens(createSurfaceTokens(surface, draftBase));
+      setDraftTokens(createDraftSurfaceTokens(surface, draftBase, draftSourceSurface, draftSourceTokens));
+    };
+
+    const updateDraftToken = (key: SurfaceTokenKey, value: string) => {
+      setDraftTokens((current) => ({ ...current, [key]: value }));
+      if (key === "bg") setDraftSurface(cssColorToHex(value, draftSurface));
+    };
+
+    const updateDraftAccent = (accent: string) => {
+      setDraftAccent(accent);
+      setDraftAccentPalette(createDraftAccentPalette(accent, draftBase, draftSourceAccent, draftSourceAccentPalette));
+      if (previewDraft) setCustomAccent(accent);
+    };
+
+    const updateDraftAccentSlot = (key: AccentPaletteKey, value: string) => {
+      setDraftAccentPalette((current) => ({ ...current, [key]: value }));
+      if (key === "accent") {
+        const accent = cssColorToHex(value, draftAccent);
+        setDraftAccent(accent);
+        if (previewDraft) setCustomAccent(accent);
+      }
     };
 
     const saveCustomTheme = () => {
       const label = draftName.trim() || defaultCreateThemeName || "自定义主题";
       const key = createThemeKey(label, theme.themes, createThemeKeyPrefix);
       const description = draftBase === "dark" ? "自建暗" : "自建亮";
-      const nextThemes = { ...theme.themes, [String(key)]: draftPreset };
+      const preset: ThemePreset = { ...draftPreset, label, description };
+      const presetOption: ThemePanelPresetOption = { key, label, description, preset };
+      const nextThemes = { ...theme.themes, [String(key)]: preset };
       const meta = { key, label, description };
       setCreatedThemeMeta((current) => ({ ...current, [String(key)]: meta }));
       theme.update({
         themes: nextThemes,
         mode: key,
-        colorScheme: draftPreset.base,
-        accent: draftPreset.accent,
-        density: draftPreset.density,
-        intensity: draftPreset.intensity,
-        radius: draftPreset.radius,
-        font: draftPreset.font,
-        tokens: draftPreset.tokens,
+        colorScheme: preset.base,
+        accent: preset.accent,
+        density: preset.density,
+        intensity: preset.intensity,
+        radius: preset.radius,
+        font: preset.font,
+        tokens: preset.tokens,
       });
       setCustomAccent(draftAccent);
-      onCreateTheme?.({ ...meta, preset: draftPreset });
+      onCreateTheme?.({ ...meta, preset, presetOption });
       clearCreateState();
     };
 
@@ -683,25 +955,39 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
                   const key = String(option.key);
                   const preset = option.preset ?? theme.themes[key];
                   const active = modeValue === key;
+                  const deletable = allowDeleteTheme && !protectedPresetKeys.has(key) && key in theme.themes;
                   return (
-                    <Button
-                      key={key}
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className={`theme-panel-preset ${active ? "active" : ""}`}
-                      onClick={() => applyPreset(option)}
-                    >
-                      <span className="theme-panel-preset-ink" aria-hidden>
-                        <span style={{ background: preset?.tokens?.bg ?? "var(--bg)" }} />
-                        <span style={{ background: preset?.tokens?.["bg-raised"] ?? "var(--bg-raised)" }} />
-                        <span style={{ background: accentFromPreset(preset) }} />
-                      </span>
-                      <span className="theme-panel-preset-copy">
-                        <span>{option.label}</span>
-                        {option.description && <small>{option.description}</small>}
-                      </span>
-                    </Button>
+                    <div key={key} className={`theme-panel-preset-shell ${deletable ? "deletable" : ""}`}>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className={`theme-panel-preset ${active ? "active" : ""}`}
+                        onClick={() => applyPreset(option)}
+                      >
+                        <span className="theme-panel-preset-ink" aria-hidden>
+                          <span style={{ background: preset?.tokens?.bg ?? "var(--bg)" }} />
+                          <span style={{ background: preset?.tokens?.["bg-raised"] ?? "var(--bg-raised)" }} />
+                          <span style={{ background: accentFromPreset(preset) }} />
+                        </span>
+                        <span className="theme-panel-preset-copy">
+                          <span>{option.label}</span>
+                          {option.description && <small>{option.description}</small>}
+                        </span>
+                      </Button>
+                      {deletable && (
+                        <Button
+                          type="button"
+                          variant="danger"
+                          size="sm"
+                          icon="trash"
+                          iconOnly
+                          tip={`删除 ${nodeToText(option.label, fallbackPresetLabel(key))}`}
+                          className="theme-panel-preset-delete"
+                          onClick={() => deletePreset(option)}
+                        />
+                      )}
+                    </div>
                   );
                 })}
               </div>
@@ -736,6 +1022,17 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
                   leadingIcon="palette"
                   allowClear
                 />
+                <RadioGroup
+                  className="theme-panel-create-mode"
+                  variant="segmented"
+                  size="sm"
+                  value={createMode}
+                  options={THEME_CREATE_MODE_OPTIONS.map((option) => ({
+                    value: option.value,
+                    label: option.label,
+                  }))}
+                  onChange={setCreateMode}
+                />
                 <div className="theme-panel-create-field">
                   <span>基底</span>
                   <RadioGroup
@@ -749,16 +1046,18 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
                     onChange={updateDraftBase}
                   />
                 </div>
-                <div className="theme-panel-create-grid">
-                  <div className="theme-panel-create-field">
-                    <span>表面</span>
-                    <ColorPicker size="sm" value={draftSurface} onChange={updateDraftSurface} />
+                {createMode === "simple" && (
+                  <div className="theme-panel-create-grid">
+                    <div className="theme-panel-create-field">
+                      <span>表面</span>
+                      <ColorPicker size="sm" value={draftSurface} onChange={updateDraftSurface} />
+                    </div>
+                    <div className="theme-panel-create-field">
+                      <span>强调</span>
+                      <ColorPicker size="sm" value={draftAccent} onChange={updateDraftAccent} />
+                    </div>
                   </div>
-                  <div className="theme-panel-create-field">
-                    <span>强调</span>
-                    <ColorPicker size="sm" value={draftAccent} onChange={setDraftAccent} />
-                  </div>
-                </div>
+                )}
                 <div className="theme-panel-create-sliders">
                   <div className="theme-panel-label">
                     <span>阴影强度</span>
@@ -786,11 +1085,118 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
                   <RadioGroup
                     variant="segmented"
                     size="sm"
-                    value={draftFont}
+                    value={toFontKey(draftFont)}
                     options={FONT_OPTIONS.map((option) => ({ value: option.value, label: option.label }))}
-                    onChange={setDraftFont}
+                    onChange={(value) => setDraftFont(value as FontKey)}
                   />
                 </div>
+                {createMode === "advanced" && (
+                  <div className="theme-panel-advanced">
+                    <div className="theme-panel-advanced-section compact">
+                      <div className="theme-panel-advanced-title">
+                        <span>字体</span>
+                        <small>{advancedFontMode === "preset" ? "选择内置字体" : "填写 CSS font-family"}</small>
+                      </div>
+                      <RadioGroup
+                        className="theme-panel-create-mode"
+                        variant="segmented"
+                        size="sm"
+                        value={advancedFontMode}
+                        options={ADVANCED_FONT_MODE_OPTIONS.map((option) => ({
+                          value: option.value,
+                          label: option.label,
+                        }))}
+                        onChange={(value) => {
+                          setAdvancedFontMode(value);
+                          if (value === "preset") setDraftFont(toFontKey(draftFont));
+                        }}
+                      />
+                      {advancedFontMode === "custom" && (
+                        <div className="theme-panel-create-field">
+                          <span>字体栈</span>
+                          <Input
+                            size="sm"
+                            value={fontConfigToText(draftFont)}
+                            onValueChange={(value) => setDraftFont(value || "system")}
+                            placeholder="CSS font-family"
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="theme-panel-advanced-section">
+                      <div className="theme-panel-advanced-title">
+                        <span>表面 tokens</span>
+                        <small>完整覆写 --bg / --fg / shadow</small>
+                      </div>
+                      <div className="theme-panel-token-grid">
+                        {SURFACE_TOKEN_FIELDS.map((field) => (
+                          <div className="theme-panel-token-field" key={field.key}>
+                            <span className="theme-panel-token-label">
+                              <span>{field.label}</span>
+                              <code>--{field.key}</code>
+                            </span>
+                            <span className="theme-panel-token-input">
+                              <ColorPicker
+                                className="theme-panel-token-picker"
+                                value={tokenPickerValue(draftTokens[field.key], draftSurface)}
+                                onChange={(value) => updateDraftToken(field.key, value)}
+                                placement="left"
+                                aria-label={`选择 ${field.label}`}
+                              >
+                                <span
+                                  className="theme-panel-token-swatch"
+                                  style={{ background: draftTokens[field.key] }}
+                                />
+                              </ColorPicker>
+                              <Input
+                                size="sm"
+                                value={draftTokens[field.key] ?? ""}
+                                onValueChange={(value) => updateDraftToken(field.key, value)}
+                              />
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="theme-panel-advanced-section">
+                      <div className="theme-panel-advanced-title">
+                        <span>强调 palette</span>
+                        <small>完整覆写 accent / ink / soft / glow</small>
+                      </div>
+                      <div className="theme-panel-token-grid">
+                        {ACCENT_PALETTE_FIELDS.map((field) => (
+                          <div className="theme-panel-token-field" key={field.key}>
+                            <span className="theme-panel-token-label">
+                              <span>{field.label}</span>
+                              <code>accent.{field.key}</code>
+                            </span>
+                            <span className="theme-panel-token-input">
+                              <ColorPicker
+                                className="theme-panel-token-picker"
+                                value={tokenPickerValue(draftAccentPalette[field.key], draftAccent)}
+                                onChange={(value) => updateDraftAccentSlot(field.key, value)}
+                                placement="left"
+                                aria-label={`选择 ${field.label}`}
+                              >
+                                <span
+                                  className="theme-panel-token-swatch"
+                                  style={{ background: draftAccentPalette[field.key] }}
+                                />
+                              </ColorPicker>
+                              <Input
+                                size="sm"
+                                value={draftAccentPalette[field.key]}
+                                onValueChange={(value) => updateDraftAccentSlot(field.key, value)}
+                              />
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div
                   className="theme-panel-create-preview"
                   style={{
@@ -801,6 +1207,7 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
                     "--preview-shadow-dark": draftTokens["shadow-dark"],
                     "--preview-shadow-light": draftTokens["shadow-light"],
                     "--preview-accent-glow": draftAccentPalette.glow,
+                    "--preview-font": fontToStack(draftFont),
                   } as React.CSSProperties}
                 >
                   <span className="theme-panel-create-preview-label">

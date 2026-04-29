@@ -27,9 +27,9 @@
 .switch.sm { --w: 36px; --h: 20px; }
 .switch.lg { --w: 58px; --h: 32px; }
 /* When checkedChildren / unCheckedChildren are present, widen the track to fit. */
-.switch.with-children { --w: 60px; }
-.switch.with-children.sm { --w: 46px; }
-.switch.with-children.lg { --w: 74px; }
+.switch.with-children { --w: 72px; }
+.switch.with-children.sm { --w: 60px; }
+.switch.with-children.lg { --w: 86px; }
 
 .switch-thumb {
   position: absolute;
@@ -68,6 +68,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
   transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
 }
 /* Checked label sits on the left side of the track (thumb pushes right). */

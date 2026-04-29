@@ -97,8 +97,14 @@
   gap: var(--gap-2);
 }
 
+.theme-panel-preset-shell {
+  position: relative;
+  min-width: 0;
+}
+
 .theme-panel .theme-panel-preset.btn {
   min-width: 0;
+  width: 100%;
   height: auto;
   min-height: 74px;
   justify-content: stretch;
@@ -132,6 +138,35 @@
 .theme-panel .theme-panel-preset.btn.active:hover {
   color: var(--accent-ink);
   box-shadow: var(--neu-in-sm), 0 0 0 1px var(--accent-glow);
+}
+
+.theme-panel .theme-panel-preset-shell.deletable .theme-panel-preset.btn {
+  padding-right: 28px;
+}
+
+.theme-panel .theme-panel-preset-delete.btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  padding: 0;
+  color: var(--fg-subtle);
+  background: var(--bg);
+  box-shadow: var(--neu-out-sm);
+  opacity: 0;
+  transform: scale(0.92);
+}
+
+.theme-panel-preset-shell:hover .theme-panel-preset-delete.btn,
+.theme-panel-preset-shell:focus-within .theme-panel-preset-delete.btn {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.theme-panel .theme-panel-preset-delete.btn:hover {
+  box-shadow: var(--neu-in-sm);
 }
 
 .theme-panel-preset-ink {
@@ -258,6 +293,10 @@
   width: 100%;
 }
 
+.theme-panel-create-mode.radio-group.segmented {
+  width: 100%;
+}
+
 .theme-panel-create-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -289,6 +328,7 @@
   box-shadow:
     calc(var(--shadow-offset) * 0.45) calc(var(--shadow-offset) * 0.45) calc(var(--shadow-blur) * 0.55) var(--preview-shadow-dark, var(--shadow-dark)),
     calc(var(--shadow-offset) * -0.45) calc(var(--shadow-offset) * -0.45) calc(var(--shadow-blur) * 0.55) var(--preview-shadow-light, var(--shadow-light));
+  font-family: var(--preview-font, var(--font-sans));
   font-size: 12px;
   font-weight: 700;
 }
@@ -323,4 +363,131 @@
   display: grid;
   grid-template-columns: 0.85fr 1fr;
   gap: 8px;
+}
+
+.theme-panel-advanced {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 2px;
+}
+
+.theme-panel-advanced-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--divider);
+}
+
+.theme-panel-advanced-section.compact {
+  padding-top: 0;
+  border-top: none;
+}
+
+.theme-panel-advanced-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.theme-panel-advanced-title span {
+  min-width: 0;
+  color: var(--fg);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.theme-panel-advanced-title small {
+  min-width: 0;
+  color: var(--fg-subtle);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.theme-panel-token-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.theme-panel-token-field {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+}
+
+.theme-panel-token-label {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.theme-panel-token-label span {
+  color: var(--fg-muted);
+  font-size: 10px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.theme-panel-token-label code {
+  color: var(--fg-subtle);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.theme-panel-token-input {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 7px;
+  align-items: center;
+}
+
+.theme-panel-token-picker {
+  width: 24px;
+  height: 24px;
+}
+
+.theme-panel-token-picker .cp-custom-trigger {
+  width: 24px;
+  height: 24px;
+  display: block;
+  border-radius: 7px;
+}
+
+.theme-panel-token-swatch {
+  display: block;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  box-shadow: var(--neu-in-sm), inset 0 0 0 1px var(--border);
+  transition:
+    box-shadow var(--dur-fast) var(--ease),
+    transform var(--dur-fast) var(--ease);
+}
+
+.theme-panel-token-picker .cp-custom-trigger:hover .theme-panel-token-swatch {
+  box-shadow: var(--neu-out-sm), inset 0 0 0 1px var(--border);
+  transform: translateY(-1px);
+}
+
+.theme-panel-token-input .input-wrap,
+.theme-panel-create-field .input-wrap {
+  min-width: 0;
+}
+
+.theme-panel-token-input .input {
+  font-family: var(--font-mono);
+  font-size: 11px;
 }

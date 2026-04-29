@@ -10,7 +10,8 @@ import * as React from "react";
  * - Presets: accent palettes, font stacks, densities.
  * - Custom accent: pass a full palette or only a base color — missing slots
  *   are auto-derived via `color-mix`.
- * - Persistence: optional localStorage via `storageKey` prop.
+ * - Persistence: optional localStorage via `storageKey` prop, including custom
+ *   named themes.
  * - "system" mode respects `prefers-color-scheme` via matchMedia.
  * - Arbitrary token overrides through the `tokens` prop.
  * ========================================================================== */
@@ -53,6 +54,10 @@ export type ThemeTokens = Record<string, string>;
 
 /** Named custom theme mode. `base` keeps dark/light specific component rules. */
 export interface ThemePreset {
+  /** Optional display name used by ThemePanel or other theme pickers. */
+  label?: string;
+  /** Optional helper text used by ThemePanel or other theme pickers. */
+  description?: string;
   base?: ThemeBaseMode;
   accent?: AccentKey | CustomAccentInput;
   density?: DensityMode;
@@ -286,6 +291,49 @@ function toVar(key: string): string {
   return key.startsWith("--") ? key : `--${key}`;
 }
 
+function applyShadowTokens(target: HTMLElement, colorScheme: ThemeBaseMode): void {
+  if (colorScheme === "dark") {
+    target.style.setProperty("--shadow-offset", "calc(4px * var(--d))");
+    target.style.setProperty("--shadow-blur", "calc(10px * var(--d))");
+    target.style.setProperty("--shadow-inset-offset", "calc(3px * var(--d))");
+    target.style.setProperty("--shadow-inset-blur", "calc(7px * var(--d))");
+  } else {
+    target.style.setProperty("--shadow-offset", "calc(6px * var(--d))");
+    target.style.setProperty("--shadow-blur", "calc(16px * var(--d))");
+    target.style.setProperty("--shadow-inset-offset", "calc(4px * var(--d))");
+    target.style.setProperty("--shadow-inset-blur", "calc(10px * var(--d))");
+  }
+
+  target.style.setProperty(
+    "--neu-out",
+    "var(--shadow-offset) var(--shadow-offset) var(--shadow-blur) var(--shadow-dark), calc(var(--shadow-offset) * -1) calc(var(--shadow-offset) * -1) var(--shadow-blur) var(--shadow-light)"
+  );
+  target.style.setProperty(
+    "--neu-out-sm",
+    "calc(var(--shadow-offset) * 0.5) calc(var(--shadow-offset) * 0.5) calc(var(--shadow-blur) * 0.6) var(--shadow-dark), calc(var(--shadow-offset) * -0.5) calc(var(--shadow-offset) * -0.5) calc(var(--shadow-blur) * 0.6) var(--shadow-light)"
+  );
+  target.style.setProperty(
+    "--neu-out-lg",
+    "calc(var(--shadow-offset) * 1.6) calc(var(--shadow-offset) * 1.6) calc(var(--shadow-blur) * 1.4) var(--shadow-dark), calc(var(--shadow-offset) * -1.6) calc(var(--shadow-offset) * -1.6) calc(var(--shadow-blur) * 1.4) var(--shadow-light)"
+  );
+  target.style.setProperty(
+    "--neu-in",
+    "inset var(--shadow-inset-offset) var(--shadow-inset-offset) var(--shadow-inset-blur) var(--shadow-dark), inset calc(var(--shadow-inset-offset) * -1) calc(var(--shadow-inset-offset) * -1) var(--shadow-inset-blur) var(--shadow-light)"
+  );
+  target.style.setProperty(
+    "--neu-in-sm",
+    "inset calc(var(--shadow-inset-offset) * 0.6) calc(var(--shadow-inset-offset) * 0.6) calc(var(--shadow-inset-blur) * 0.6) var(--shadow-dark), inset calc(var(--shadow-inset-offset) * -0.6) calc(var(--shadow-inset-offset) * -0.6) calc(var(--shadow-inset-blur) * 0.6) var(--shadow-light)"
+  );
+  target.style.setProperty(
+    "--neu-flat",
+    "1px 1px 2px var(--shadow-dark), -1px -1px 2px var(--shadow-light)"
+  );
+  target.style.setProperty(
+    "--neu-float",
+    "0 calc(var(--shadow-offset) * 1.8) calc(var(--shadow-blur) * 2.2) var(--shadow-dark), 0 calc(var(--shadow-offset) * 0.4) calc(var(--shadow-blur) * 0.7) var(--shadow-dark)"
+  );
+}
+
 /** Imperative theme application — writes CSS vars / data-attrs on a target. */
 export function applyTheme(target: HTMLElement, config: ThemeConfig): void {
   const cfg = resolveThemeConfig(config);
@@ -313,6 +361,7 @@ export function applyTheme(target: HTMLElement, config: ThemeConfig): void {
   // Shadow intensity (1..10 → 0.4..1.6)
   const intensity = cfg.intensity ?? DEFAULT_CONFIG.intensity;
   target.style.setProperty("--d", String(0.4 + intensity * 0.12));
+  applyShadowTokens(target, colorScheme);
 
   // Radius scale
   const r = cfg.radius ?? DEFAULT_CONFIG.radius;
@@ -378,8 +427,7 @@ function loadPersisted(key: string | undefined): Partial<ThemeConfig> | null {
 function persist(key: string | undefined, cfg: ThemeConfig): void {
   if (!key || !isBrowser) return;
   try {
-    const { themes: _themes, ...persisted } = cfg;
-    localStorage.setItem(key, JSON.stringify(persisted));
+    localStorage.setItem(key, JSON.stringify(cfg));
   } catch {
     /* quota exceeded / disabled storage — ignore */
   }
@@ -399,7 +447,7 @@ export interface ThemeProviderProps extends ThemeConfig {
   as?: keyof JSX.IntrinsicElements;
   className?: string;
   style?: React.CSSProperties;
-  /** If set, theme state is persisted to localStorage under this key. */
+  /** If set, theme state and custom named themes are persisted to localStorage under this key. */
   storageKey?: string;
   /** Called whenever the resolved theme value changes. */
   onChange?: (value: ThemeValue) => void;
@@ -469,29 +517,81 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = (props) => {
   }, []);
 
   const [config, setConfig] = React.useState<ThemeConfig>(initialConfig);
+  const previousPropsRef = React.useRef<ThemeConfig>({
+    mode: configProps.mode,
+    colorScheme: configProps.colorScheme,
+    accent: configProps.accent,
+    density: configProps.density,
+    intensity: configProps.intensity,
+    radius: configProps.radius,
+    font: configProps.font,
+    tokens: configProps.tokens,
+    themes: configProps.themes,
+  });
 
   // Sync external prop changes into state — so callers can drive the provider
   // "controlled-style" (e.g. <ThemeProvider accent={reactState} />).
   // `setMode`/`setAccent`/etc. still work; they just get overridden if the
   // parent later changes the prop.
   React.useEffect(() => {
+    const previous = previousPropsRef.current;
+    const changedProps: Partial<ThemeConfig> = {};
+    const assignIfChanged = <K extends keyof ThemeConfig>(key: K, value: ThemeConfig[K] | undefined) => {
+      if (value !== previous[key]) changedProps[key] = value;
+    };
+
+    assignIfChanged("mode", configProps.mode);
+    assignIfChanged("colorScheme", configProps.colorScheme);
+    assignIfChanged("accent", configProps.accent);
+    assignIfChanged("density", configProps.density);
+    assignIfChanged("intensity", configProps.intensity);
+    assignIfChanged("radius", configProps.radius);
+    assignIfChanged("font", configProps.font);
+    assignIfChanged("tokens", configProps.tokens);
+    assignIfChanged("themes", configProps.themes);
+
+    previousPropsRef.current = {
+      mode: configProps.mode,
+      colorScheme: configProps.colorScheme,
+      accent: configProps.accent,
+      density: configProps.density,
+      intensity: configProps.intensity,
+      radius: configProps.radius,
+      font: configProps.font,
+      tokens: configProps.tokens,
+      themes: configProps.themes,
+    };
+
+    if (Object.keys(changedProps).length === 0) return;
+
     setConfig((c) => {
       const base: ThemeConfig = {
         ...c,
-        themes: configProps.themes ?? c.themes,
+        ...(Object.prototype.hasOwnProperty.call(changedProps, "themes")
+          ? { themes: configProps.themes ?? DEFAULT_CONFIG.themes }
+          : null),
       };
-      const mode = configProps.mode ?? c.mode ?? DEFAULT_CONFIG.mode;
-      const nextFromMode = configProps.mode ? applyThemePreset(base, mode) : base;
+      const mode =
+        Object.prototype.hasOwnProperty.call(changedProps, "mode")
+          ? (configProps.mode ?? DEFAULT_CONFIG.mode)
+          : (c.mode ?? DEFAULT_CONFIG.mode);
+      const nextFromMode = Object.prototype.hasOwnProperty.call(changedProps, "mode")
+        ? applyThemePreset(base, mode)
+        : base;
       const next: ThemeConfig = {
         ...nextFromMode,
         mode,
-        colorScheme: configProps.colorScheme ?? nextFromMode.colorScheme,
-        accent: configProps.accent ?? nextFromMode.accent,
-        density: configProps.density ?? nextFromMode.density,
-        intensity: configProps.intensity ?? nextFromMode.intensity,
-        radius: configProps.radius ?? nextFromMode.radius,
-        font: configProps.font ?? nextFromMode.font,
-        tokens: configProps.tokens ?? nextFromMode.tokens,
+        ...(Object.prototype.hasOwnProperty.call(changedProps, "colorScheme")
+          ? { colorScheme: configProps.colorScheme }
+          : null),
+        ...(Object.prototype.hasOwnProperty.call(changedProps, "accent") ? { accent: configProps.accent } : null),
+        ...(Object.prototype.hasOwnProperty.call(changedProps, "density") ? { density: configProps.density } : null),
+        ...(Object.prototype.hasOwnProperty.call(changedProps, "intensity")
+          ? { intensity: configProps.intensity }
+          : null),
+        ...(Object.prototype.hasOwnProperty.call(changedProps, "radius") ? { radius: configProps.radius } : null),
+        ...(Object.prototype.hasOwnProperty.call(changedProps, "font") ? { font: configProps.font } : null),
+        ...(Object.prototype.hasOwnProperty.call(changedProps, "tokens") ? { tokens: configProps.tokens } : null),
       };
       if (
         next.mode === c.mode &&
@@ -615,7 +715,11 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = (props) => {
         <Component
           ref={scopeRef as React.Ref<never>}
           className={className}
-          style={style}
+          style={{
+            color: "var(--fg)",
+            fontFamily: "var(--font-sans)",
+            ...style,
+          }}
         >
           {children}
         </Component>

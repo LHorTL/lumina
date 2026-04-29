@@ -86,6 +86,8 @@ mode 可以指向 themes 中的命名 preset。base 决定 light/dark 基底,tok
 ```tsx
 const themes = {
   graphite: {
+    label: "Graphite",
+    description: "深色",
     base: "dark",
     accent: {
       accent: "oklch(72% 0.13 190)",
@@ -173,9 +175,10 @@ applyTheme(document.documentElement, {
 | font | `FontConfig` | `"sf"` | 字体预设或 CSS 栈 |
 | tokens | `Record<string, string>` | — | 任意 CSS 变量覆写 |
 | themes | `Record<string, ThemePreset>` | — | 命名自定义模式 preset |
+| ThemePreset.label / description | `string` | — | 可选展示元信息;ThemePanel 会读取它作为卡片标题和说明 |
 | target | `"root" | "scope"` | `"root"` | 应用到根还是局部 |
 | as | `keyof JSX.IntrinsicElements` | `"div"` | scope 模式的元素标签 |
-| storageKey | `string` | — | localStorage 持久化 key |
+| storageKey | `string` | — | localStorage 持久化 key,包含当前主题状态与自定义 themes |
 | onChange | `(value: ThemeValue) => void` | — | 主题值变更回调 |
 
 

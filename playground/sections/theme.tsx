@@ -128,6 +128,8 @@ const ThemeCustomDemo: React.FC = () => {
 
 const CUSTOM_MODE_THEMES = {
   graphite: {
+    label: "Graphite",
+    description: "深色",
     base: "dark",
     accent: {
       accent: "oklch(72% 0.13 190)",
@@ -148,6 +150,8 @@ const CUSTOM_MODE_THEMES = {
     },
   },
   porcelain: {
+    label: "瓷白",
+    description: "清亮",
     base: "light",
     accent: "mint",
     intensity: 6,
@@ -330,6 +334,8 @@ t.reset();                   // 重置到 props 初值`,
         description: "mode 可以指向 themes 中的命名 preset。base 决定 light/dark 基底,tokens 决定完整视觉。",
         code: `const themes = {
   graphite: {
+    label: "Graphite",
+    description: "深色",
     base: "dark",
     accent: {
       accent: "oklch(72% 0.13 190)",
@@ -412,9 +418,10 @@ applyTheme(document.documentElement, {
           { prop: "font", description: "字体预设或 CSS 栈", type: "FontConfig", default: `"sf"` },
           { prop: "tokens", description: "任意 CSS 变量覆写", type: "Record<string, string>" },
           { prop: "themes", description: "命名自定义模式 preset", type: "Record<string, ThemePreset>" },
+          { prop: "ThemePreset.label / description", description: "可选展示元信息;ThemePanel 会读取它作为卡片标题和说明", type: "string" },
           { prop: "target", description: "应用到根还是局部", type: `"root" | "scope"`, default: `"root"` },
           { prop: "as", description: "scope 模式的元素标签", type: "keyof JSX.IntrinsicElements", default: `"div"` },
-          { prop: "storageKey", description: "localStorage 持久化 key", type: "string" },
+          { prop: "storageKey", description: "localStorage 持久化 key,包含当前主题状态与自定义 themes", type: "string" },
           { prop: "onChange", description: "主题值变更回调", type: "(value: ThemeValue) => void" },
         ],
       },
