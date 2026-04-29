@@ -174,8 +174,10 @@ function isBuiltInThemeMode(mode: ThemeMode | undefined): mode is BuiltInThemeMo
   return mode === "light" || mode === "dark" || mode === "system";
 }
 
+const TRANSIENT_THEME_MODES = new Set<ThemeMode>(["__theme_panel_draft__"]);
+
 function isTransientThemeMode(mode: ThemeMode | undefined): boolean {
-  return typeof mode === "string" && mode.startsWith("__") && mode.endsWith("__");
+  return mode != null && TRANSIENT_THEME_MODES.has(mode);
 }
 
 function getThemePreset(themes: ThemePresets | undefined, mode: ThemeMode | undefined): ThemePreset | undefined {
