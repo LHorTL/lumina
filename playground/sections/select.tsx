@@ -19,7 +19,7 @@ const SectionSelect: React.FC<SectionCtx> = () => {
         height: 16,
         borderRadius: 5,
         background: tone,
-        boxShadow: "var(--neu-flat)",
+        boxShadow: "var(--neu-shadow-subtle)",
       }}
     />
   );

@@ -25,7 +25,7 @@ const SectionStatusBar: React.FC<SectionCtx> = () => (
   right={<StatusBar.Item tone="muted">UTF-8</StatusBar.Item>}
 />`,
         render: () => (
-          <div style={{ borderRadius: "var(--r-lg)", overflow: "hidden", boxShadow: "var(--neu-out)" }}>
+          <div style={{ borderRadius: "var(--r-lg)", overflow: "hidden", boxShadow: "var(--neu-shadow-panel)" }}>
             <div style={{ padding: 24, background: "var(--bg-sunken)", color: "var(--fg-muted)", fontSize: 13, minHeight: 80 }}>
               应用内容区
             </div>
@@ -59,7 +59,7 @@ const SectionStatusBar: React.FC<SectionCtx> = () => (
           const Live = () => {
             const [branch, setBranch] = React.useState("main");
             return (
-              <div style={{ borderRadius: "var(--r-lg)", overflow: "hidden", boxShadow: "var(--neu-out)" }}>
+              <div style={{ borderRadius: "var(--r-lg)", overflow: "hidden", boxShadow: "var(--neu-shadow-panel)" }}>
                 <div style={{ padding: 24, background: "var(--bg-sunken)", color: "var(--fg-muted)", fontSize: 13, minHeight: 80 }}>
                   点击底部任意项试试
                 </div>
@@ -97,7 +97,7 @@ const SectionStatusBar: React.FC<SectionCtx> = () => (
         description: "tone 控制文字颜色:default / muted / accent / success / warning / danger。",
         code: `<StatusBar.Item tone="danger">3 errors</StatusBar.Item>`,
         render: () => (
-          <div style={{ borderRadius: "var(--r-lg)", overflow: "hidden", boxShadow: "var(--neu-out)" }}>
+          <div style={{ borderRadius: "var(--r-lg)", overflow: "hidden", boxShadow: "var(--neu-shadow-panel)" }}>
             <StatusBar
               left={
                 <>

@@ -19,7 +19,7 @@
   padding: 0;
   border-radius: 999px;
   background: var(--bg);
-  box-shadow: var(--neu-in-sm);
+  box-shadow: var(--neu-shadow-inset);
   cursor: inherit;
   flex-shrink: 0;
   transition: all var(--dur) var(--ease);
@@ -39,7 +39,7 @@
   height: calc(var(--h) - 6px);
   border-radius: 999px;
   background: var(--bg-raised);
-  box-shadow: var(--neu-out-sm);
+  box-shadow: var(--neu-shadow-control);
   transition: all var(--dur) var(--ease);
   z-index: 1;
 }

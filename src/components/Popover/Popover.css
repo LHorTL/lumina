@@ -4,7 +4,7 @@
   background: var(--bg);
   border-radius: var(--r-md);
   min-width: 220px;
-  box-shadow: var(--neu-float);
+  box-shadow: var(--neu-shadow-float);
   position: relative;
 }
 

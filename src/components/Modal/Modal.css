@@ -15,7 +15,7 @@
 .modal {
   background: var(--bg);
   border-radius: var(--r-xl);
-  box-shadow: var(--neu-float);
+  box-shadow: var(--neu-shadow-float);
   padding: var(--gap-6);
   width: min(480px, 92vw);
   animation: modalIn var(--dur-slow) var(--ease);
@@ -68,7 +68,7 @@
 .modal-close:hover {
   color: var(--fg);
   background: var(--bg);
-  box-shadow: var(--neu-flat);
+  box-shadow: var(--neu-shadow-subtle);
 }
 
 .modal-static-body {
@@ -85,7 +85,7 @@
   place-items: center;
   flex-shrink: 0;
   background: var(--bg);
-  box-shadow: var(--neu-in-sm);
+  box-shadow: var(--neu-shadow-inset);
   color: var(--accent);
 }
 

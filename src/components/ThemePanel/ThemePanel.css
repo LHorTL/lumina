@@ -9,7 +9,7 @@
   border-radius: var(--r-xl);
   color: var(--fg);
   background: var(--bg);
-  box-shadow: var(--neu-out-lg);
+  box-shadow: var(--neu-shadow-lift);
 }
 
 .theme-panel.compact {
@@ -85,7 +85,7 @@
   border-radius: var(--r-pill);
   color: var(--accent-ink);
   background: var(--bg);
-  box-shadow: var(--neu-in-sm);
+  box-shadow: var(--neu-shadow-inset);
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 500;
@@ -114,7 +114,7 @@
   padding: 9px;
   color: var(--fg-muted);
   background: var(--bg);
-  box-shadow: var(--neu-out-sm);
+  box-shadow: var(--neu-shadow-control);
   text-align: left;
   white-space: normal;
   transition:
@@ -125,19 +125,19 @@
 
 .theme-panel .theme-panel-preset.btn:hover {
   color: var(--fg);
-  box-shadow: var(--neu-out);
+  box-shadow: var(--neu-shadow-panel);
   transform: translateY(-1px);
 }
 
 .theme-panel .theme-panel-preset.btn.active {
   color: var(--accent-ink);
-  box-shadow: var(--neu-in-sm), 0 0 0 1px var(--accent-glow);
+  box-shadow: var(--neu-shadow-inset), 0 0 0 1px var(--accent-glow);
   transform: none;
 }
 
 .theme-panel .theme-panel-preset.btn.active:hover {
   color: var(--accent-ink);
-  box-shadow: var(--neu-in-sm), 0 0 0 1px var(--accent-glow);
+  box-shadow: var(--neu-shadow-inset), 0 0 0 1px var(--accent-glow);
 }
 
 .theme-panel .theme-panel-preset-shell.deletable .theme-panel-preset.btn {
@@ -154,7 +154,7 @@
   padding: 0;
   color: var(--fg-subtle);
   background: var(--bg);
-  box-shadow: var(--neu-out-sm);
+  box-shadow: var(--neu-shadow-control);
   opacity: 0;
   transform: scale(0.92);
 }
@@ -166,7 +166,7 @@
 }
 
 .theme-panel .theme-panel-preset-delete.btn:hover {
-  box-shadow: var(--neu-in-sm);
+  box-shadow: var(--neu-shadow-inset);
 }
 
 .theme-panel-preset-ink {
@@ -224,11 +224,11 @@
   min-width: 28px;
   padding: 0;
   border-radius: var(--r-pill);
-  box-shadow: var(--neu-flat);
+  box-shadow: var(--neu-shadow-subtle);
 }
 
 .theme-panel-swatch.active {
-  box-shadow: var(--neu-in-sm), 0 0 0 2px var(--accent-glow);
+  box-shadow: var(--neu-shadow-inset), 0 0 0 2px var(--accent-glow);
 }
 
 .theme-panel .radio-group.segmented {
@@ -246,7 +246,7 @@
   padding: 10px;
   border-radius: var(--r-md);
   background: var(--bg);
-  box-shadow: var(--neu-in-sm);
+  box-shadow: var(--neu-shadow-inset);
 }
 
 .theme-panel-create-head {
@@ -315,6 +315,10 @@
   padding: 2px 0;
 }
 
+.theme-panel-shadow {
+  gap: 7px;
+}
+
 .theme-panel-create-preview {
   min-height: 36px;
   display: flex;
@@ -326,8 +330,8 @@
   color: var(--preview-fg, var(--fg));
   background: var(--preview-bg, var(--bg));
   box-shadow:
-    calc(var(--shadow-offset) * 0.45) calc(var(--shadow-offset) * 0.45) calc(var(--shadow-blur) * 0.55) var(--preview-shadow-dark, var(--shadow-dark)),
-    calc(var(--shadow-offset) * -0.45) calc(var(--shadow-offset) * -0.45) calc(var(--shadow-blur) * 0.55) var(--preview-shadow-light, var(--shadow-light));
+    calc(var(--shadow-offset) * 0.45 * var(--preview-shadow-scale, 1)) calc(var(--shadow-offset) * 0.45 * var(--preview-shadow-scale, 1)) calc(var(--shadow-blur) * 0.55 * var(--preview-shadow-scale, 1)) var(--preview-shadow-dark, var(--shadow-dark)),
+    calc(var(--shadow-offset) * -0.45 * var(--preview-shadow-scale, 1)) calc(var(--shadow-offset) * -0.45 * var(--preview-shadow-scale, 1)) calc(var(--shadow-blur) * 0.55 * var(--preview-shadow-scale, 1)) var(--preview-shadow-light, var(--shadow-light));
   font-family: var(--preview-font, var(--font-sans));
   font-size: 12px;
   font-weight: 700;
@@ -454,6 +458,18 @@
   align-items: center;
 }
 
+.theme-panel-token-field.scale {
+  align-items: start;
+}
+
+.theme-panel-token-scale {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 7px;
+  align-items: center;
+}
+
 .theme-panel-token-picker {
   width: 24px;
   height: 24px;
@@ -471,14 +487,14 @@
   width: 24px;
   height: 24px;
   border-radius: 7px;
-  box-shadow: var(--neu-in-sm), inset 0 0 0 1px var(--border);
+  box-shadow: var(--neu-shadow-inset), inset 0 0 0 1px var(--border);
   transition:
     box-shadow var(--dur-fast) var(--ease),
     transform var(--dur-fast) var(--ease);
 }
 
 .theme-panel-token-picker .cp-custom-trigger:hover .theme-panel-token-swatch {
-  box-shadow: var(--neu-out-sm), inset 0 0 0 1px var(--border);
+  box-shadow: var(--neu-shadow-control), inset 0 0 0 1px var(--border);
   transform: translateY(-1px);
 }
 

@@ -16,7 +16,7 @@
   border: none;
   border-radius: var(--r-sm);
   background: var(--bg);
-  box-shadow: var(--neu-out-sm);
+  box-shadow: var(--neu-shadow-control);
   display: inline-flex; align-items: center; justify-content: center;
   cursor: pointer;
   font-size: 12px;
@@ -27,11 +27,11 @@
 }
 .pagination .pg:hover { color: var(--accent-ink); }
 .pagination .pg.active {
-  box-shadow: var(--neu-in-sm);
+  box-shadow: var(--neu-shadow-inset);
   color: var(--accent-ink);
   font-weight: 700;
 }
-.pagination .pg.disabled { color: var(--fg-subtle); cursor: not-allowed; box-shadow: var(--neu-flat); }
+.pagination .pg.disabled { color: var(--fg-subtle); cursor: not-allowed; box-shadow: var(--neu-shadow-subtle); }
 .pagination .ellipsis { padding: 0 4px; color: var(--fg-subtle); }
 
 /* size changer — compact Select inline with the page buttons */
@@ -54,7 +54,7 @@
   border: none;
   border-radius: var(--r-sm);
   background: var(--bg);
-  box-shadow: var(--neu-in-sm);
+  box-shadow: var(--neu-shadow-inset);
   color: var(--fg);
   font-family: inherit;
   font-size: 12px;
@@ -64,5 +64,5 @@
   transition: box-shadow var(--dur-fast) var(--ease);
 }
 .pagination .pg-jumper-input:focus-visible {
-  box-shadow: var(--neu-in-sm), 0 0 0 2px var(--accent-glow);
+  box-shadow: var(--neu-shadow-inset), 0 0 0 2px var(--accent-glow);
 }

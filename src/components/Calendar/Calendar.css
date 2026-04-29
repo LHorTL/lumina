@@ -3,7 +3,7 @@
   background: var(--bg);
   border-radius: var(--r-lg);
   padding: var(--gap-4);
-  box-shadow: var(--neu-out);
+  box-shadow: var(--neu-shadow-panel);
   width: 320px;
 }
 .calendar-head {
@@ -18,7 +18,7 @@
   font-family: inherit;
   transition: all var(--dur-fast) var(--ease);
 }
-.calendar-title:hover { background: var(--bg); box-shadow: var(--neu-flat); }
+.calendar-title:hover { background: var(--bg); box-shadow: var(--neu-shadow-subtle); }
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -47,7 +47,7 @@
   transition: all var(--dur-fast) var(--ease);
 }
 .calendar-cell.out { color: var(--fg-subtle); opacity: 0.5; }
-.calendar-cell:hover { background: var(--bg); box-shadow: var(--neu-flat); }
+.calendar-cell:hover { background: var(--bg); box-shadow: var(--neu-shadow-subtle); }
 .calendar-cell.today { font-weight: 700; color: var(--accent-ink); }
 .calendar-cell.today::after {
   content: ""; position: absolute; bottom: 4px; left: 50%;
@@ -57,7 +57,7 @@
 }
 .calendar-cell.selected {
   background: var(--bg);
-  box-shadow: var(--neu-in-sm);
+  box-shadow: var(--neu-shadow-inset);
   color: var(--accent-ink);
   font-weight: 600;
 }

@@ -15,7 +15,7 @@
   padding: 0;
   border-radius: 7px;
   background: var(--bg);
-  box-shadow: var(--neu-in-sm);
+  box-shadow: var(--neu-shadow-inset);
   display: grid;
   place-items: center;
   flex-shrink: 0;
@@ -26,12 +26,12 @@
 .checkbox-box svg { opacity: 0; transform: scale(0.6); transition: all var(--dur) var(--ease); }
 .checkbox.checked .checkbox-box {
   background: var(--accent);
-  box-shadow: var(--neu-out-sm), 0 2px 8px var(--accent-glow);
+  box-shadow: var(--neu-shadow-control), 0 2px 8px var(--accent-glow);
 }
 .checkbox.checked .checkbox-box svg { opacity: 1; transform: scale(1); }
 .checkbox.indeterminate .checkbox-box {
   background: var(--accent);
-  box-shadow: var(--neu-out-sm), 0 2px 8px var(--accent-glow);
+  box-shadow: var(--neu-shadow-control), 0 2px 8px var(--accent-glow);
 }
 .checkbox.indeterminate .checkbox-box::after {
   content: "";

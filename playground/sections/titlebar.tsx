@@ -22,7 +22,7 @@ const SectionTitleBar: React.FC<SectionCtx> = () => (
         span: 2,
         code: `<TitleBar platform="mac" title="无标题文档" actions={<>...</>} />`,
         render: () => (
-          <div style={{ borderRadius: "var(--r-lg)", overflow: "hidden", boxShadow: "var(--neu-out)" }}>
+          <div style={{ borderRadius: "var(--r-lg)", overflow: "hidden", boxShadow: "var(--neu-shadow-panel)" }}>
             <TitleBar
               title="无标题文档"
               platform="mac"
@@ -48,7 +48,7 @@ const SectionTitleBar: React.FC<SectionCtx> = () => (
         span: 2,
         code: `<TitleBar platform="windows" title="..." actions={...} />`,
         render: () => (
-          <div style={{ borderRadius: "var(--r-lg)", overflow: "hidden", boxShadow: "var(--neu-out)" }}>
+          <div style={{ borderRadius: "var(--r-lg)", overflow: "hidden", boxShadow: "var(--neu-shadow-panel)" }}>
             <TitleBar
               title="无标题文档"
               platform="windows"

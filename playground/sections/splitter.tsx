@@ -49,7 +49,7 @@ const SectionSplitter: React.FC<SectionCtx> = () => (
               height: 240,
               borderRadius: "var(--r-lg)",
               overflow: "hidden",
-              boxShadow: "var(--neu-out)",
+              boxShadow: "var(--neu-shadow-panel)",
             }}
           >
             <Splitter defaultSize={200} min={120} max={360}>
@@ -71,7 +71,7 @@ const SectionSplitter: React.FC<SectionCtx> = () => (
               height: 280,
               borderRadius: "var(--r-lg)",
               overflow: "hidden",
-              boxShadow: "var(--neu-out)",
+              boxShadow: "var(--neu-shadow-panel)",
             }}
           >
             <Splitter direction="vertical" defaultSize={120} min={60} max={220}>
@@ -99,7 +99,7 @@ const SectionSplitter: React.FC<SectionCtx> = () => (
               height: 320,
               borderRadius: "var(--r-lg)",
               overflow: "hidden",
-              boxShadow: "var(--neu-out)",
+              boxShadow: "var(--neu-shadow-panel)",
             }}
           >
             <Splitter defaultSize={180} min={120} max={280}>
@@ -132,7 +132,7 @@ const SectionSplitter: React.FC<SectionCtx> = () => (
                     height: 220,
                     borderRadius: "var(--r-lg)",
                     overflow: "hidden",
-                    boxShadow: "var(--neu-out)",
+                    boxShadow: "var(--neu-shadow-panel)",
                   }}
                 >
                   <Splitter size={w} onResize={setW} min={100} max={400}>

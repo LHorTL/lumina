@@ -4,7 +4,7 @@
   padding: 6px;
   background: var(--bg);
   border-radius: var(--r-md);
-  box-shadow: var(--neu-float);
+  box-shadow: var(--neu-shadow-float);
   border: 1px solid var(--divider);
   display: flex;
   flex-direction: column;
@@ -37,13 +37,13 @@
 .context-menu-item.active:not(:disabled) {
   background: var(--bg);
   color: var(--accent-ink);
-  box-shadow: var(--neu-in-sm);
+  box-shadow: var(--neu-shadow-inset);
 }
 .context-menu-item.danger { color: var(--danger); }
 .context-menu-item.danger.active:not(:disabled) {
   background: var(--bg);
   color: var(--danger);
-  box-shadow: var(--neu-in-sm);
+  box-shadow: var(--neu-shadow-inset);
 }
 
 .context-menu-icon {

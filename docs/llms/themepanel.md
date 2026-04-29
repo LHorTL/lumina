@@ -58,7 +58,7 @@ const [themes, setThemes] = React.useState<ThemePresets>({});
   compact
   title="微调"
   description={null}
-  sections={["accent", "intensity", "radius"]}
+  sections={["accent", "shadow", "radius"]}
   showReset={false}
 />
 ```
@@ -71,7 +71,7 @@ const [themes, setThemes] = React.useState<ThemePresets>({});
 | --- | --- | --- | --- |
 | title | `ReactNode` | `"主题"` | 面板标题;传 null 可隐藏标题文本 |
 | description | `ReactNode` | `"快速调整当前 Lumina 主题"` | 面板副标题 |
-| sections | `ThemePanelSection[]` | — | 展示的控制区及顺序 |
+| sections | `ThemePanelSection[]` | — | 展示的控制区及顺序;shadow 区同时控制 intensity / shadow-scale / shadow-float-scale |
 | modeOptions | `ThemePanelModeOption[]` | — | 模式切换项 |
 | presetOptions | `ThemePanelPresetOption[]` | — | 命名主题预设卡片;不传时使用浅色/深色/瓷白/助手/助手暗 + theme.themes,也可完全由业务侧控制 |
 | defaultCustomAccent | `string` | `"#845ef7"` | 自定义强调色初始值 |

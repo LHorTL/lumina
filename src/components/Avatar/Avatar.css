@@ -4,7 +4,7 @@
   width: var(--size); height: var(--size);
   border-radius: 999px;
   background: var(--bg);
-  box-shadow: var(--neu-out-sm);
+  box-shadow: var(--neu-shadow-control);
   display: grid; place-items: center;
   overflow: hidden;
   color: var(--accent-ink);

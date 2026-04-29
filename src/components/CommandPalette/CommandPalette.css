@@ -17,7 +17,7 @@
   max-height: 60vh;
   background: var(--bg);
   border-radius: var(--r-lg);
-  box-shadow: var(--neu-float);
+  box-shadow: var(--neu-shadow-float);
   border: 1px solid var(--divider);
   display: flex;
   flex-direction: column;
@@ -73,7 +73,7 @@
 .cmdp-item.active:not(:disabled) {
   background: var(--bg);
   color: var(--accent-ink);
-  box-shadow: var(--neu-in-sm);
+  box-shadow: var(--neu-shadow-inset);
 }
 
 .cmdp-icon {
@@ -132,7 +132,7 @@
   padding: 0 5px;
   border-radius: 5px;
   background: var(--bg);
-  box-shadow: var(--neu-flat);
+  box-shadow: var(--neu-shadow-subtle);
   font-family: var(--font-mono);
   font-size: 10.5px;
   color: var(--fg-muted);

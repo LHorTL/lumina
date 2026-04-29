@@ -28,6 +28,7 @@ export type ThemePanelSection =
   | "mode"
   | "presets"
   | "accent"
+  | "shadow"
   | "intensity"
   | "radius"
   | "font"
@@ -82,6 +83,8 @@ export const THEME_PANEL_DEFAULT_THEME_PRESETS = {
       divider: "rgba(130, 148, 175, 0.18)",
       "shadow-dark": "rgba(163, 177, 198, 0.55)",
       "shadow-light": "rgba(255, 255, 255, 0.95)",
+      "shadow-scale": "1",
+      "shadow-float-scale": "1",
     },
   },
   dark: {
@@ -102,6 +105,8 @@ export const THEME_PANEL_DEFAULT_THEME_PRESETS = {
       divider: "rgba(255, 255, 255, 0.06)",
       "shadow-dark": "rgba(0, 0, 0, 0.55)",
       "shadow-light": "rgba(130, 145, 180, 0.06)",
+      "shadow-scale": "1",
+      "shadow-float-scale": "1",
     },
   },
   porcelain: {
@@ -127,6 +132,8 @@ export const THEME_PANEL_DEFAULT_THEME_PRESETS = {
       divider: "rgba(101, 134, 139, 0.18)",
       "shadow-dark": "rgba(143, 163, 168, 0.45)",
       "shadow-light": "rgba(255, 255, 255, 0.96)",
+      "shadow-scale": "1",
+      "shadow-float-scale": "1",
     },
   },
   assistant: {
@@ -152,6 +159,8 @@ export const THEME_PANEL_DEFAULT_THEME_PRESETS = {
       divider: "rgba(33, 53, 71, 0.12)",
       "shadow-dark": "#d1d5de",
       "shadow-light": "#fbffff",
+      "shadow-scale": "1",
+      "shadow-float-scale": "1",
     },
   },
   assistantDark: {
@@ -177,6 +186,8 @@ export const THEME_PANEL_DEFAULT_THEME_PRESETS = {
       divider: "rgba(255, 255, 255, 0.08)",
       "shadow-dark": "#1a1a24",
       "shadow-light": "#3a3a46",
+      "shadow-scale": "1",
+      "shadow-float-scale": "1",
     },
   },
 } satisfies Record<string, ThemePreset>;
@@ -235,10 +246,17 @@ const SURFACE_TOKEN_KEYS = [
   "fg-subtle",
   "border",
   "divider",
+] as const;
+const SHADOW_TOKEN_KEYS = [
   "shadow-dark",
   "shadow-light",
+  "shadow-scale",
+  "shadow-float-scale",
 ] as const;
+const THEME_TOKEN_KEYS = [...SURFACE_TOKEN_KEYS, ...SHADOW_TOKEN_KEYS] as const;
 type SurfaceTokenKey = (typeof SURFACE_TOKEN_KEYS)[number];
+type ShadowTokenKey = (typeof SHADOW_TOKEN_KEYS)[number];
+type ThemeTokenKey = (typeof THEME_TOKEN_KEYS)[number];
 type AccentPaletteKey = keyof AccentPalette;
 type ThemeCreateMode = "simple" | "advanced";
 type AdvancedFontMode = "preset" | "custom";
@@ -247,7 +265,7 @@ const DEFAULT_SECTIONS: ThemePanelSection[] = [
   "mode",
   "presets",
   "accent",
-  "intensity",
+  "shadow",
   "radius",
   "font",
   "density",
@@ -291,8 +309,13 @@ const SURFACE_TOKEN_FIELDS: { key: SurfaceTokenKey; label: string }[] = [
   { key: "fg-subtle", label: "弱文字" },
   { key: "border", label: "描边" },
   { key: "divider", label: "分割线" },
-  { key: "shadow-dark", label: "暗阴影" },
-  { key: "shadow-light", label: "亮阴影" },
+];
+
+const SHADOW_TOKEN_FIELDS: { key: ShadowTokenKey; label: string; kind: "color" | "scale" }[] = [
+  { key: "shadow-dark", label: "暗阴影", kind: "color" },
+  { key: "shadow-light", label: "亮阴影", kind: "color" },
+  { key: "shadow-scale", label: "阴影扩散", kind: "scale" },
+  { key: "shadow-float-scale", label: "浮层深度", kind: "scale" },
 ];
 
 const ACCENT_PALETTE_FIELDS: { key: AccentPaletteKey; label: string }[] = [
@@ -448,6 +471,8 @@ function createSurfaceTokens(surface: string, base: ThemeBaseMode): NonNullable<
         divider: "rgba(255, 255, 255, 0.08)",
         "shadow-dark": "rgba(0, 0, 0, 0.56)",
         "shadow-light": "rgba(130, 145, 180, 0.06)",
+        "shadow-scale": "1",
+        "shadow-float-scale": "1",
       }
     : {
         bg: surface,
@@ -460,6 +485,8 @@ function createSurfaceTokens(surface: string, base: ThemeBaseMode): NonNullable<
         divider: "rgba(110, 130, 150, 0.18)",
         "shadow-dark": `color-mix(in oklch, ${surface} 68%, black)`,
         "shadow-light": "rgba(255, 255, 255, 0.96)",
+        "shadow-scale": "1",
+        "shadow-float-scale": "1",
       };
 }
 
@@ -505,13 +532,13 @@ function readCssVar(element: HTMLElement | null, name: string, fallback: string)
   return getComputedStyle(element).getPropertyValue(name).trim() || fallback;
 }
 
-function readCurrentSurfaceTokens(
+function readCurrentThemeTokens(
   element: HTMLElement | null,
   base: ThemeBaseMode
 ): NonNullable<ThemePreset["tokens"]> {
   const fallbackTokens = defaultBaseTokens(base);
   return Object.fromEntries(
-    SURFACE_TOKEN_KEYS.map((key) => [
+    THEME_TOKEN_KEYS.map((key) => [
       key,
       readCssVar(element, `--${key}`, fallbackTokens[key] ?? DEFAULT_SURFACE_BY_BASE[base]),
     ])
@@ -544,6 +571,15 @@ function fontToStack(font: FontConfig): string {
 
 function tokenPickerValue(value: string | undefined, fallback: string): string {
   return cssColorToHex(value ?? fallback, fallback);
+}
+
+function parseScaleToken(value: string | undefined, fallback = 1): number {
+  const parsed = Number.parseFloat(value ?? "");
+  return Number.isFinite(parsed) ? Math.min(2, Math.max(0.2, parsed)) : fallback;
+}
+
+function formatScaleToken(value: number): string {
+  return value.toFixed(2).replace(/\.?0+$/, "");
 }
 
 /**
@@ -778,7 +814,7 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
       );
       const accentPalette = readCurrentAccentPalette(root, theme.accentPalette);
       const accent = cssColorToHex(accentPalette.accent, defaultCustomAccent);
-      const currentTokens = readCurrentSurfaceTokens(root, base);
+      const currentTokens = readCurrentThemeTokens(root, base);
       const currentPreset: ThemePreset = {
         base,
         accent: accentPalette,
@@ -858,7 +894,7 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
       setDraftTokens(createDraftSurfaceTokens(surface, draftBase, draftSourceSurface, draftSourceTokens));
     };
 
-    const updateDraftToken = (key: SurfaceTokenKey, value: string) => {
+    const updateDraftToken = (key: ThemeTokenKey, value: string) => {
       setDraftTokens((current) => ({ ...current, [key]: value }));
       if (key === "bg") setDraftSurface(cssColorToHex(value, draftSurface));
     };
@@ -911,6 +947,15 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
     const rootClass = ["theme-panel", compact && "compact", className]
       .filter(Boolean)
       .join(" ");
+    const shadowScale = parseScaleToken(
+      theme.tokens["shadow-scale"] ?? readCssVar(rootRef.current, "--shadow-scale", "1")
+    );
+    const shadowFloatScale = parseScaleToken(
+      theme.tokens["shadow-float-scale"] ?? readCssVar(rootRef.current, "--shadow-float-scale", "1")
+    );
+    const updateThemeToken = (key: ShadowTokenKey, value: string) => {
+      theme.setTokens({ ...theme.tokens, [key]: value });
+    };
 
     return (
       <div ref={setRootRef} className={rootClass} {...rest}>
@@ -1127,7 +1172,7 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
                     <div className="theme-panel-advanced-section">
                       <div className="theme-panel-advanced-title">
                         <span>表面 tokens</span>
-                        <small>完整覆写 --bg / --fg / shadow</small>
+                        <small>完整覆写 --bg / --fg</small>
                       </div>
                       <div className="theme-panel-token-grid">
                         {SURFACE_TOKEN_FIELDS.map((field) => (
@@ -1157,6 +1202,65 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
                             </span>
                           </div>
                         ))}
+                      </div>
+                    </div>
+
+                    <div className="theme-panel-advanced-section">
+                      <div className="theme-panel-advanced-title">
+                        <span>阴影系统</span>
+                        <small>暗/亮阴影与层级缩放</small>
+                      </div>
+                      <div className="theme-panel-token-grid">
+                        {SHADOW_TOKEN_FIELDS.map((field) =>
+                          field.kind === "color" ? (
+                            <div className="theme-panel-token-field" key={field.key}>
+                              <span className="theme-panel-token-label">
+                                <span>{field.label}</span>
+                                <code>--{field.key}</code>
+                              </span>
+                              <span className="theme-panel-token-input">
+                                <ColorPicker
+                                  className="theme-panel-token-picker"
+                                  value={tokenPickerValue(draftTokens[field.key], draftSurface)}
+                                  onChange={(value) => updateDraftToken(field.key, value)}
+                                  placement="left"
+                                  aria-label={`选择 ${field.label}`}
+                                >
+                                  <span
+                                    className="theme-panel-token-swatch"
+                                    style={{ background: draftTokens[field.key] }}
+                                  />
+                                </ColorPicker>
+                                <Input
+                                  size="sm"
+                                  value={draftTokens[field.key] ?? ""}
+                                  onValueChange={(value) => updateDraftToken(field.key, value)}
+                                />
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="theme-panel-token-field scale" key={field.key}>
+                              <span className="theme-panel-token-label">
+                                <span>{field.label}</span>
+                                <code>--{field.key}</code>
+                              </span>
+                              <span className="theme-panel-token-scale">
+                                <Input
+                                  size="sm"
+                                  value={draftTokens[field.key] ?? "1"}
+                                  onValueChange={(value) => updateDraftToken(field.key, value || "1")}
+                                />
+                                <Slider
+                                  value={parseScaleToken(draftTokens[field.key])}
+                                  onChange={(value) => updateDraftToken(field.key, formatScaleToken(value))}
+                                  min={0.6}
+                                  max={field.key === "shadow-float-scale" ? 1.8 : 1.6}
+                                  step={0.05}
+                                />
+                              </span>
+                            </div>
+                          )
+                        )}
                       </div>
                     </div>
 
@@ -1206,6 +1310,7 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
                     "--preview-radius": `${draftRadius}px`,
                     "--preview-shadow-dark": draftTokens["shadow-dark"],
                     "--preview-shadow-light": draftTokens["shadow-light"],
+                    "--preview-shadow-scale": draftTokens["shadow-scale"] ?? "1",
                     "--preview-accent-glow": draftAccentPalette.glow,
                     "--preview-font": fontToStack(draftFont),
                   } as React.CSSProperties}
@@ -1266,7 +1371,39 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
           </div>
         )}
 
-        {sections.includes("intensity") && (
+        {sections.includes("shadow") && (
+          <div className="theme-panel-row theme-panel-shadow">
+            <div className="theme-panel-label">
+              <span>阴影强度</span>
+              <span>{theme.intensity}</span>
+            </div>
+            <Slider value={theme.intensity} onChange={theme.setIntensity} min={1} max={10} step={1} />
+            <div className="theme-panel-label">
+              <span>阴影扩散</span>
+              <span>{formatScaleToken(shadowScale)}x</span>
+            </div>
+            <Slider
+              value={shadowScale}
+              onChange={(value) => updateThemeToken("shadow-scale", formatScaleToken(value))}
+              min={0.6}
+              max={1.6}
+              step={0.05}
+            />
+            <div className="theme-panel-label">
+              <span>浮层深度</span>
+              <span>{formatScaleToken(shadowFloatScale)}x</span>
+            </div>
+            <Slider
+              value={shadowFloatScale}
+              onChange={(value) => updateThemeToken("shadow-float-scale", formatScaleToken(value))}
+              min={0.6}
+              max={1.8}
+              step={0.05}
+            />
+          </div>
+        )}
+
+        {sections.includes("intensity") && !sections.includes("shadow") && (
           <div className="theme-panel-row">
             <div className="theme-panel-label">
               <span>阴影</span>

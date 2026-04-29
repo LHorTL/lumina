@@ -20,42 +20,52 @@
 
   /* Distance multiplier — driven by ThemeProvider `intensity` (1..10 → 0.4..1.6). */
   --d: 1;
+  --shadow-scale: 1;
+  --shadow-float-scale: 1;
 
-  --shadow-blur: calc(16px * var(--d));
-  --shadow-offset: calc(6px * var(--d));
-  --shadow-inset-blur: calc(10px * var(--d));
-  --shadow-inset-offset: calc(4px * var(--d));
+  --shadow-blur: calc(16px * var(--d) * var(--shadow-scale));
+  --shadow-offset: calc(6px * var(--d) * var(--shadow-scale));
+  --shadow-inset-blur: calc(10px * var(--d) * var(--shadow-scale));
+  --shadow-inset-offset: calc(4px * var(--d) * var(--shadow-scale));
 
-  --neu-out:
+  --neu-shadow-panel:
     var(--shadow-offset) var(--shadow-offset) var(--shadow-blur) var(--shadow-dark),
     calc(var(--shadow-offset) * -1) calc(var(--shadow-offset) * -1) var(--shadow-blur) var(--shadow-light);
 
-  --neu-out-sm:
+  --neu-shadow-control:
     calc(var(--shadow-offset) * 0.5) calc(var(--shadow-offset) * 0.5) calc(var(--shadow-blur) * 0.6) var(--shadow-dark),
     calc(var(--shadow-offset) * -0.5) calc(var(--shadow-offset) * -0.5) calc(var(--shadow-blur) * 0.6) var(--shadow-light);
 
-  --neu-out-lg:
+  --neu-shadow-lift:
     calc(var(--shadow-offset) * 1.6) calc(var(--shadow-offset) * 1.6) calc(var(--shadow-blur) * 1.4) var(--shadow-dark),
     calc(var(--shadow-offset) * -1.6) calc(var(--shadow-offset) * -1.6) calc(var(--shadow-blur) * 1.4) var(--shadow-light);
 
-  --neu-in:
+  --neu-shadow-inset-strong:
     inset var(--shadow-inset-offset) var(--shadow-inset-offset) var(--shadow-inset-blur) var(--shadow-dark),
     inset calc(var(--shadow-inset-offset) * -1) calc(var(--shadow-inset-offset) * -1) var(--shadow-inset-blur) var(--shadow-light);
 
-  --neu-in-sm:
+  --neu-shadow-inset:
     inset calc(var(--shadow-inset-offset) * 0.6) calc(var(--shadow-inset-offset) * 0.6) calc(var(--shadow-inset-blur) * 0.6) var(--shadow-dark),
     inset calc(var(--shadow-inset-offset) * -0.6) calc(var(--shadow-inset-offset) * -0.6) calc(var(--shadow-inset-blur) * 0.6) var(--shadow-light);
 
-  --neu-flat:
+  --neu-shadow-subtle:
     1px 1px 2px var(--shadow-dark),
     -1px -1px 2px var(--shadow-light);
 
   /* Floating-overlay elevation.
      No top-left highlight — there's no continuous surface beneath an overlay
      panel, so the neumorphic light-reflection metaphor would read as a halo. */
-  --neu-float:
-    0 calc(var(--shadow-offset) * 1.8) calc(var(--shadow-blur) * 2.2) var(--shadow-dark),
-    0 calc(var(--shadow-offset) * 0.4) calc(var(--shadow-blur) * 0.7) var(--shadow-dark);
+  --neu-shadow-float:
+    0 calc(var(--shadow-offset) * 1.8 * var(--shadow-float-scale)) calc(var(--shadow-blur) * 2.2 * var(--shadow-float-scale)) var(--shadow-dark),
+    0 calc(var(--shadow-offset) * 0.4 * var(--shadow-float-scale)) calc(var(--shadow-blur) * 0.7 * var(--shadow-float-scale)) var(--shadow-dark);
+
+  --neu-out: var(--neu-shadow-panel);
+  --neu-out-sm: var(--neu-shadow-control);
+  --neu-out-lg: var(--neu-shadow-lift);
+  --neu-in: var(--neu-shadow-inset-strong);
+  --neu-in-sm: var(--neu-shadow-inset);
+  --neu-flat: var(--neu-shadow-subtle);
+  --neu-float: var(--neu-shadow-float);
 
   /* ---- Accent (default sky) ---- */
   --accent: oklch(68% 0.14 235);
@@ -123,10 +133,10 @@
   --shadow-dark: rgba(0, 0, 0, 0.55);
   --shadow-light: rgba(130, 145, 180, 0.06);
   /* 同时收紧阴影尺寸,深色模式下拟态更内敛 */
-  --shadow-offset: calc(4px * var(--d));
-  --shadow-blur: calc(10px * var(--d));
-  --shadow-inset-offset: calc(3px * var(--d));
-  --shadow-inset-blur: calc(7px * var(--d));
+  --shadow-offset: calc(4px * var(--d) * var(--shadow-scale));
+  --shadow-blur: calc(10px * var(--d) * var(--shadow-scale));
+  --shadow-inset-offset: calc(3px * var(--d) * var(--shadow-scale));
+  --shadow-inset-blur: calc(7px * var(--d) * var(--shadow-scale));
   --accent-soft: oklch(35% 0.06 235);
   --accent-ink: oklch(82% 0.09 235);
   --accent-glow: oklch(68% 0.14 235 / 0.18);

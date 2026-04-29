@@ -19,7 +19,7 @@
   width: 56px; height: 56px;
   border-radius: var(--r-lg);
   background: var(--bg);
-  box-shadow: var(--neu-in-sm);
+  box-shadow: var(--neu-shadow-inset);
   display: grid; place-items: center;
   color: var(--fg-subtle);
 }

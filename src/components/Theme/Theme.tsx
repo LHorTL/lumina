@@ -291,47 +291,64 @@ function toVar(key: string): string {
   return key.startsWith("--") ? key : `--${key}`;
 }
 
+const LEGACY_SHADOW_TOKEN_ALIASES: Record<string, string> = {
+  "--neu-flat": "--neu-shadow-subtle",
+  "--neu-out-sm": "--neu-shadow-control",
+  "--neu-out": "--neu-shadow-panel",
+  "--neu-out-lg": "--neu-shadow-lift",
+  "--neu-in-sm": "--neu-shadow-inset",
+  "--neu-in": "--neu-shadow-inset-strong",
+  "--neu-float": "--neu-shadow-float",
+};
+
 function applyShadowTokens(target: HTMLElement, colorScheme: ThemeBaseMode): void {
   if (colorScheme === "dark") {
-    target.style.setProperty("--shadow-offset", "calc(4px * var(--d))");
-    target.style.setProperty("--shadow-blur", "calc(10px * var(--d))");
-    target.style.setProperty("--shadow-inset-offset", "calc(3px * var(--d))");
-    target.style.setProperty("--shadow-inset-blur", "calc(7px * var(--d))");
+    target.style.setProperty("--shadow-offset", "calc(4px * var(--d) * var(--shadow-scale))");
+    target.style.setProperty("--shadow-blur", "calc(10px * var(--d) * var(--shadow-scale))");
+    target.style.setProperty("--shadow-inset-offset", "calc(3px * var(--d) * var(--shadow-scale))");
+    target.style.setProperty("--shadow-inset-blur", "calc(7px * var(--d) * var(--shadow-scale))");
   } else {
-    target.style.setProperty("--shadow-offset", "calc(6px * var(--d))");
-    target.style.setProperty("--shadow-blur", "calc(16px * var(--d))");
-    target.style.setProperty("--shadow-inset-offset", "calc(4px * var(--d))");
-    target.style.setProperty("--shadow-inset-blur", "calc(10px * var(--d))");
+    target.style.setProperty("--shadow-offset", "calc(6px * var(--d) * var(--shadow-scale))");
+    target.style.setProperty("--shadow-blur", "calc(16px * var(--d) * var(--shadow-scale))");
+    target.style.setProperty("--shadow-inset-offset", "calc(4px * var(--d) * var(--shadow-scale))");
+    target.style.setProperty("--shadow-inset-blur", "calc(10px * var(--d) * var(--shadow-scale))");
   }
 
   target.style.setProperty(
-    "--neu-out",
+    "--neu-shadow-panel",
     "var(--shadow-offset) var(--shadow-offset) var(--shadow-blur) var(--shadow-dark), calc(var(--shadow-offset) * -1) calc(var(--shadow-offset) * -1) var(--shadow-blur) var(--shadow-light)"
   );
   target.style.setProperty(
-    "--neu-out-sm",
+    "--neu-shadow-control",
     "calc(var(--shadow-offset) * 0.5) calc(var(--shadow-offset) * 0.5) calc(var(--shadow-blur) * 0.6) var(--shadow-dark), calc(var(--shadow-offset) * -0.5) calc(var(--shadow-offset) * -0.5) calc(var(--shadow-blur) * 0.6) var(--shadow-light)"
   );
   target.style.setProperty(
-    "--neu-out-lg",
+    "--neu-shadow-lift",
     "calc(var(--shadow-offset) * 1.6) calc(var(--shadow-offset) * 1.6) calc(var(--shadow-blur) * 1.4) var(--shadow-dark), calc(var(--shadow-offset) * -1.6) calc(var(--shadow-offset) * -1.6) calc(var(--shadow-blur) * 1.4) var(--shadow-light)"
   );
   target.style.setProperty(
-    "--neu-in",
+    "--neu-shadow-inset-strong",
     "inset var(--shadow-inset-offset) var(--shadow-inset-offset) var(--shadow-inset-blur) var(--shadow-dark), inset calc(var(--shadow-inset-offset) * -1) calc(var(--shadow-inset-offset) * -1) var(--shadow-inset-blur) var(--shadow-light)"
   );
   target.style.setProperty(
-    "--neu-in-sm",
+    "--neu-shadow-inset",
     "inset calc(var(--shadow-inset-offset) * 0.6) calc(var(--shadow-inset-offset) * 0.6) calc(var(--shadow-inset-blur) * 0.6) var(--shadow-dark), inset calc(var(--shadow-inset-offset) * -0.6) calc(var(--shadow-inset-offset) * -0.6) calc(var(--shadow-inset-blur) * 0.6) var(--shadow-light)"
   );
   target.style.setProperty(
-    "--neu-flat",
+    "--neu-shadow-subtle",
     "1px 1px 2px var(--shadow-dark), -1px -1px 2px var(--shadow-light)"
   );
   target.style.setProperty(
-    "--neu-float",
-    "0 calc(var(--shadow-offset) * 1.8) calc(var(--shadow-blur) * 2.2) var(--shadow-dark), 0 calc(var(--shadow-offset) * 0.4) calc(var(--shadow-blur) * 0.7) var(--shadow-dark)"
+    "--neu-shadow-float",
+    "0 calc(var(--shadow-offset) * 1.8 * var(--shadow-float-scale)) calc(var(--shadow-blur) * 2.2 * var(--shadow-float-scale)) var(--shadow-dark), 0 calc(var(--shadow-offset) * 0.4 * var(--shadow-float-scale)) calc(var(--shadow-blur) * 0.7 * var(--shadow-float-scale)) var(--shadow-dark)"
   );
+  target.style.setProperty("--neu-out", "var(--neu-shadow-panel)");
+  target.style.setProperty("--neu-out-sm", "var(--neu-shadow-control)");
+  target.style.setProperty("--neu-out-lg", "var(--neu-shadow-lift)");
+  target.style.setProperty("--neu-in", "var(--neu-shadow-inset-strong)");
+  target.style.setProperty("--neu-in-sm", "var(--neu-shadow-inset)");
+  target.style.setProperty("--neu-flat", "var(--neu-shadow-subtle)");
+  target.style.setProperty("--neu-float", "var(--neu-shadow-float)");
 }
 
 /** Imperative theme application — writes CSS vars / data-attrs on a target. */
@@ -385,8 +402,14 @@ export function applyTheme(target: HTMLElement, config: ThemeConfig): void {
 
   // Arbitrary token overrides
   if (cfg.tokens) {
+    const tokenVars = new Set(Object.keys(cfg.tokens).map(toVar));
     for (const [k, v] of Object.entries(cfg.tokens)) {
-      target.style.setProperty(toVar(k), v);
+      const variable = toVar(k);
+      const semanticAlias = LEGACY_SHADOW_TOKEN_ALIASES[variable];
+      if (semanticAlias && !tokenVars.has(semanticAlias)) {
+        target.style.setProperty(semanticAlias, v);
+      }
+      target.style.setProperty(variable, v);
     }
   }
 }

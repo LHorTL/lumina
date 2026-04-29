@@ -48,6 +48,21 @@ t.update({ radius: 14 });    // 一次改多个
 t.reset();                   // 重置到 props 初值
 ```
 
+### 阴影系统
+
+阴影强度、扩散和浮层深度都由 ThemeProvider tokens 驱动,组件只消费语义阴影 token。
+
+```tsx
+const t = useTheme();
+
+t.setIntensity(6);
+t.setTokens({
+  ...t.tokens,
+  "shadow-scale": "1.15",
+  "shadow-float-scale": "1.25",
+});
+```
+
 ### 预设强调色
 
 内置 6 种拟态强调色,点击切换。
@@ -104,6 +119,8 @@ const themes = {
       fg: "#edf1f7",
       "shadow-dark": "rgba(0,0,0,.58)",
       "shadow-light": "rgba(128,146,166,.07)",
+      "shadow-scale": "1",
+      "shadow-float-scale": "1",
     },
   },
 };
@@ -141,6 +158,8 @@ tokens prop 可以改 tokens.css 里任何变量 —— 键名可省略 --。
     bg: "#f5f5f7",           // 等价 --bg
     "--bg-sunken": "#e8e8ed",
     "shadow-dark": "rgba(0,0,0,0.18)",
+    "shadow-scale": "0.9",
+    "shadow-float-scale": "1.15",
     "--font-display": '"Inter", sans-serif',
   }}
 />
@@ -173,7 +192,7 @@ applyTheme(document.documentElement, {
 | intensity | `number` | `5` | 阴影强度 1-10 |
 | radius | `number` | `20` | 圆角基准 px |
 | font | `FontConfig` | `"sf"` | 字体预设或 CSS 栈 |
-| tokens | `Record<string, string>` | — | 任意 CSS 变量覆写 |
+| tokens | `Record<string, string>` | — | 任意 CSS 变量覆写;推荐用语义阴影 token 和 shadow-scale / shadow-float-scale 控制阴影系统 |
 | themes | `Record<string, ThemePreset>` | — | 命名自定义模式 preset |
 | ThemePreset.label / description | `string` | — | 可选展示元信息;ThemePanel 会读取它作为卡片标题和说明 |
 | target | `"root" | "scope"` | `"root"` | 应用到根还是局部 |

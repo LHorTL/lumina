@@ -5,7 +5,7 @@
   padding: 5px;
   border-radius: var(--r-md);
   background: var(--bg);
-  box-shadow: var(--neu-in-sm);
+  box-shadow: var(--neu-shadow-inset);
   gap: 2px;
   align-self: flex-start;
 }
@@ -28,7 +28,7 @@
 .tabs-nav .tab.active {
   color: var(--accent-ink);
   background: var(--bg);
-  box-shadow: var(--neu-out-sm);
+  box-shadow: var(--neu-shadow-control);
   font-weight: 600;
 }
 .tabs-nav .tab[disabled] { opacity: 0.4; cursor: not-allowed; }

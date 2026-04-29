@@ -11,7 +11,7 @@
   padding: 0 36px 0 var(--ctrl-pad-x);
   border-radius: var(--r-md);
   background: var(--bg);
-  box-shadow: var(--neu-out-sm);
+  box-shadow: var(--neu-shadow-control);
   display: inline-flex;
   align-items: center;
   font-size: 13px;
@@ -23,7 +23,7 @@
   text-align: left;
 }
 .cascader-trigger.placeholder { color: var(--fg-subtle); }
-.cascader.open .cascader-trigger { box-shadow: var(--neu-in-sm); color: var(--accent-ink); }
+.cascader.open .cascader-trigger { box-shadow: var(--neu-shadow-inset); color: var(--accent-ink); }
 .cascader-clear {
   position: absolute;
   right: 30px;
@@ -33,7 +33,7 @@
   height: 20px;
   border-radius: 999px;
   background: var(--bg);
-  box-shadow: var(--neu-out-sm);
+  box-shadow: var(--neu-shadow-control);
   display: inline-grid;
   place-items: center;
   color: var(--fg-subtle);
@@ -41,13 +41,13 @@
   transition: all var(--dur-fast) var(--ease);
 }
 .cascader:hover .cascader-clear { opacity: 1; }
-.cascader-clear:hover { color: var(--accent-ink); box-shadow: var(--neu-in-sm); }
+.cascader-clear:hover { color: var(--accent-ink); box-shadow: var(--neu-shadow-inset); }
 .cascader-panel {
   z-index: 1000;
   display: flex;
   background: var(--bg);
   border-radius: var(--r-md);
-  box-shadow: var(--neu-float);
+  box-shadow: var(--neu-shadow-float);
   padding: 6px;
   animation: menuIn var(--dur) var(--ease);
   gap: 4px;
@@ -88,7 +88,7 @@
 }
 .cascader-search-item:hover {
   background: var(--bg);
-  box-shadow: var(--neu-flat);
+  box-shadow: var(--neu-shadow-subtle);
   color: var(--accent-ink);
 }
 .cascader-path-sep { color: var(--fg-subtle); }
@@ -139,10 +139,10 @@
   height: 15px;
   object-fit: contain;
 }
-.cascader-item:hover { background: var(--bg); box-shadow: var(--neu-flat); color: var(--accent-ink); }
+.cascader-item:hover { background: var(--bg); box-shadow: var(--neu-shadow-subtle); color: var(--accent-ink); }
 .cascader-item.active {
   background: var(--bg);
-  box-shadow: var(--neu-in-sm);
+  box-shadow: var(--neu-shadow-inset);
   color: var(--accent-ink);
   font-weight: 500;
 }

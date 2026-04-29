@@ -15,7 +15,7 @@
 .divider.sunken {
   background: transparent;
   height: 2px;
-  box-shadow: var(--neu-in-sm);
+  box-shadow: var(--neu-shadow-inset);
 }
 .divider.sunken.vertical {
   width: 2px;
@@ -23,7 +23,7 @@
 }
 .divider.sunken:has(.divider-label) { background: transparent; box-shadow: none; }
 .divider.sunken:has(.divider-label)::before,
-.divider.sunken:has(.divider-label)::after { height: 2px; background: transparent; box-shadow: var(--neu-in-sm); }
+.divider.sunken:has(.divider-label)::after { height: 2px; background: transparent; box-shadow: var(--neu-shadow-inset); }
 
 /* ---- Dashed variant ---- */
 .divider.dashed {

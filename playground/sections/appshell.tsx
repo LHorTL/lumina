@@ -30,7 +30,7 @@ const SectionAppShell: React.FC<SectionCtx> = () => {
   <main>...</main>
 </AppShell>`,
           render: () => (
-            <div style={{ borderRadius: "var(--r-xl)", overflow: "hidden", boxShadow: "var(--neu-out-lg)" }}>
+            <div style={{ borderRadius: "var(--r-xl)", overflow: "hidden", boxShadow: "var(--neu-shadow-lift)" }}>
               <AppShell
                 titleBar={
                   <TitleBar

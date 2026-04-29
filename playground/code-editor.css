@@ -9,13 +9,13 @@
   line-height: 1.6;
   tab-size: 2;
   background: var(--bg);
-  box-shadow: var(--neu-in-sm);
+  box-shadow: var(--neu-shadow-inset);
 }
 .code-editor:focus-within {
-  box-shadow: var(--neu-in-sm), 0 0 0 2px var(--accent-glow);
+  box-shadow: var(--neu-shadow-inset), 0 0 0 2px var(--accent-glow);
 }
 .code-editor.invalid {
-  box-shadow: var(--neu-in-sm), 0 0 0 2px color-mix(in oklch, var(--danger) 30%, transparent);
+  box-shadow: var(--neu-shadow-inset), 0 0 0 2px color-mix(in oklch, var(--danger) 30%, transparent);
 }
 
 /* Reset ALL leaked library styles inside the editor */

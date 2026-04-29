@@ -9,7 +9,7 @@
   z-index: 1500;
   background: var(--bg);
   border-radius: var(--r-md);
-  box-shadow: var(--neu-float);
+  box-shadow: var(--neu-shadow-float);
   padding: 6px;
   max-height: 280px;
   overflow-y: auto;
@@ -43,7 +43,7 @@
 .autocomplete-item.active:not(:disabled) {
   background: var(--bg);
   color: var(--accent-ink);
-  box-shadow: var(--neu-in-sm);
+  box-shadow: var(--neu-shadow-inset);
 }
 
 .autocomplete-empty {

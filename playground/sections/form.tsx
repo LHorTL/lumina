@@ -235,7 +235,7 @@ const SectionForm: React.FC<SectionCtx> = () => (
                     margin: 0,
                     padding: 14,
                     background: "var(--bg)",
-                    boxShadow: "var(--neu-in-sm)",
+                    boxShadow: "var(--neu-shadow-inset)",
                     borderRadius: "var(--r-md)",
                     fontSize: 12,
                     fontFamily: "var(--font-mono)",

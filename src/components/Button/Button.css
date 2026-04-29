@@ -13,7 +13,7 @@
   font-family: inherit;
   color: var(--fg);
   background: var(--bg);
-  box-shadow: var(--neu-out-sm);
+  box-shadow: var(--neu-shadow-control);
   cursor: pointer;
   user-select: none;
   white-space: nowrap;
@@ -59,12 +59,12 @@
 .btn.danger { color: var(--danger); }
 
 .btn:hover {
-  box-shadow: var(--neu-out);
+  box-shadow: var(--neu-shadow-panel);
 }
 .btn.ghost:hover {
   background: var(--bg);
   border-color: transparent;
-  box-shadow: var(--neu-flat);
+  box-shadow: var(--neu-shadow-subtle);
   color: var(--fg);
 }
 .btn.danger:hover {
@@ -72,7 +72,7 @@
 }
 .btn:active,
 .btn.pressed {
-  box-shadow: var(--neu-in);
+  box-shadow: var(--neu-shadow-inset-strong);
 }
 .btn.ghost:active,
 .btn.ghost.pressed {
@@ -96,14 +96,14 @@
   color: var(--fg-subtle);
   cursor: not-allowed;
   border-color: transparent;
-  box-shadow: var(--neu-flat);
+  box-shadow: var(--neu-shadow-subtle);
   transform: none;
 }
 .btn[disabled]:hover, .btn:disabled:hover, .btn.disabled:hover {
   color: var(--fg-subtle);
   background: var(--bg);
   border-color: transparent;
-  box-shadow: var(--neu-flat);
+  box-shadow: var(--neu-shadow-subtle);
   transform: none;
 }
 

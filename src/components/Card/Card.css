@@ -2,11 +2,11 @@
 .card {
   background: var(--bg);
   border-radius: var(--r-lg);
-  box-shadow: var(--neu-out);
+  box-shadow: var(--neu-shadow-panel);
   padding: var(--gap-5);
 }
-.card.flat   { box-shadow: var(--neu-flat); }
-.card.sunken { box-shadow: var(--neu-in); }
+.card.flat   { box-shadow: var(--neu-shadow-subtle); }
+.card.sunken { box-shadow: var(--neu-shadow-inset-strong); }
 .card.pad-none { padding: 0; }
 .card.pad-sm   { padding: var(--gap-3); }
 .card.pad-lg   { padding: var(--gap-6); }
@@ -17,10 +17,10 @@
 }
 .card.hoverable:hover {
   transform: translateY(-3px);
-  box-shadow: var(--neu-out-lg);
+  box-shadow: var(--neu-shadow-lift);
 }
-.card.hoverable.flat:hover { box-shadow: var(--neu-out-sm); }
-.card.hoverable.sunken:hover { box-shadow: var(--neu-out); }
+.card.hoverable.flat:hover { box-shadow: var(--neu-shadow-control); }
+.card.hoverable.sunken:hover { box-shadow: var(--neu-shadow-panel); }
 
 .card-head {
   display: flex; align-items: flex-start; justify-content: space-between;

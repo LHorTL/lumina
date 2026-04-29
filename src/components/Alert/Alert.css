@@ -6,7 +6,7 @@
   padding: 14px 16px;
   border-radius: var(--r-md);
   background: var(--bg);
-  box-shadow: var(--neu-in-sm);
+  box-shadow: var(--neu-shadow-inset);
   position: relative;
 }
 .alert-ico {
@@ -50,4 +50,4 @@
   cursor: pointer;
   border: none; background: transparent;
 }
-.alert-close:hover { color: var(--fg); background: var(--bg); box-shadow: var(--neu-flat); }
+.alert-close:hover { color: var(--fg); background: var(--bg); box-shadow: var(--neu-shadow-subtle); }

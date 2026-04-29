@@ -72,7 +72,7 @@ const SectionIcon: React.FC<SectionCtx> = () => (
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background = "var(--bg)";
-                  e.currentTarget.style.boxShadow = "var(--neu-flat)";
+                  e.currentTarget.style.boxShadow = "var(--neu-shadow-subtle)";
                   e.currentTarget.style.color = "var(--accent-ink)";
                 }}
                 onMouseLeave={(e) => {

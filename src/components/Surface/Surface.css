@@ -16,9 +16,9 @@
 }
 
 .surface.plain { box-shadow: none; }
-.surface.raised { box-shadow: var(--neu-out); }
-.surface.sunken { box-shadow: var(--neu-in); }
-.surface.floating { box-shadow: var(--neu-float); }
+.surface.raised { box-shadow: var(--neu-shadow-panel); }
+.surface.sunken { box-shadow: var(--neu-shadow-inset-strong); }
+.surface.floating { box-shadow: var(--neu-shadow-float); }
 .surface.bordered { border: 1px solid var(--border); }
 
 .surface.pad-none { padding: 0; }

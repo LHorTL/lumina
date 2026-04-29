@@ -48,7 +48,7 @@
   padding: 1px 6px;
   border-radius: 5px;
   background: var(--bg-sunken);
-  box-shadow: var(--neu-in-sm);
+  box-shadow: var(--neu-shadow-inset);
   color: var(--accent-ink);
   margin: 0 2px;
 }
@@ -59,7 +59,7 @@
   padding: 1px 7px;
   border-radius: 5px;
   background: var(--bg-raised);
-  box-shadow: var(--neu-flat);
+  box-shadow: var(--neu-shadow-subtle);
   border: 1px solid var(--border);
   color: var(--fg);
   margin: 0 2px;
@@ -145,7 +145,7 @@
 .typo-action:hover {
   color: var(--accent-ink);
   background: var(--bg);
-  box-shadow: var(--neu-flat);
+  box-shadow: var(--neu-shadow-subtle);
 }
 .typo-action:focus-visible {
   outline: 2px solid var(--accent-glow);
@@ -169,7 +169,7 @@
   font: inherit;
   color: inherit;
   background: var(--bg-sunken);
-  box-shadow: var(--neu-in);
+  box-shadow: var(--neu-shadow-inset-strong);
   border: none;
   outline: none;
   width: 100%;
@@ -184,7 +184,7 @@
   font-family: inherit;
 }
 .typo-editor:focus {
-  box-shadow: var(--neu-in), 0 0 0 3px var(--accent-glow);
+  box-shadow: var(--neu-shadow-inset-strong), 0 0 0 3px var(--accent-glow);
 }
 
 /* ---- Ellipsis ---- */

@@ -34,7 +34,7 @@ const ThemedSwatch: React.FC<{ palette: string; active: boolean; onClick: () => 
       border: active ? "2px solid var(--fg)" : "2px solid transparent",
       background: palette,
       padding: 0,
-      boxShadow: active ? "var(--neu-in-sm)" : "var(--neu-flat)",
+      boxShadow: active ? "var(--neu-shadow-inset)" : "var(--neu-shadow-subtle)",
     }}
   />
 );
@@ -147,6 +147,8 @@ const CUSTOM_MODE_THEMES = {
       "fg-muted": "#a3adbd",
       "shadow-dark": "rgba(0,0,0,.58)",
       "shadow-light": "rgba(128,146,166,.07)",
+      "shadow-scale": "1",
+      "shadow-float-scale": "1",
     },
   },
   porcelain: {
@@ -300,6 +302,19 @@ t.reset();                   // 重置到 props 初值`,
         render: () => <ThemeHookDemo />,
       },
       {
+        id: "shadow-system",
+        title: "阴影系统",
+        description: "阴影强度、扩散和浮层深度都由 ThemeProvider tokens 驱动,组件只消费语义阴影 token。",
+        code: `const t = useTheme();
+
+t.setIntensity(6);
+t.setTokens({
+  ...t.tokens,
+  "shadow-scale": "1.15",
+  "shadow-float-scale": "1.25",
+});`,
+      },
+      {
         id: "presets",
         title: "预设强调色",
         description: "内置 6 种拟态强调色,点击切换。",
@@ -352,6 +367,8 @@ t.reset();                   // 重置到 props 初值`,
       fg: "#edf1f7",
       "shadow-dark": "rgba(0,0,0,.58)",
       "shadow-light": "rgba(128,146,166,.07)",
+      "shadow-scale": "1",
+      "shadow-float-scale": "1",
     },
   },
 };
@@ -388,6 +405,8 @@ t.reset();                   // 重置到 props 初值`,
     bg: "#f5f5f7",           // 等价 --bg
     "--bg-sunken": "#e8e8ed",
     "shadow-dark": "rgba(0,0,0,0.18)",
+    "shadow-scale": "0.9",
+    "shadow-float-scale": "1.15",
     "--font-display": '"Inter", sans-serif',
   }}
 />`,
@@ -416,7 +435,11 @@ applyTheme(document.documentElement, {
           { prop: "intensity", description: "阴影强度 1-10", type: "number", default: "5" },
           { prop: "radius", description: "圆角基准 px", type: "number", default: "20" },
           { prop: "font", description: "字体预设或 CSS 栈", type: "FontConfig", default: `"sf"` },
-          { prop: "tokens", description: "任意 CSS 变量覆写", type: "Record<string, string>" },
+          {
+            prop: "tokens",
+            description: "任意 CSS 变量覆写;推荐用语义阴影 token 和 shadow-scale / shadow-float-scale 控制阴影系统",
+            type: "Record<string, string>",
+          },
           { prop: "themes", description: "命名自定义模式 preset", type: "Record<string, ThemePreset>" },
           { prop: "ThemePreset.label / description", description: "可选展示元信息;ThemePanel 会读取它作为卡片标题和说明", type: "string" },
           { prop: "target", description: "应用到根还是局部", type: `"root" | "scope"`, default: `"root"` },

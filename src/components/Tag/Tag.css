@@ -9,7 +9,7 @@
   font-size: 11px;
   font-weight: 500;
   background: var(--bg);
-  box-shadow: var(--neu-flat);
+  box-shadow: var(--neu-shadow-subtle);
   color: var(--fg-muted);
 }
 .tag.accent  { color: var(--accent-ink); }

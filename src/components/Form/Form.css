@@ -63,5 +63,5 @@
 
 .form-item.has-error .input-wrap,
 .form-item.has-error .select-trigger {
-  box-shadow: var(--neu-in-sm), 0 0 0 2px color-mix(in oklch, var(--danger) 30%, transparent);
+  box-shadow: var(--neu-shadow-inset), 0 0 0 2px color-mix(in oklch, var(--danger) 30%, transparent);
 }

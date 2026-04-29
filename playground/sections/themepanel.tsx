@@ -168,7 +168,7 @@ const CompactPanelDemo: React.FC = () => (
         compact
         title="微调"
         description={null}
-        sections={["accent", "intensity", "radius"]}
+        sections={["accent", "shadow", "radius"]}
         showReset={false}
       />
       <PreviewContent />
@@ -241,7 +241,7 @@ const [themes, setThemes] = React.useState<ThemePresets>({});
   compact
   title="微调"
   description={null}
-  sections={["accent", "intensity", "radius"]}
+  sections={["accent", "shadow", "radius"]}
   showReset={false}
 />`,
         render: () => <CompactPanelDemo />,
@@ -253,7 +253,7 @@ const [themes, setThemes] = React.useState<ThemePresets>({});
         rows: [
           { prop: "title", description: "面板标题;传 null 可隐藏标题文本", type: "ReactNode", default: `"主题"` },
           { prop: "description", description: "面板副标题", type: "ReactNode", default: `"快速调整当前 Lumina 主题"` },
-          { prop: "sections", description: "展示的控制区及顺序", type: "ThemePanelSection[]" },
+          { prop: "sections", description: "展示的控制区及顺序;shadow 区同时控制 intensity / shadow-scale / shadow-float-scale", type: "ThemePanelSection[]" },
           { prop: "modeOptions", description: "模式切换项", type: "ThemePanelModeOption[]" },
           { prop: "presetOptions", description: "命名主题预设卡片;不传时使用浅色/深色/瓷白/助手/助手暗 + theme.themes,也可完全由业务侧控制", type: "ThemePanelPresetOption[]" },
           { prop: "defaultCustomAccent", description: "自定义强调色初始值", type: "string", default: `"#845ef7"` },

@@ -13,7 +13,7 @@ const SectionCascader: React.FC<SectionCtx> = () => {
         height: 14,
         borderRadius: 4,
         background: color,
-        boxShadow: "var(--neu-flat)",
+        boxShadow: "var(--neu-shadow-subtle)",
       }}
     />
   );

@@ -45,23 +45,34 @@
 ## 阴影系统
 
 拟态核心。所有阴影由 `--shadow-dark` 和 `--shadow-light` 两种颜色组合而成。
+组件优先消费语义阴影 token,旧的 `--neu-*` token 继续保留做兼容。
 
 | Token | 作用 |
 |---|---|
+| `--neu-shadow-subtle` | 轻微边缘/低强调表面 |
+| `--neu-shadow-control` | 按钮、可点击控件 |
+| `--neu-shadow-panel` | 卡片、面板 |
+| `--neu-shadow-lift` | hover 或高层级凸起 |
+| `--neu-shadow-inset` | 小凹陷 |
+| `--neu-shadow-inset-strong` | 标准凹陷 |
+| `--neu-shadow-float` | 浮层阴影 |
 | `--neu-out` | 标准凸起 |
 | `--neu-out-sm` | 小凸起 |
 | `--neu-out-lg` | 大凸起 |
 | `--neu-in` | 标准凹陷 |
 | `--neu-in-sm` | 小凹陷 |
 | `--neu-flat` | 微凸（仅 1px 光边） |
+| `--shadow-scale` | 整体阴影距离/模糊缩放 |
+| `--shadow-float-scale` | 浮层阴影额外缩放 |
 
 ### 强度调节
 
-通过 `--d` 乘数统一缩放：
+通过 `--d` 乘数统一缩放,也可以用 `--shadow-scale` / `--shadow-float-scale` 做主题级微调：
 
 ```css
 .app { --d: 0.8; }  /* 更柔和 */
 .app { --d: 1.2; }  /* 更夸张 */
+.app { --shadow-scale: 0.9; --shadow-float-scale: 1.15; }
 ```
 
 ## 圆角 Radius

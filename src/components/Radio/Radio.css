@@ -16,7 +16,7 @@
   padding: 0;
   border-radius: 999px;
   background: var(--bg);
-  box-shadow: var(--neu-in-sm);
+  box-shadow: var(--neu-shadow-inset);
   cursor: inherit;
   position: relative;
   flex-shrink: 0;
@@ -24,7 +24,7 @@
 }
 .radio.checked .radio-dot {
   background: var(--accent);
-  box-shadow: var(--neu-out-sm), 0 2px 8px var(--accent-glow);
+  box-shadow: var(--neu-shadow-control), 0 2px 8px var(--accent-glow);
 }
 .radio.checked .radio-dot::after {
   content: "";
@@ -46,7 +46,7 @@
   padding: 4px;
   border-radius: var(--r-md);
   background: var(--bg);
-  box-shadow: var(--neu-in-sm);
+  box-shadow: var(--neu-shadow-inset);
   gap: 2px;
   flex-wrap: nowrap;
 }
@@ -81,7 +81,7 @@
   left: 0;
   border-radius: calc(var(--r-md) - 4px);
   background: var(--bg);
-  box-shadow: var(--neu-out-sm);
+  box-shadow: var(--neu-shadow-control);
   pointer-events: none;
   transition:
     transform var(--dur-slow) var(--ease),

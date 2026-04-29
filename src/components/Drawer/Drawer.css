@@ -86,7 +86,7 @@
 .drawer-close:hover {
   color: var(--fg);
   background: var(--bg);
-  box-shadow: var(--neu-flat);
+  box-shadow: var(--neu-shadow-subtle);
 }
 .drawer-body {
   flex: 1;

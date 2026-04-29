@@ -3,7 +3,7 @@
 .collapse-item {
   background: var(--bg);
   border-radius: var(--r-md);
-  box-shadow: var(--neu-out-sm);
+  box-shadow: var(--neu-shadow-control);
   overflow: hidden;
 }
 .collapse.ghost .collapse-item {
@@ -49,5 +49,5 @@
   padding: 2px;
 }
 .collapse-chev.clickable { cursor: pointer; }
-.collapse-chev.clickable:hover { color: var(--fg); background: var(--bg); box-shadow: var(--neu-flat); }
+.collapse-chev.clickable:hover { color: var(--fg); background: var(--bg); box-shadow: var(--neu-shadow-subtle); }
 .collapse-item.open .collapse-chev { transform: rotate(180deg); color: var(--accent); }

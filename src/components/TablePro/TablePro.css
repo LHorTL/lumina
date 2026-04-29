@@ -2,7 +2,7 @@
 .table-card {
   border-radius: var(--r-lg);
   background: var(--bg);
-  box-shadow: var(--neu-out-sm);
+  box-shadow: var(--neu-shadow-control);
   overflow: hidden;
 }
 .table-card .table-wrap { background: transparent; box-shadow: none; border-radius: 0; }

@@ -20,7 +20,7 @@
   border: none;
   border-radius: 50%;
   background: var(--bg);
-  box-shadow: var(--neu-in-sm);
+  box-shadow: var(--neu-shadow-inset);
   animation: none;
 }
 

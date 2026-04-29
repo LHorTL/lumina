@@ -20,7 +20,7 @@ const Dropzone: React.FC<{ children?: React.ReactNode; hint?: React.ReactNode }>
       color: "var(--fg-muted)",
       fontSize: 13,
       userSelect: "none",
-      boxShadow: "var(--neu-in-sm)",
+      boxShadow: "var(--neu-shadow-inset)",
       padding: 16,
       textAlign: "center",
     }}
@@ -44,7 +44,7 @@ const kbdStyle: React.CSSProperties = {
   padding: "0 5px",
   borderRadius: 5,
   background: "var(--bg)",
-  boxShadow: "var(--neu-flat)",
+  boxShadow: "var(--neu-shadow-subtle)",
   fontFamily: "var(--font-mono)",
   fontSize: 10.5,
   color: "var(--fg-muted)",

@@ -46,6 +46,8 @@ const BUILT_IN_CUSTOM_THEME_PRESETS = {
       divider: "rgba(255, 255, 255, 0.08)",
       "shadow-dark": "rgba(0, 0, 0, 0.58)",
       "shadow-light": "rgba(128, 146, 166, 0.07)",
+      "shadow-scale": "1",
+      "shadow-float-scale": "1",
     },
   },
   porcelain: {
@@ -71,6 +73,8 @@ const BUILT_IN_CUSTOM_THEME_PRESETS = {
       divider: "rgba(101, 134, 139, 0.18)",
       "shadow-dark": "rgba(143, 163, 168, 0.45)",
       "shadow-light": "rgba(255, 255, 255, 0.96)",
+      "shadow-scale": "1",
+      "shadow-float-scale": "1",
     },
   },
   assistant: {
@@ -98,6 +102,8 @@ const BUILT_IN_CUSTOM_THEME_PRESETS = {
       divider: "rgba(33, 53, 71, 0.12)",
       "shadow-dark": "#d1d5de",
       "shadow-light": "#fbffff",
+      "shadow-scale": "1",
+      "shadow-float-scale": "1",
     },
   },
   assistantDark: {
@@ -125,6 +131,8 @@ const BUILT_IN_CUSTOM_THEME_PRESETS = {
       divider: "rgba(255, 255, 255, 0.08)",
       "shadow-dark": "#1a1a24",
       "shadow-light": "#3a3a46",
+      "shadow-scale": "1",
+      "shadow-float-scale": "1",
     },
   },
   ember: {
@@ -150,6 +158,8 @@ const BUILT_IN_CUSTOM_THEME_PRESETS = {
       divider: "rgba(255, 233, 212, 0.09)",
       "shadow-dark": "rgba(0, 0, 0, 0.54)",
       "shadow-light": "rgba(232, 172, 118, 0.07)",
+      "shadow-scale": "1",
+      "shadow-float-scale": "1",
     },
   },
 } satisfies ThemePresets;
@@ -343,7 +353,7 @@ const AppInner: React.FC = () => {
                 height: 22,
                 borderRadius: 7,
                 background: "var(--bg)",
-                boxShadow: "var(--neu-flat)",
+                boxShadow: "var(--neu-shadow-subtle)",
                 display: "inline-grid",
                 placeItems: "center",
                 color: "var(--accent)",
