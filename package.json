@@ -1,6 +1,6 @@
 {
   "name": "@fangxinyan/lumina",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "description": "Lumina — Neumorphic component library for Electron & React apps",
   "type": "module",
   "main": "./dist/index.cjs",
