@@ -42,6 +42,7 @@ title 与 content 等价,也支持 bottomLeft 等细分位置。
 | title | `ReactNode` | — | content 的等价别名 |
 | placement | `"top" | "bottom" | "left" | "right" | ...` | `"top"` | 位置,支持 bottomLeft 等细分方向 |
 | delay | `number` | `250` | 悬浮延时 (ms) |
+| closeDelay | `number` | `300` | 离开触发器或提示浮层后的关闭延时 (ms) |
 | disabled | `boolean` | `false` | 禁用提示 |
 | open / visible | `boolean` | — | 受控显示状态 |
 | overlayClassName / popupClassName | `string` | — | 浮层 className |

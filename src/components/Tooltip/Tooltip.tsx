@@ -34,6 +34,8 @@ export interface TooltipProps
   /** Controlled visibility alias. */
   visible?: boolean;
   onVisibleChange?: (visible: boolean) => void;
+  /** Delay before closing after leaving trigger / bubble. */
+  closeDelay?: number;
   /** Class for the popped-out bubble. */
   overlayClassName?: string;
   /** Alias used by some popup APIs. */
@@ -74,16 +76,20 @@ export const Tooltip = React.forwardRef<HTMLSpanElement, TooltipProps>(({
   onOpenChange,
   visible,
   onVisibleChange,
+  closeDelay = 300,
   overlayClassName = "",
   popupClassName = "",
   onMouseEnter,
   onMouseLeave,
+  onPointerEnter,
+  onPointerLeave,
   onFocus,
   onBlur,
   ...rest
 }, ref) => {
   const [innerShow, setInnerShow] = React.useState(defaultOpen);
-  const t = React.useRef<number | undefined>();
+  const openTimerRef = React.useRef<number | undefined>();
+  const closeTimerRef = React.useRef<number | undefined>();
   const controlledShow = openProp ?? visible;
   const show = controlledShow ?? innerShow;
   const resolvedContent = content ?? title;
@@ -95,18 +101,45 @@ export const Tooltip = React.forwardRef<HTMLSpanElement, TooltipProps>(({
     onVisibleChange?.(next);
   }, [controlledShow, onOpenChange, onVisibleChange]);
 
-  const open = () => {
+  React.useEffect(() => {
+    return () => {
+      window.clearTimeout(openTimerRef.current);
+      window.clearTimeout(closeTimerRef.current);
+    };
+  }, []);
+
+  React.useEffect(() => {
+    if (disabledTooltip && show) setShow(false);
+  }, [disabledTooltip, setShow, show]);
+
+  const open = React.useCallback(() => {
     if (disabledTooltip) return;
-    window.clearTimeout(t.current);
-    t.current = window.setTimeout(() => setShow(true), delay);
-  };
-  const close = () => {
-    window.clearTimeout(t.current);
-    setShow(false);
-  };
+    window.clearTimeout(closeTimerRef.current);
+    window.clearTimeout(openTimerRef.current);
+    if (delay <= 0) {
+      setShow(true);
+      return;
+    }
+    openTimerRef.current = window.setTimeout(() => setShow(true), delay);
+  }, [delay, disabledTooltip, setShow]);
+
+  const close = React.useCallback(() => {
+    window.clearTimeout(openTimerRef.current);
+    window.clearTimeout(closeTimerRef.current);
+    if (closeDelay <= 0) {
+      setShow(false);
+      return;
+    }
+    closeTimerRef.current = window.setTimeout(() => setShow(false), closeDelay);
+  }, [closeDelay, setShow]);
 
   const normalized = normalizePlacement(placement);
-  const { triggerRef, floatingStyle, placement: resolved } = useFloating<HTMLSpanElement>({
+  const {
+    triggerRef,
+    floatingRef,
+    floatingStyle,
+    placement: resolved,
+  } = useFloating<HTMLSpanElement, HTMLDivElement>({
     open: show,
     placement: normalized.placement,
     panelWidth: 160,
@@ -136,6 +169,14 @@ export const Tooltip = React.forwardRef<HTMLSpanElement, TooltipProps>(({
           onMouseLeave?.(e);
           close();
         }}
+        onPointerEnter={(e) => {
+          onPointerEnter?.(e);
+          open();
+        }}
+        onPointerLeave={(e) => {
+          onPointerLeave?.(e);
+          close();
+        }}
         onFocus={(e) => {
           onFocus?.(e);
           open();
@@ -150,9 +191,18 @@ export const Tooltip = React.forwardRef<HTMLSpanElement, TooltipProps>(({
       </span>
       {show && typeof document !== "undefined" &&
         createPortal(
-          <span className={`tip ${resolved} ${overlayClassName} ${popupClassName}`} style={floatingStyle}>
+          <div
+            ref={floatingRef}
+            className={`tip ${resolved} ${overlayClassName} ${popupClassName}`}
+            style={floatingStyle}
+            role="tooltip"
+            onMouseEnter={open}
+            onMouseLeave={close}
+            onPointerEnter={open}
+            onPointerLeave={close}
+          >
             {resolvedContent}
-          </span>,
+          </div>,
           document.body
         )}
     </>

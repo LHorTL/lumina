@@ -2,7 +2,9 @@ import "../../styles/tokens.css";
 import "../../styles/shared.css";
 import "./Typography.css";
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { Icon, type IconName } from "../Icon";
+import { useFloating } from "../../utils/useFloating";
 
 /* ============================================================================
  * Shared types
@@ -59,7 +61,7 @@ export interface EllipsisConfig {
   symbol?: React.ReactNode;
   /** Fired on expand. */
   onExpand?: (event: React.MouseEvent<HTMLElement>) => void;
-  /** Show full text in a `title` attribute. */
+  /** Show full text in a tooltip when truncated. */
   tooltip?: boolean | React.ReactNode;
   /** Optional suffix that should always remain visible (e.g. an em-dash author). */
   suffix?: string;
@@ -130,6 +132,144 @@ function buildClass(props: BaseTypographyProps, base: string, extra?: string) {
     .filter(Boolean)
     .join(" ");
 }
+
+function assignRef<T>(ref: React.Ref<T> | undefined, value: T | null) {
+  if (!ref) return;
+  if (typeof ref === "function") {
+    ref(value);
+    return;
+  }
+  (ref as React.MutableRefObject<T | null>).current = value;
+}
+
+const EllipsisTooltip = React.forwardRef<
+  HTMLElement,
+  { content: React.ReactNode; children: React.ReactElement }
+>(({ content, children }, forwardedRef) => {
+  const [open, setOpen] = React.useState(false);
+  const openTimerRef = React.useRef<number | undefined>();
+  const closeTimerRef = React.useRef<number | undefined>();
+  const childRef = (children as React.ReactElement & { ref?: React.Ref<HTMLElement> }).ref;
+  const {
+    triggerRef,
+    floatingRef,
+    floatingStyle,
+    placement,
+  } = useFloating<HTMLElement, HTMLDivElement>({
+    open,
+    placement: "top",
+    panelWidth: 360,
+    panelHeight: 96,
+    alignCross: "center",
+  });
+
+  React.useEffect(() => {
+    return () => {
+      window.clearTimeout(openTimerRef.current);
+      window.clearTimeout(closeTimerRef.current);
+    };
+  }, []);
+
+  const show = React.useCallback(() => {
+    window.clearTimeout(closeTimerRef.current);
+    if (open || openTimerRef.current != null) return;
+    openTimerRef.current = window.setTimeout(() => {
+      openTimerRef.current = undefined;
+      setOpen(true);
+    }, 250);
+  }, [open]);
+
+  const hide = React.useCallback(() => {
+    window.clearTimeout(openTimerRef.current);
+    openTimerRef.current = undefined;
+    window.clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = window.setTimeout(() => setOpen(false), 300);
+  }, []);
+
+  const setTriggerRef = React.useCallback(
+    (node: HTMLElement | null) => {
+      (triggerRef as React.MutableRefObject<HTMLElement | null>).current = node;
+      assignRef(forwardedRef, node);
+      assignRef(childRef, node);
+    },
+    [childRef, forwardedRef, triggerRef]
+  );
+
+  const childProps = children.props as {
+    onMouseEnter?: React.MouseEventHandler<HTMLElement>;
+    onMouseOver?: React.MouseEventHandler<HTMLElement>;
+    onMouseMove?: React.MouseEventHandler<HTMLElement>;
+    onMouseLeave?: React.MouseEventHandler<HTMLElement>;
+    onPointerEnter?: React.PointerEventHandler<HTMLElement>;
+    onPointerMove?: React.PointerEventHandler<HTMLElement>;
+    onPointerLeave?: React.PointerEventHandler<HTMLElement>;
+    onFocus?: React.FocusEventHandler<HTMLElement>;
+    onBlur?: React.FocusEventHandler<HTMLElement>;
+  };
+
+  return (
+    <>
+      {React.cloneElement(children, {
+        ref: setTriggerRef,
+        onMouseEnter: (event: React.MouseEvent<HTMLElement>) => {
+          childProps.onMouseEnter?.(event);
+          show();
+        },
+        onMouseOver: (event: React.MouseEvent<HTMLElement>) => {
+          childProps.onMouseOver?.(event);
+          show();
+        },
+        onMouseMove: (event: React.MouseEvent<HTMLElement>) => {
+          childProps.onMouseMove?.(event);
+          show();
+        },
+        onMouseLeave: (event: React.MouseEvent<HTMLElement>) => {
+          childProps.onMouseLeave?.(event);
+          hide();
+        },
+        onPointerEnter: (event: React.PointerEvent<HTMLElement>) => {
+          childProps.onPointerEnter?.(event);
+          show();
+        },
+        onPointerMove: (event: React.PointerEvent<HTMLElement>) => {
+          childProps.onPointerMove?.(event);
+          show();
+        },
+        onPointerLeave: (event: React.PointerEvent<HTMLElement>) => {
+          childProps.onPointerLeave?.(event);
+          hide();
+        },
+        onFocus: (event: React.FocusEvent<HTMLElement>) => {
+          childProps.onFocus?.(event);
+          show();
+        },
+        onBlur: (event: React.FocusEvent<HTMLElement>) => {
+          childProps.onBlur?.(event);
+          hide();
+        },
+      })}
+      {open && typeof document !== "undefined" &&
+        createPortal(
+          <div
+            ref={floatingRef}
+            className={`typo-ellipsis-tooltip ${placement}`}
+            style={floatingStyle}
+            role="tooltip"
+            onMouseEnter={show}
+            onMouseMove={show}
+            onMouseLeave={hide}
+            onPointerEnter={show}
+            onPointerMove={show}
+            onPointerLeave={hide}
+          >
+            {content}
+          </div>,
+          document.body
+        )}
+    </>
+  );
+});
+EllipsisTooltip.displayName = "Typography.EllipsisTooltip";
 
 /* ---------- Copy button ---------- */
 
@@ -405,12 +545,11 @@ function useTypographyBody(props: RenderableProps) {
     );
   }
 
-  /* ---- title attribute fallback ---- */
-  const titleAttr =
-    wantClamp && ellConf.tooltip
-      ? typeof ellConf.tooltip === "string"
-        ? ellConf.tooltip
-        : fallbackText
+  const tooltipContent =
+    wantClamp && !expanded && ellConf.tooltip
+      ? ellConf.tooltip === true
+        ? fallbackText
+        : ellConf.tooltip
       : undefined;
 
   return {
@@ -425,7 +564,7 @@ function useTypographyBody(props: RenderableProps) {
     expandNode,
     style,
     extraCls,
-    titleAttr,
+    tooltipContent,
   };
 }
 
@@ -470,12 +609,11 @@ export const Title = React.forwardRef<HTMLElement, TitleProps>((props, ref) => {
     );
   }
 
-  return (
+  const element = (
     <Tag
       ref={ref as React.Ref<HTMLHeadingElement>}
       className={buildClass(rest, `typo typo-title h${level}`, body.extraCls)}
       style={body.style}
-      title={body.titleAttr}
     >
       {body.inner}
       {body.expandNode}
@@ -483,6 +621,12 @@ export const Title = React.forwardRef<HTMLElement, TitleProps>((props, ref) => {
       {body.editIconNode}
     </Tag>
   );
+
+  return body.tooltipContent ? (
+    <EllipsisTooltip ref={ref as React.Ref<HTMLElement>} content={body.tooltipContent}>
+      {element}
+    </EllipsisTooltip>
+  ) : element;
 });
 Title.displayName = "Typography.Title";
 
@@ -527,12 +671,11 @@ export const Text = React.forwardRef<HTMLElement, TextProps>((props, ref) => {
     );
   }
 
-  return (
+  const element = (
     <Tag
       ref={ref as React.Ref<HTMLSpanElement>}
       className={buildClass(rest, "typo typo-text", body.extraCls)}
       style={body.style}
-      title={body.titleAttr}
     >
       {body.inner}
       {body.expandNode}
@@ -540,6 +683,12 @@ export const Text = React.forwardRef<HTMLElement, TextProps>((props, ref) => {
       {body.editIconNode}
     </Tag>
   );
+
+  return body.tooltipContent ? (
+    <EllipsisTooltip ref={ref as React.Ref<HTMLElement>} content={body.tooltipContent}>
+      {element}
+    </EllipsisTooltip>
+  ) : element;
 });
 Text.displayName = "Typography.Text";
 
@@ -578,12 +727,11 @@ export const Paragraph = React.forwardRef<HTMLParagraphElement, ParagraphProps>(
       );
     }
 
-    return (
+    const element = (
       <p
         ref={ref}
         className={buildClass(props, "typo typo-paragraph", body.extraCls)}
         style={body.style}
-        title={body.titleAttr}
       >
         {body.inner}
         {body.expandNode}
@@ -591,6 +739,12 @@ export const Paragraph = React.forwardRef<HTMLParagraphElement, ParagraphProps>(
         {body.editIconNode}
       </p>
     );
+
+    return body.tooltipContent ? (
+      <EllipsisTooltip ref={ref as React.Ref<HTMLElement>} content={body.tooltipContent}>
+        {element}
+      </EllipsisTooltip>
+    ) : element;
   }
 );
 Paragraph.displayName = "Typography.Paragraph";
@@ -682,12 +836,11 @@ export const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(
       );
     }
 
-    return (
+    const element = (
       <a
         ref={ref}
         className={buildClass(props, "typo typo-link", body.extraCls)}
         style={body.style}
-        title={body.titleAttr}
         target={target}
         rel={safeRel}
         aria-disabled={disabled || undefined}
@@ -711,6 +864,12 @@ export const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(
         {body.editIconNode}
       </a>
     );
+
+    return body.tooltipContent ? (
+      <EllipsisTooltip ref={ref as React.Ref<HTMLElement>} content={body.tooltipContent}>
+        {element}
+      </EllipsisTooltip>
+    ) : element;
   }
 );
 Link.displayName = "Typography.Link";

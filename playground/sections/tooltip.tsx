@@ -69,6 +69,7 @@ const SectionTooltip: React.FC<SectionCtx> = () => (
           { prop: "title", description: "content 的等价别名", type: "ReactNode" },
           { prop: "placement", description: "位置,支持 bottomLeft 等细分方向", type: `"top" | "bottom" | "left" | "right" | ...`, default: `"top"` },
           { prop: "delay", description: "悬浮延时 (ms)", type: "number", default: "250" },
+          { prop: "closeDelay", description: "离开触发器或提示浮层后的关闭延时 (ms)", type: "number", default: "300" },
           { prop: "disabled", description: "禁用提示", type: "boolean", default: "false" },
           { prop: "open / visible", description: "受控显示状态", type: "boolean" },
           { prop: "overlayClassName / popupClassName", description: "浮层 className", type: "string" },

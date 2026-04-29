@@ -57,10 +57,10 @@ import { Typography } from "@fangxinyan/lumina";
 
 ### 省略截断
 
-多行截断并支持「展开」。
+多行截断支持「展开」，悬停时可查看完整内容。
 
 ```tsx
-<Typography.Paragraph ellipsis={{ rows: 2, expandable: true }}>{long}</Typography.Paragraph>
+<Typography.Paragraph ellipsis={{ rows: 2, expandable: true, tooltip: true }}>{long}</Typography.Paragraph>
 ```
 
 ### 链接
@@ -88,6 +88,16 @@ import { Typography } from "@fangxinyan/lumina";
 | copyable | `boolean | CopyableConfig` | — | 显示复制按钮 |
 | editable | `boolean | EditableConfig` | — | 显示编辑按钮 |
 | ellipsis | `boolean | EllipsisConfig` | — | 截断省略 |
+
+
+**EllipsisConfig**
+
+| Prop | 类型 | 默认 | 说明 |
+| --- | --- | --- | --- |
+| rows | `number` | `1` | 截断行数 |
+| expandable | `boolean` | `false` | 显示展开入口 |
+| tooltip | `boolean | ReactNode` | `false` | 悬停显示完整内容 |
+| symbol | `ReactNode` | `"展开"` | 自定义展开文案 |
 
 
 **Typography.Link**

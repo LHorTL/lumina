@@ -115,7 +115,7 @@
 .typo-link.disabled {
   color: var(--fg-subtle);
   cursor: not-allowed;
-  pointer-events: none;
+  pointer-events: auto;
   text-decoration: none;
 }
 .typo-link-ext {
@@ -232,6 +232,31 @@
   user-select: none;
 }
 .typo-expand:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+
+.typo-ellipsis-tooltip {
+  display: block;
+  box-sizing: border-box;
+  max-width: min(520px, calc(100vw - 32px));
+  padding: 7px 10px;
+  border-radius: var(--r-sm);
+  background: var(--bg-sunken);
+  color: var(--fg);
+  box-shadow: var(--neu-shadow-control);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.55;
+  white-space: normal;
+  line-break: auto;
+  text-wrap: wrap;
+  text-align: justify;
+  text-align-last: left;
+  text-justify: inter-character;
+  word-break: normal;
+  overflow-wrap: anywhere;
+  pointer-events: auto;
+  animation: fadeIn var(--dur) var(--ease);
+  z-index: 1000;
+}
 
 /* In dark mode, mark needs slightly higher contrast */
 [data-theme="dark"] .typo mark {

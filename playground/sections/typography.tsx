@@ -122,11 +122,11 @@ const SectionTypography: React.FC<SectionCtx> = () => {
           id: "ellipsis",
           title: "省略截断",
           span: 2,
-          description: "多行截断并支持「展开」。",
-          code: `<Typography.Paragraph ellipsis={{ rows: 2, expandable: true }}>{long}</Typography.Paragraph>`,
+          description: "多行截断支持「展开」，悬停时可查看完整内容。",
+          code: `<Typography.Paragraph ellipsis={{ rows: 2, expandable: true, tooltip: true }}>{long}</Typography.Paragraph>`,
           render: () => (
             <div style={{ maxWidth: 520 }}>
-              <Typography.Paragraph ellipsis={{ rows: 2, expandable: true }}>
+              <Typography.Paragraph ellipsis={{ rows: 2, expandable: true, tooltip: true }}>
                 {longText}
               </Typography.Paragraph>
             </div>
@@ -168,6 +168,15 @@ const SectionTypography: React.FC<SectionCtx> = () => {
             { prop: "copyable", description: "显示复制按钮", type: "boolean | CopyableConfig" },
             { prop: "editable", description: "显示编辑按钮", type: "boolean | EditableConfig" },
             { prop: "ellipsis", description: "截断省略", type: "boolean | EllipsisConfig" },
+          ],
+        },
+        {
+          title: "EllipsisConfig",
+          rows: [
+            { prop: "rows", description: "截断行数", type: "number", default: "1" },
+            { prop: "expandable", description: "显示展开入口", type: "boolean", default: "false" },
+            { prop: "tooltip", description: "悬停显示完整内容", type: "boolean | ReactNode", default: "false" },
+            { prop: "symbol", description: "自定义展开文案", type: "ReactNode", default: "\"展开\"" },
           ],
         },
         {
