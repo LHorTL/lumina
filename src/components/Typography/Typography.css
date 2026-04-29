@@ -132,15 +132,20 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
-  margin-left: 6px;
-  border-radius: 7px;
+  width: 20px;
+  height: 20px;
+  margin-left: 5px;
+  border-radius: 6px;
   cursor: pointer;
   color: var(--fg-subtle);
+  line-height: 1;
   transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
-  vertical-align: middle;
+  vertical-align: -0.18em;
   user-select: none;
+}
+.typo-action > svg {
+  display: block;
+  flex-shrink: 0;
 }
 .typo-action:hover {
   color: var(--accent-ink);

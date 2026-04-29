@@ -245,12 +245,6 @@ export const App: React.FC = () => {
 
   return (
     <ThemeProvider
-      mode="light"
-      accent="rose"
-      density="comfortable"
-      intensity={5}
-      radius={22}
-      font="sf"
       themes={initialThemesRef.current}
       storageKey="lumina:theme"
     >
