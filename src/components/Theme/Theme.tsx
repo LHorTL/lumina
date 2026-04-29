@@ -174,6 +174,10 @@ function isBuiltInThemeMode(mode: ThemeMode | undefined): mode is BuiltInThemeMo
   return mode === "light" || mode === "dark" || mode === "system";
 }
 
+function isTransientThemeMode(mode: ThemeMode | undefined): boolean {
+  return typeof mode === "string" && mode.startsWith("__") && mode.endsWith("__");
+}
+
 function getThemePreset(themes: ThemePresets | undefined, mode: ThemeMode | undefined): ThemePreset | undefined {
   if (!mode || isBuiltInThemeMode(mode)) return undefined;
   return themes?.[mode];
@@ -441,7 +445,12 @@ function loadPersisted(key: string | undefined): Partial<ThemeConfig> | null {
   try {
     const raw = localStorage.getItem(key);
     if (!raw) return null;
-    return JSON.parse(raw) as Partial<ThemeConfig>;
+    const persisted = JSON.parse(raw) as Partial<ThemeConfig>;
+    if (isTransientThemeMode(persisted.mode)) {
+      localStorage.removeItem(key);
+      return null;
+    }
+    return persisted;
   } catch {
     return null;
   }
@@ -449,6 +458,7 @@ function loadPersisted(key: string | undefined): Partial<ThemeConfig> | null {
 
 function persist(key: string | undefined, cfg: ThemeConfig): void {
   if (!key || !isBrowser) return;
+  if (isTransientThemeMode(cfg.mode)) return;
   try {
     localStorage.setItem(key, JSON.stringify(cfg));
   } catch {
@@ -507,6 +517,17 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = (props) => {
 
   // Build the initial config: defaults ← props ← custom preset ← persisted (if any)
   const initialConfig = React.useMemo<ThemeConfig>(() => {
+    const applyExplicitProps = (base: ThemeConfig): ThemeConfig => ({
+      ...base,
+      ...(configProps.colorScheme !== undefined ? { colorScheme: configProps.colorScheme } : null),
+      ...(configProps.accent !== undefined ? { accent: configProps.accent } : null),
+      ...(configProps.density !== undefined ? { density: configProps.density } : null),
+      ...(configProps.intensity != null ? { intensity: configProps.intensity } : null),
+      ...(configProps.radius != null ? { radius: configProps.radius } : null),
+      ...(configProps.font !== undefined ? { font: configProps.font } : null),
+      ...(configProps.tokens !== undefined ? { tokens: configProps.tokens } : null),
+      ...(configProps.themes !== undefined ? { themes: configProps.themes } : null),
+    });
     const fromProps: ThemeConfig = {
       mode: configProps.mode ?? DEFAULT_CONFIG.mode,
       colorScheme: configProps.colorScheme,
@@ -520,22 +541,26 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = (props) => {
     };
     const persisted = loadPersisted(storageKey);
     const seeded = applyThemePreset(fromProps, fromProps.mode ?? DEFAULT_CONFIG.mode);
-    const withExplicitProps: ThemeConfig = {
-      ...seeded,
-      ...(configProps.colorScheme ? { colorScheme: configProps.colorScheme } : null),
-      ...(configProps.accent ? { accent: configProps.accent } : null),
-      ...(configProps.density ? { density: configProps.density } : null),
-      ...(configProps.intensity != null ? { intensity: configProps.intensity } : null),
-      ...(configProps.radius != null ? { radius: configProps.radius } : null),
-      ...(configProps.font ? { font: configProps.font } : null),
-      ...(configProps.tokens ? { tokens: configProps.tokens } : null),
-    };
+    const withExplicitProps = applyExplicitProps(seeded);
     if (!persisted) return withExplicitProps;
-    const persistedMode = persisted.mode ?? withExplicitProps.mode ?? DEFAULT_CONFIG.mode;
-    return {
+
+    let persistedForMerge = persisted;
+    if (configProps.themes !== undefined) {
+      const { themes: _persistedThemes, ...rest } = persisted;
+      persistedForMerge = rest;
+    }
+
+    const persistedMode = persistedForMerge.mode ?? withExplicitProps.mode ?? DEFAULT_CONFIG.mode;
+    const withPersisted: ThemeConfig = {
       ...applyThemePreset({ ...withExplicitProps, mode: persistedMode }, persistedMode),
-      ...persisted,
+      ...persistedForMerge,
+      ...(configProps.themes !== undefined ? { themes: configProps.themes } : null),
     };
+    const withControlledThemePreset =
+      configProps.themes !== undefined && !isBuiltInThemeMode(persistedMode)
+        ? applyThemePreset(withPersisted, persistedMode)
+        : withPersisted;
+    return applyExplicitProps(withControlledThemePreset);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

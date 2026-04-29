@@ -607,11 +607,18 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
     const restorePreviewSnapshot = () => {
       const snapshot = previewSnapshotRef.current;
       if (!snapshot) return;
-      theme.update({
+      updateThemeRef.current({
         ...snapshot,
         mode: snapshot.mode === DRAFT_THEME_MODE ? snapshot.colorScheme ?? "light" : snapshot.mode,
       });
     };
+
+    React.useEffect(() => {
+      return () => {
+        restorePreviewSnapshot();
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const applyMode = (mode: string) => {
       clearCreateState();
