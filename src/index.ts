@@ -49,4 +49,4 @@ export * from "./components/ThemePanel";
 export * from "./components/Timeline";
 
 /** Package version — bumped by release scripts. */
-export const VERSION = "0.6.5";
+export const VERSION = "0.6.6";
