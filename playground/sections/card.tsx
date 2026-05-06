@@ -93,6 +93,60 @@ const SectionCard: React.FC<SectionCtx> = () => (
           </Card>
         ),
       },
+      {
+        id: "body-layout",
+        title: "正文布局",
+        description: "bodyLayout 控制正文槽布局，bodyClassName / bodyStyle / bodyProps 直接作用到 .card-body。",
+        code: `<Card
+  fill
+  bodyLayout="stack"
+  bodyClassName="settings-card-body"
+  bodyStyle={{ minHeight: 160 }}
+>
+  ...
+</Card>`,
+        render: () => (
+          <Card
+            title="同步任务"
+            description="正文槽可以独立布局"
+            fill
+            bodyLayout="stack"
+            bodyStyle={{ minHeight: 160 }}
+            bodyProps={{ "data-region": "task-body" }}
+          >
+            <Tag tone="info">运行中</Tag>
+            <div style={{ color: "var(--fg-muted)", lineHeight: 1.7 }}>
+              业务内容不需要再覆盖 .card-body，就可以获得堆叠布局、最小宽度收缩和独立样式入口。
+            </div>
+            <Button size="sm" variant="ghost">
+              查看详情
+            </Button>
+          </Card>
+        ),
+      },
+      {
+        id: "loading",
+        title: "加载覆盖",
+        description: "loading 会在正文区域显示内建 overlay；loadingOverlay 可替换默认 Spin。",
+        code: `<Card loading loadingOverlay="正在同步...">
+  ...
+</Card>`,
+        render: () => (
+          <Card
+            title="资源面板"
+            description="正文覆盖层"
+            loading
+            loadingOverlay="正在同步..."
+            bodyStyle={{ minHeight: 120 }}
+          >
+            <div style={{ display: "grid", gap: 8 }}>
+              <div style={{ height: 16, borderRadius: "var(--r-sm)", boxShadow: "var(--neu-shadow-inset)" }} />
+              <div style={{ height: 16, borderRadius: "var(--r-sm)", boxShadow: "var(--neu-shadow-inset)" }} />
+              <div style={{ height: 16, width: "72%", borderRadius: "var(--r-sm)", boxShadow: "var(--neu-shadow-inset)" }} />
+            </div>
+          </Card>
+        ),
+      },
     ]}
     api={[
       {
@@ -104,6 +158,13 @@ const SectionCard: React.FC<SectionCtx> = () => (
           { prop: "title", description: "标题", type: "ReactNode" },
           { prop: "description", description: "副标题", type: "ReactNode" },
           { prop: "actions", description: "右上操作区", type: "ReactNode" },
+          { prop: "fill", description: "卡片和正文填满可用高度", type: "boolean", default: "false" },
+          { prop: "bodyLayout", description: "正文布局策略", type: `"block" | "stack" | "fill" | "center"`, default: `"block"` },
+          { prop: "bodyClassName", description: "正文容器 className", type: "string" },
+          { prop: "bodyStyle", description: "正文容器内联样式", type: "CSSProperties" },
+          { prop: "bodyProps", description: "透传给正文容器的 DOM props", type: "HTMLAttributes<HTMLDivElement>" },
+          { prop: "loading", description: "显示正文加载覆盖层", type: "boolean", default: "false" },
+          { prop: "loadingOverlay", description: "自定义加载覆盖层内容", type: "ReactNode" },
         ],
       },
     ]}

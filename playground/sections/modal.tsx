@@ -209,6 +209,51 @@ Modal.warning({ title: "容量不足", content: "请先清理缓存。" });`,
             );
           },
         },
+        {
+          id: "body-control",
+          title: "正文容器控制",
+          description: "bodyClassName / bodyStyle / bodyProps 可直接作用到正文容器；bodyOverflow 用于切换滚动或允许拟态阴影外溢。",
+          code: `<Modal
+  bodyClassName="settings-modal-body"
+  bodyStyle={{ maxHeight: 260, padding: 12 }}
+  bodyOverflow="visible"
+  bodyProps={{ "data-panel": "settings" }}
+>
+  ...
+</Modal>`,
+          render: () => {
+            const [open, setOpen] = React.useState(false);
+            return (
+              <>
+                <Button onClick={() => setOpen(true)}>正文容器控制</Button>
+                <Modal
+                  open={open}
+                  onClose={() => setOpen(false)}
+                  title="拟态内容不被裁切"
+                  description="正文容器可按业务场景单独控制 class、style 与 overflow。"
+                  bodyStyle={{
+                    overflow: "visible",
+                    padding: "var(--gap-4)",
+                    borderRadius: "var(--r-md)",
+                    boxShadow: "var(--neu-shadow-inset)",
+                  }}
+                  bodyProps={{ "data-panel": "settings" }}
+                >
+                  <div
+                    style={{
+                      padding: "var(--gap-4)",
+                      borderRadius: "var(--r-md)",
+                      boxShadow: "var(--neu-shadow-control)",
+                      background: "var(--bg)",
+                    }}
+                  >
+                    内容块自身带阴影时，不必再从业务侧覆盖 .modal-body。
+                  </div>
+                </Modal>
+              </>
+            );
+          },
+        },
       ]}
       api={[
         {
@@ -223,6 +268,10 @@ Modal.warning({ title: "容量不足", content: "请先清理缓存。" });`,
             { prop: "okText / cancelText", description: "默认按钮文案", type: "ReactNode", default: `"确定" / "取消"` },
             { prop: "okButtonProps / cancelButtonProps", description: "透传给默认按钮", type: "Partial<ButtonProps>" },
             { prop: "confirmLoading", description: "OK 按钮显示 spinner 并禁用", type: "boolean", default: "false" },
+            { prop: "bodyClassName", description: "正文容器 className", type: "string" },
+            { prop: "bodyStyle", description: "正文容器内联样式", type: "CSSProperties" },
+            { prop: "bodyProps", description: "透传给正文容器的 DOM props", type: "HTMLAttributes<HTMLDivElement>" },
+            { prop: "bodyOverflow", description: "正文容器 overflow 快捷控制", type: "CSSProperties['overflow']" },
             { prop: "closable", description: "显示右上角 ×", type: "boolean", default: "true" },
             { prop: "closeIcon", description: "自定义关闭图标", type: "ReactNode" },
             { prop: "maskClosable", description: "点击遮罩关闭", type: "boolean", default: "true" },

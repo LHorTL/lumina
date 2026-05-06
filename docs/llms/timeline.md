@@ -112,6 +112,24 @@ reverse 属性将时间线反转，最新的事件在最上面
 />
 ```
 
+### 槽位样式
+
+item / content / dot / label 都可以拿到样式入口；content 默认 min-width: 0，长内容能在弹性容器里正确收缩。
+
+```tsx
+<Timeline
+  contentMinWidth={0}
+  dotOffset={4}
+  items={[
+    {
+      children: "很长的任务标题...",
+      contentStyle: { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
+      dotStyle: { boxShadow: "var(--neu-shadow-lift)" },
+    },
+  ]}
+/>
+```
+
 ## API
 
 **Timeline**
@@ -123,6 +141,13 @@ reverse 属性将时间线反转，最新的事件在最上面
 | pendingContent | `ReactNode` | `"加载中..."` | 等待节点的文字内容 |
 | mode | `"left" | "right" | "alternate"` | `"left"` | 布局模式 |
 | reverse | `boolean` | `false` | 反转节点顺序 |
+| itemClassName / itemStyle | `string / CSSProperties` | — | 透传到每个节点外层 |
+| contentClassName / contentStyle | `string / CSSProperties` | — | 透传到每个内容槽 |
+| contentMinWidth | `CSSProperties['minWidth']` | `0` | 内容槽最小宽度，默认允许在 flex/grid 中收缩 |
+| dotClassName / dotStyle | `string / CSSProperties` | — | 透传到每个圆点槽 |
+| dotOffset | `CSSProperties['marginTop']` | `4` | 圆点垂直偏移 |
+| dotAlign | `"start" | "center" | "end"` | `"center"` | 圆点在 head 列中的横向对齐 |
+| labelClassName / labelStyle | `string / CSSProperties` | — | 透传到每个标签槽 |
 
 
 **TimelineItemConfig**
@@ -134,6 +159,10 @@ reverse 属性将时间线反转，最新的事件在最上面
 | label | `ReactNode` | — | 对侧标签（alternate 模式下使用） |
 | color | `"accent" | "success" | "warning" | "danger" | "info" | "muted"` | `"accent"` | 圆点颜色 |
 | dot | `ReactNode` | — | 自定义圆点内容 |
+| className / style | `string / CSSProperties` | — | 节点外层样式槽 |
+| contentClassName / contentStyle | `string / CSSProperties` | — | 内容槽样式 |
+| dotClassName / dotStyle | `string / CSSProperties` | — | 圆点槽样式 |
+| labelClassName / labelStyle | `string / CSSProperties` | — | 标签槽样式 |
 
 
 ---

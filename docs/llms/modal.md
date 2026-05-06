@@ -78,6 +78,21 @@ closable={false} 隐藏右上角 ×,closeIcon 可自定义。
 <Modal closeIcon={<Icon name="chevDown" />} />
 ```
 
+### 正文容器控制
+
+bodyClassName / bodyStyle / bodyProps 可直接作用到正文容器；bodyOverflow 用于切换滚动或允许拟态阴影外溢。
+
+```tsx
+<Modal
+  bodyClassName="settings-modal-body"
+  bodyStyle={{ maxHeight: 260, padding: 12 }}
+  bodyOverflow="visible"
+  bodyProps={{ "data-panel": "settings" }}
+>
+  ...
+</Modal>
+```
+
 ## API
 
 **Modal**
@@ -93,6 +108,10 @@ closable={false} 隐藏右上角 ×,closeIcon 可自定义。
 | okText / cancelText | `ReactNode` | `"确定" / "取消"` | 默认按钮文案 |
 | okButtonProps / cancelButtonProps | `Partial<ButtonProps>` | — | 透传给默认按钮 |
 | confirmLoading | `boolean` | `false` | OK 按钮显示 spinner 并禁用 |
+| bodyClassName | `string` | — | 正文容器 className |
+| bodyStyle | `CSSProperties` | — | 正文容器内联样式 |
+| bodyProps | `HTMLAttributes<HTMLDivElement>` | — | 透传给正文容器的 DOM props |
+| bodyOverflow | `CSSProperties['overflow']` | — | 正文容器 overflow 快捷控制 |
 | closable | `boolean` | `true` | 显示右上角 × |
 | closeIcon | `ReactNode` | — | 自定义关闭图标 |
 | maskClosable | `boolean` | `true` | 点击遮罩关闭 |

@@ -7,6 +7,15 @@ import { createRoot, type Root } from "react-dom/client";
 import { Icon } from "../Icon";
 import { Button, type ButtonProps } from "../Button";
 
+type DataAttributes = {
+  [K in `data-${string}`]?: string | number | boolean | undefined;
+};
+type ModalBodyProps = Omit<
+  React.HTMLAttributes<HTMLDivElement>,
+  "children" | "className" | "style"
+> &
+  DataAttributes;
+
 export interface ModalProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, "title" | "children" | "onClose"> {
   /** Whether the modal is visible. */
@@ -44,6 +53,14 @@ export interface ModalProps
   cancelButtonProps?: Partial<ButtonProps>;
   /** Show a spinner on the OK button (e.g. while an async submit is running). */
   confirmLoading?: boolean;
+  /** Class name forwarded to the modal body wrapper. */
+  bodyClassName?: string;
+  /** Inline style forwarded to the modal body wrapper. */
+  bodyStyle?: React.CSSProperties;
+  /** Extra DOM props forwarded to the modal body wrapper. */
+  bodyProps?: ModalBodyProps;
+  /** Convenience overflow control for the body wrapper. */
+  bodyOverflow?: React.CSSProperties["overflow"];
   /**
    * When true the modal's children are unmounted every time it closes.
    * Default `false` — children stay mounted so internal state survives
@@ -119,6 +136,10 @@ const ModalBase = React.forwardRef<HTMLDivElement, ModalProps>(({
   okButtonProps,
   cancelButtonProps,
   confirmLoading,
+  bodyClassName = "",
+  bodyStyle,
+  bodyProps,
+  bodyOverflow,
   destroyOnClose = false,
   afterOpenChange,
   zIndex,
@@ -179,6 +200,8 @@ const ModalBase = React.forwardRef<HTMLDivElement, ModalProps>(({
       </Button>
     </>
   );
+  const modalBodyStyle: React.CSSProperties | undefined =
+    bodyOverflow == null ? bodyStyle : { overflow: bodyOverflow, ...bodyStyle };
 
   return ReactDOM.createPortal(
     <div
@@ -218,7 +241,13 @@ const ModalBase = React.forwardRef<HTMLDivElement, ModalProps>(({
             )}
           </div>
         )}
-        <div className="modal-body">{children}</div>
+        <div
+          {...bodyProps}
+          className={`modal-body ${bodyClassName}`.trim()}
+          style={modalBodyStyle}
+        >
+          {children}
+        </div>
         {footer === null ? null : (
           <div className="modal-foot">{footer ?? defaultFooter}</div>
         )}

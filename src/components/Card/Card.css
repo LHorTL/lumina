@@ -5,6 +5,12 @@
   box-shadow: var(--neu-shadow-panel);
   padding: var(--gap-5);
 }
+.card.fill {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
 .card.flat   { box-shadow: var(--neu-shadow-subtle); }
 .card.sunken { box-shadow: var(--neu-shadow-inset-strong); }
 .card.pad-none { padding: 0; }
@@ -30,4 +36,38 @@
 .card-title { font-size: 15px; font-weight: 600; }
 .card-desc  { font-size: 12px; color: var(--fg-muted); }
 .card-actions { display: flex; gap: 6px; }
-.card-body { font-size: 13px; }
+.card-body {
+  font-size: 13px;
+  min-width: 0;
+  position: relative;
+}
+.card-body.body-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-3);
+}
+.card-body.body-fill {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+.card-body.body-center {
+  display: grid;
+  place-items: center;
+}
+.card-body.loading {
+  pointer-events: none;
+}
+
+.card-loading-overlay {
+  position: absolute;
+  inset: calc(var(--gap-2) * -1);
+  border-radius: var(--r-md);
+  display: grid;
+  place-items: center;
+  background: color-mix(in oklch, var(--bg) 82%, transparent);
+  box-shadow: var(--neu-shadow-inset);
+  color: var(--fg-muted);
+  z-index: 1;
+}

@@ -9,6 +9,13 @@ const timelineApi: ApiRow[] = [
   { prop: "pendingContent", type: "ReactNode", default: '"加载中..."', description: "等待节点的文字内容" },
   { prop: "mode", type: '"left" | "right" | "alternate"', default: '"left"', description: "布局模式" },
   { prop: "reverse", type: "boolean", default: "false", description: "反转节点顺序" },
+  { prop: "itemClassName / itemStyle", type: "string / CSSProperties", description: "透传到每个节点外层" },
+  { prop: "contentClassName / contentStyle", type: "string / CSSProperties", description: "透传到每个内容槽" },
+  { prop: "contentMinWidth", type: "CSSProperties['minWidth']", default: "0", description: "内容槽最小宽度，默认允许在 flex/grid 中收缩" },
+  { prop: "dotClassName / dotStyle", type: "string / CSSProperties", description: "透传到每个圆点槽" },
+  { prop: "dotOffset", type: "CSSProperties['marginTop']", default: "4", description: "圆点垂直偏移" },
+  { prop: "dotAlign", type: '"start" | "center" | "end"', default: '"center"', description: "圆点在 head 列中的横向对齐" },
+  { prop: "labelClassName / labelStyle", type: "string / CSSProperties", description: "透传到每个标签槽" },
 ];
 
 const timelineItemApi: ApiRow[] = [
@@ -17,6 +24,10 @@ const timelineItemApi: ApiRow[] = [
   { prop: "label", type: "ReactNode", description: "对侧标签（alternate 模式下使用）" },
   { prop: "color", type: '"accent" | "success" | "warning" | "danger" | "info" | "muted"', default: '"accent"', description: "圆点颜色" },
   { prop: "dot", type: "ReactNode", description: "自定义圆点内容" },
+  { prop: "className / style", type: "string / CSSProperties", description: "节点外层样式槽" },
+  { prop: "contentClassName / contentStyle", type: "string / CSSProperties", description: "内容槽样式" },
+  { prop: "dotClassName / dotStyle", type: "string / CSSProperties", description: "圆点槽样式" },
+  { prop: "labelClassName / labelStyle", type: "string / CSSProperties", description: "标签槽样式" },
 ];
 
 const SectionTimeline: React.FC<SectionCtx> = () => {
@@ -187,6 +198,57 @@ const SectionTimeline: React.FC<SectionCtx> = () => {
             { children: "第三步：测试", color: "warning" },
           ]}
         />
+      ),
+    },
+    {
+      id: "slot-style",
+      title: "槽位样式",
+      description: "item / content / dot / label 都可以拿到样式入口；content 默认 min-width: 0，长内容能在弹性容器里正确收缩。",
+      span: 2,
+      code: `<Timeline
+  contentMinWidth={0}
+  dotOffset={4}
+  items={[
+    {
+      children: "很长的任务标题...",
+      contentStyle: { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
+      dotStyle: { boxShadow: "var(--neu-shadow-lift)" },
+    },
+  ]}
+/>`,
+      render: () => (
+        <div style={{ width: 360, maxWidth: "100%" }}>
+          <Timeline
+            contentMinWidth={0}
+            dotOffset={4}
+            itemStyle={{ minWidth: 0 }}
+            contentStyle={{
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+            dotStyle={{ boxShadow: "var(--neu-shadow-lift)" }}
+            items={[
+              {
+                label: "09:12",
+                children: "同步来自实际业务的超长任务名称：角色资料、心法资源、外观记录与筛选状态全部完成",
+                color: "success",
+              },
+              {
+                label: "09:15",
+                children: "生成报告并写入本地缓存，后续可直接从详情页查看",
+                dot: <Icon name="checkCircleFilled" size={14} />,
+                dotStyle: { color: "var(--success)" },
+              },
+              {
+                label: "09:18",
+                children: "等待远端任务返回",
+                color: "muted",
+                contentStyle: { color: "var(--fg-muted)" },
+              },
+            ]}
+          />
+        </div>
       ),
     },
   ];
