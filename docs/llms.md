@@ -3,7 +3,7 @@
 > 拟态风格的 React 18 组件库,目标是 Electron 桌面应用。**写给 AI 编程助手**的按需文档 —— 每个组件单独一个 `.md`,避免一次性读取全部。示例源自 playground 的 demo,可直接复制运行。
 
 - **包名**: `@fangxinyan/lumina`
-- **版本**: `0.6.7`
+- **版本**: `0.6.8`
 - **React 最低版本**: 18
 - **环境**: 带打包器的 React 工程(Vite / Next.js / Webpack / Remix / Electron + Vite 等)
 - **零运行时依赖**: 只依赖 `react` / `react-dom` (peer deps)
@@ -55,6 +55,7 @@
 ### 表单
 
 - [Input 输入框](./llms/input.md) — 凹陷凹槽式输入域,支持前后置图标、错误态、禁用态。
+- [Textarea 多行输入](./llms/textarea.md) — 多行文本输入域,支持清除、字数统计、错误态和原生 textarea 属性。
 - [InputNumber 数字输入](./llms/inputnumber.md) — 带步进按钮的数字输入框。
 - [Switch 开关](./llms/switch.md) — 二元状态切换器。
 - [Checkbox 复选框](./llms/checkbox.md) — 在一组选项中进行多项选择,或独立切换某个开关项。

@@ -2,6 +2,12 @@
 
 > 垂直时间线，支持等待状态、自定义圆点、交替布局
 
+## 导入
+
+```tsx
+import { Timeline } from "@fangxinyan/lumina";
+```
+
 ## 示例
 
 ### 基础用法

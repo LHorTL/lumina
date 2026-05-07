@@ -2,6 +2,12 @@
 
 > 受控表单,字段绑定 + 校验。
 
+## 导入
+
+```tsx
+import { Form, FormItem } from "@fangxinyan/lumina";
+```
+
 ## 示例
 
 ### 基础

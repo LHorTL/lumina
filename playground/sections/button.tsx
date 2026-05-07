@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Button, message } from "lumina";
+import { Button, IconButton, message } from "lumina";
 import { DocPage, type ApiRow, type DocDemoSpec } from "../docs";
 import { Row } from "./_shared";
 import { defineSection, type SectionCtx } from "./_types";
@@ -15,6 +15,15 @@ const buttonApi: ApiRow[] = [
   { prop: "block", description: "撑满父容器宽度", type: "boolean", default: "false" },
   { prop: "disabled", description: "禁用", type: "boolean", default: "false" },
   { prop: "onClick", description: "点击回调", type: "(e: MouseEvent) => void" },
+];
+
+const iconButtonApi: ApiRow[] = [
+  { prop: "icon", description: "按钮图标,可传内置图标名或自定义节点", type: "IconName | ReactNode", required: true },
+  { prop: "tip", description: "原生悬浮提示,也会作为缺省 aria-label", type: "string" },
+  { prop: "variant", description: "按钮风格", type: `"default" | "primary" | "ghost" | "danger"`, default: `"default"` },
+  { prop: "size", description: "按钮尺寸", type: `"sm" | "md" | "lg"`, default: `"md"` },
+  { prop: "loading", description: "加载态", type: "boolean", default: "false" },
+  { prop: "disabled", description: "禁用", type: "boolean", default: "false" },
 ];
 
 const SectionButton: React.FC<SectionCtx> = () => {
@@ -124,15 +133,15 @@ const SectionButton: React.FC<SectionCtx> = () => {
     {
       id: "icon-only",
       title: "纯图标按钮",
-      description: "Button 在只有 icon 时自动呈现为方形按钮,常配合 tip 使用。",
+      description: "IconButton 是 Button 的方形图标专用封装;Button 在只有 icon 时也会自动呈现为同样形态。",
       code: `<Button icon="heart" tip="收藏" />
-<Button icon="bell" tip="通知" />
-<Button icon="settings" tip="设置" />`,
+<IconButton icon="bell" tip="通知" />
+<IconButton icon="settings" tip="设置" />`,
       render: () => (
         <Row>
           <Button icon="heart" size="sm" tip="收藏" />
-          <Button icon="bell" tip="通知" />
-          <Button icon="settings" tip="设置" />
+          <IconButton icon="bell" tip="通知" />
+          <IconButton icon="settings" tip="设置" />
         </Row>
       ),
     },
@@ -153,6 +162,7 @@ const SectionButton: React.FC<SectionCtx> = () => {
       demos={demos}
       api={[
         { title: "Button", rows: buttonApi },
+        { title: "IconButton", rows: iconButtonApi },
       ]}
     />
   );

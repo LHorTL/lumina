@@ -50,6 +50,8 @@ TablePro 直接透传 expandable 到 Table。
 | actions | `ReactNode` | — | 工具栏右侧操作 |
 | footer | `ReactNode` | — | 底部 (可选,传了会渲染在分页下方) |
 | title | `ReactNode` | — | 工具栏标题 |
+| className / style / id / data-* / aria-* | `native attrs` | — | 透传到外层 table-card 根节点 |
+| tableClassName / tableStyle | `string / CSSProperties` | — | 透传到内部 Table |
 
 
 ---

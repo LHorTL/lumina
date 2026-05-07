@@ -5,7 +5,7 @@
 ## 导入
 
 ```tsx
-import { Button } from "@fangxinyan/lumina";
+import { Button, IconButton } from "@fangxinyan/lumina";
 ```
 
 ## 示例
@@ -62,12 +62,12 @@ block 让按钮撑满容器宽度,常用于底部主操作或表单提交。
 
 ### 纯图标按钮
 
-Button 在只有 icon 时自动呈现为方形按钮,常配合 tip 使用。
+IconButton 是 Button 的方形图标专用封装;Button 在只有 icon 时也会自动呈现为同样形态。
 
 ```tsx
 <Button icon="heart" tip="收藏" />
-<Button icon="bell" tip="通知" />
-<Button icon="settings" tip="设置" />
+<IconButton icon="bell" tip="通知" />
+<IconButton icon="settings" tip="设置" />
 ```
 
 ## API
@@ -86,6 +86,18 @@ Button 在只有 icon 时自动呈现为方形按钮,常配合 tip 使用。
 | block | `boolean` | `false` | 撑满父容器宽度 |
 | disabled | `boolean` | `false` | 禁用 |
 | onClick | `(e: MouseEvent) => void` | — | 点击回调 |
+
+
+**IconButton**
+
+| Prop | 类型 | 默认 | 说明 |
+| --- | --- | --- | --- |
+| icon \* | `IconName | ReactNode` | — | 按钮图标,可传内置图标名或自定义节点 |
+| tip | `string` | — | 原生悬浮提示,也会作为缺省 aria-label |
+| variant | `"default" | "primary" | "ghost" | "danger"` | `"default"` | 按钮风格 |
+| size | `"sm" | "md" | "lg"` | `"md"` | 按钮尺寸 |
+| loading | `boolean` | `false` | 加载态 |
+| disabled | `boolean` | `false` | 禁用 |
 
 
 ---

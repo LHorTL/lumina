@@ -2,6 +2,12 @@
 
 > 带步进按钮的数字输入框。
 
+## 导入
+
+```tsx
+import { InputNumber } from "@fangxinyan/lumina";
+```
+
 ## 示例
 
 ### 基础

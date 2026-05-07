@@ -49,6 +49,7 @@ function verifyTypeSmoke() {
   const smokeSource = `import * as React from "react";
 import {
   Button,
+  IconButton,
   Badge,
   Collapse,
   Cascader,
@@ -68,6 +69,7 @@ import {
   Tag,
   TablePro,
   Textarea,
+  TextArea,
   ThemePanel,
   THEME_PANEL_DEFAULT_PRESET_OPTIONS,
   THEME_PANEL_DEFAULT_THEME_PRESETS,
@@ -75,6 +77,7 @@ import {
   ThemeProvider,
   type BadgeProps,
   type ButtonProps,
+  type IconButtonProps,
   type CascaderProps,
   type ImageProps,
   type LayeredImageProps,
@@ -97,6 +100,16 @@ import {
   type ThemePanelProps,
   type TooltipProps,
 } from "@fangxinyan/lumina";
+import { IconButton as SubpathIconButton } from "@fangxinyan/lumina/IconButton";
+import { InputPassword } from "@fangxinyan/lumina/InputPassword";
+import { TextArea as SubpathTextArea } from "@fangxinyan/lumina/TextArea";
+import { RadioGroup as SubpathRadioGroup } from "@fangxinyan/lumina/RadioGroup";
+import { FormItem } from "@fangxinyan/lumina/FormItem";
+import { ThemeProvider as SubpathThemeProvider } from "@fangxinyan/lumina/ThemeProvider";
+import { Title as SubpathTitle } from "@fangxinyan/lumina/Title";
+import { Text as SubpathText } from "@fangxinyan/lumina/Text";
+import { Paragraph as SubpathParagraph } from "@fangxinyan/lumina/Paragraph";
+import { Link as SubpathLink } from "@fangxinyan/lumina/Link";
 import {
   LoadingOutlined,
   RobotOutlined,
@@ -115,6 +128,13 @@ const buttonProps: ButtonProps = {
 const iconButtonProps: ButtonProps = {
   icon: "plus",
   tip: "Add item",
+};
+
+const squareIconButtonProps: IconButtonProps = {
+  icon: "settings",
+  tip: "Settings",
+  variant: "ghost",
+  className: "icon-button-check",
 };
 
 const customIconButtonProps: ButtonProps = {
@@ -231,6 +251,9 @@ const tableProProps: TableProProps<{ id: number; name: string }> = {
   columns: [{ key: "name", title: "Name", dataIndex: "name" }],
   data: [{ id: 1, name: "Lumina" }],
   rowKey: "id",
+  className: "table-pro-check",
+  style: { minHeight: 120 },
+  tableClassName: "inner-table-check",
 };
 
 const statusBarItemProps: StatusBarItemProps = {
@@ -289,6 +312,7 @@ const Example = () => {
   const surfaceRef = React.useRef<HTMLDivElement>(null);
   const themePanelRef = React.useRef<HTMLDivElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+  const tableProRef = React.useRef<HTMLDivElement>(null);
 
   return (
     <ThemeProvider>
@@ -319,6 +343,15 @@ const Example = () => {
         {...iconButtonProps}
         data-testid="icon-btn"
       />
+      <IconButton
+        {...squareIconButtonProps}
+        data-testid="icon-button"
+      />
+      <SubpathIconButton
+        icon="copy"
+        tip="Copy"
+        data-testid="subpath-icon-button"
+      />
       <Button
         {...customIconButtonProps}
         data-testid="custom-icon-btn"
@@ -333,10 +366,22 @@ const Example = () => {
         defaultValue="secret"
         data-testid="password"
       />
+      <InputPassword
+        defaultValue="secret-subpath"
+        data-testid="password-subpath"
+      />
       <Input.TextArea
         defaultValue="notes"
         onChange={(event) => void event.target.value}
         data-testid="input-textarea"
+      />
+      <TextArea
+        defaultValue="notes alias"
+        data-testid="textarea-alias"
+      />
+      <SubpathTextArea
+        defaultValue="notes subpath"
+        data-testid="textarea-subpath"
       />
       <Collapse {...collapseProps} data-testid="collapse" />
       <Select {...selectProps} data-testid="select" />
@@ -360,6 +405,7 @@ const Example = () => {
       <Spin {...spinProps} data-testid="spin" />
       <Radio {...radioProps} data-testid="radio" />
       <RadioGroup {...radioGroupProps} data-testid="radio-group" />
+      <SubpathRadioGroup {...radioGroupProps} data-testid="radio-group-subpath" />
       <RadioGroup {...segmentedRadioGroupProps} data-testid="radio-segmented" />
       <Skeleton {...skeletonProps} data-testid="skeleton" />
       <Textarea
@@ -374,7 +420,20 @@ const Example = () => {
       <StatusBarItem {...statusBarItemProps} data-testid="status">
         synced
       </StatusBarItem>
-      <TablePro {...tableProProps} data-testid="table-pro" />
+      <TablePro
+        ref={tableProRef}
+        {...tableProProps}
+        data-testid="table-pro"
+        aria-label="table pro"
+      />
+      <SubpathThemeProvider>
+        <FormItem>
+          <SubpathTitle level={5}>Title</SubpathTitle>
+          <SubpathText>Text</SubpathText>
+          <SubpathParagraph>Paragraph</SubpathParagraph>
+          <SubpathLink href="#">Link</SubpathLink>
+        </FormItem>
+      </SubpathThemeProvider>
       <SettingOutlined />
       <RobotOutlined />
       <LoadingOutlined spin />

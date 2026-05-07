@@ -1,6 +1,6 @@
 {
   "name": "@fangxinyan/lumina",
-  "version": "0.6.7",
+  "version": "0.6.8",
   "description": "Lumina — Neumorphic component library for Electron & React apps",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -26,6 +26,56 @@
       "types": "./dist/AppShell.d.ts",
       "import": "./dist/AppShell.js",
       "require": "./dist/AppShell.cjs"
+    },
+    "./IconButton": {
+      "types": "./dist/Button.d.ts",
+      "import": "./dist/Button.js",
+      "require": "./dist/Button.cjs"
+    },
+    "./InputPassword": {
+      "types": "./dist/Input.d.ts",
+      "import": "./dist/Input.js",
+      "require": "./dist/Input.cjs"
+    },
+    "./TextArea": {
+      "types": "./dist/Textarea.d.ts",
+      "import": "./dist/Textarea.js",
+      "require": "./dist/Textarea.cjs"
+    },
+    "./RadioGroup": {
+      "types": "./dist/Radio.d.ts",
+      "import": "./dist/Radio.js",
+      "require": "./dist/Radio.cjs"
+    },
+    "./FormItem": {
+      "types": "./dist/Form.d.ts",
+      "import": "./dist/Form.js",
+      "require": "./dist/Form.cjs"
+    },
+    "./ThemeProvider": {
+      "types": "./dist/Theme.d.ts",
+      "import": "./dist/Theme.js",
+      "require": "./dist/Theme.cjs"
+    },
+    "./Title": {
+      "types": "./dist/Typography.d.ts",
+      "import": "./dist/Typography.js",
+      "require": "./dist/Typography.cjs"
+    },
+    "./Text": {
+      "types": "./dist/Typography.d.ts",
+      "import": "./dist/Typography.js",
+      "require": "./dist/Typography.cjs"
+    },
+    "./Paragraph": {
+      "types": "./dist/Typography.d.ts",
+      "import": "./dist/Typography.js",
+      "require": "./dist/Typography.cjs"
+    },
+    "./Link": {
+      "types": "./dist/Typography.d.ts",
+      "import": "./dist/Typography.js",
+      "require": "./dist/Typography.cjs"
     },
     "./Sidebar": {
       "types": "./dist/AppShell.d.ts",

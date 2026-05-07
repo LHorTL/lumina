@@ -237,6 +237,8 @@ const SectionTablePro: React.FC<SectionCtx> = () => {
             { prop: "actions", description: "工具栏右侧操作", type: "ReactNode" },
             { prop: "footer", description: "底部 (可选,传了会渲染在分页下方)", type: "ReactNode" },
             { prop: "title", description: "工具栏标题", type: "ReactNode" },
+            { prop: "className / style / id / data-* / aria-*", description: "透传到外层 table-card 根节点", type: "native attrs" },
+            { prop: "tableClassName / tableStyle", description: "透传到内部 Table", type: "string / CSSProperties" },
           ],
         },
       ]}

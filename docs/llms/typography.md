@@ -5,7 +5,7 @@
 ## 导入
 
 ```tsx
-import { Typography } from "@fangxinyan/lumina";
+import { Typography, Title, Text, Paragraph, Link } from "@fangxinyan/lumina";
 ```
 
 ## 示例

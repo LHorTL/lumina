@@ -2,6 +2,12 @@
 
 > 输入时展示建议下拉,不限定必须从候选中选。
 
+## 导入
+
+```tsx
+import { AutoComplete } from "@fangxinyan/lumina";
+```
+
 ## 示例
 
 ### 基础

@@ -33,7 +33,8 @@ export type ThemePanelSection =
   | "intensity"
   | "radius"
   | "font"
-  | "density";
+  | "density"
+  | "advanced";
 
 export interface ThemePanelPresetOption {
   /** Mode key. If it exists in `theme.themes`, the registered preset is used. */
@@ -63,6 +64,13 @@ export interface ThemePanelCreateThemePayload extends ThemePanelCreatedThemeMeta
 
 export interface ThemePanelDeleteThemePayload extends ThemePanelCreatedThemeMeta {
   preset?: ThemePreset;
+}
+
+export interface ThemePanelUpdateThemePayload extends ThemePanelCreatedThemeMeta {
+  preset: ThemePreset;
+  previousPreset?: ThemePreset;
+  /** Ready-to-sync preset option for callers that control `presetOptions`. */
+  presetOption: ThemePanelPresetOption;
 }
 
 type ThemePanelDefaultPresetKey = "light" | "dark" | "porcelain" | "assistant" | "assistantDark";
@@ -107,6 +115,10 @@ export interface ThemePanelProps extends Omit<React.HTMLAttributes<HTMLDivElemen
   allowDeleteTheme?: boolean;
   /** Called after a non-default theme is removed from the nearest ThemeProvider. */
   onDeleteTheme?: (payload: ThemePanelDeleteThemePayload) => void;
+  /** Show the save action for non-default named themes in the advanced editor. */
+  allowUpdateTheme?: boolean;
+  /** Called after a non-default theme is saved from the advanced editor. */
+  onUpdateTheme?: (payload: ThemePanelUpdateThemePayload) => void;
   /** Show the reset button. */
   showReset?: boolean;
   /** Compact typography and spacing. */
@@ -151,6 +163,7 @@ const DEFAULT_SECTIONS: ThemePanelSection[] = [
   "radius",
   "font",
   "density",
+  "advanced",
 ];
 
 const DEFAULT_MODE_OPTIONS: ThemePanelModeOption[] = [
@@ -243,6 +256,11 @@ function createThemeKey(label: string, themes: Record<string, ThemePreset>, pref
     i += 1;
   }
   return key as ThemeMode;
+}
+
+function createSaveAsLabel(label: string, fallback: string): string {
+  const base = label.trim() || fallback.trim() || "自定义主题";
+  return `${base} 副本`;
 }
 
 const clampColor = (value: number): number => Math.min(1, Math.max(0, value));
@@ -377,6 +395,16 @@ function defaultBaseTokens(base: ThemeBaseMode): NonNullable<ThemePreset["tokens
   return { ...tokens };
 }
 
+function mergeBaseTokens(
+  base: ThemeBaseMode,
+  tokens: ThemePreset["tokens"]
+): NonNullable<ThemePreset["tokens"]> {
+  return {
+    ...defaultBaseTokens(base),
+    ...(tokens ?? {}),
+  };
+}
+
 function createDraftSurfaceTokens(
   surface: string,
   base: ThemeBaseMode,
@@ -490,6 +518,8 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
       onCreateTheme,
       allowDeleteTheme = true,
       onDeleteTheme,
+      allowUpdateTheme = true,
+      onUpdateTheme,
       showReset = true,
       compact,
       className = "",
@@ -504,6 +534,9 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
     updateThemeRef.current = theme.update;
     const [customAccent, setCustomAccent] = React.useState(defaultCustomAccent);
     const [createdThemeMeta, setCreatedThemeMeta] = React.useState<Record<string, ThemePanelCreatedThemeMeta>>({});
+    const [advancedOpen, setAdvancedOpen] = React.useState(false);
+    const [saveAsName, setSaveAsName] = React.useState("");
+    const [saveAsDescription, setSaveAsDescription] = React.useState("");
     const [isCreatingTheme, setIsCreatingTheme] = React.useState(false);
     const [previewDraft, setPreviewDraft] = React.useState(true);
     const [draftName, setDraftName] = React.useState(defaultCreateThemeName);
@@ -530,6 +563,7 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
     const [draftFont, setDraftFont] = React.useState<NonNullable<ThemeConfig["font"]>>("sf");
     const [createMode, setCreateMode] = React.useState<ThemeCreateMode>("simple");
     const [advancedFontMode, setAdvancedFontMode] = React.useState<AdvancedFontMode>("preset");
+    const [liveAdvancedFontMode, setLiveAdvancedFontMode] = React.useState<AdvancedFontMode>("preset");
     const [draftBasePresets, setDraftBasePresets] = React.useState<Record<ThemeBaseMode, ThemePreset>>(() => ({
       light: THEME_PANEL_DEFAULT_THEME_PRESETS.light,
       dark: THEME_PANEL_DEFAULT_THEME_PRESETS.dark,
@@ -539,6 +573,10 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
       () => new Set(["system", ...THEME_PANEL_DEFAULT_PRESET_OPTIONS.map((option) => String(option.key))]),
       []
     );
+
+    React.useEffect(() => {
+      setLiveAdvancedFontMode(toFontKey(theme.font) === theme.font ? "preset" : "custom");
+    }, [theme.font]);
 
     const setRootRef = React.useCallback(
       (node: HTMLDivElement | null) => {
@@ -583,6 +621,22 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
         }));
       return [...builtIns, ...customOptions];
     }, [createdThemeMeta, presetOptions, theme.themes]);
+
+    const activePresetOption = React.useMemo(
+      () => resolvedPresetOptions.find((option) => String(option.key) === modeValue),
+      [modeValue, resolvedPresetOptions]
+    );
+
+    const liveAdvancedTokens = React.useMemo(
+      () => mergeBaseTokens(theme.colorScheme, theme.tokens),
+      [theme.colorScheme, theme.tokens]
+    );
+
+    const isCurrentSavedTheme =
+      !protectedPresetKeys.has(modeValue) && Object.prototype.hasOwnProperty.call(theme.themes, modeValue);
+    const canUpdateCurrentTheme =
+      allowUpdateTheme && isCurrentSavedTheme;
+    const canSaveCurrentThemeAsNew = allowCreateTheme;
 
     React.useEffect(() => {
       if (!isCreatingTheme || !previewDraft) return;
@@ -695,6 +749,140 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
       });
     };
 
+    const getActiveThemeMeta = (): ThemePanelCreatedThemeMeta => {
+      const preset = theme.themes[modeValue] ?? theme.activeTheme ?? activePresetOption?.preset;
+      const fallbackLabel = preset?.label ?? fallbackPresetLabel(modeValue);
+      const fallbackDescription = preset?.description ?? (theme.colorScheme === "dark" ? "深色" : "浅色");
+      return {
+        key: modeValue,
+        label: nodeToText(activePresetOption?.label, fallbackLabel),
+        description: nodeToText(activePresetOption?.description, fallbackDescription),
+      };
+    };
+
+    const getAdvancedThemeName = () => {
+      const label = getActiveThemeMeta().label;
+      return isCurrentSavedTheme ? label || defaultCreateThemeName : createSaveAsLabel(label, defaultCreateThemeName);
+    };
+
+    const getAdvancedThemeDescription = () => {
+      const description = getActiveThemeMeta().description;
+      if (isCurrentSavedTheme) return description;
+      return theme.colorScheme === "dark" ? "另存暗" : "另存亮";
+    };
+
+    const suggestedSaveAsName = getAdvancedThemeName();
+    const suggestedSaveAsDescription = getAdvancedThemeDescription();
+
+    React.useEffect(() => {
+      if (!advancedOpen) return;
+      setSaveAsName(getAdvancedThemeName());
+      setSaveAsDescription(getAdvancedThemeDescription());
+    }, [
+      activePresetOption,
+      advancedOpen,
+      defaultCreateThemeName,
+      isCurrentSavedTheme,
+      modeValue,
+      theme.activeTheme,
+      theme.colorScheme,
+      theme.themes,
+    ]);
+
+    const createPresetFromCurrentTheme = (
+      meta: ThemePanelCreatedThemeMeta,
+      basePreset?: ThemePreset,
+      tokens = theme.tokens
+    ): ThemePreset => ({
+      ...basePreset,
+      label: meta.label,
+      description: meta.description,
+      base: theme.colorScheme,
+      accent: theme.accent === "custom" ? { ...theme.accentPalette } : theme.accent,
+      density: theme.density,
+      intensity: theme.intensity,
+      radius: theme.radius,
+      font: theme.font,
+      tokens: { ...tokens },
+    });
+
+    const updateLiveBase = (base: ThemeBaseMode) => {
+      clearCreateState();
+      if (theme.mode === "light" || theme.mode === "dark") {
+        applyMode(base);
+        return;
+      }
+      theme.update({ colorScheme: base });
+    };
+
+    const updateLiveToken = (key: ThemeTokenKey, value: string) => {
+      clearCreateState();
+      theme.setTokens({ ...theme.tokens, [key]: value });
+    };
+
+    const updateLiveAccentSlot = (key: AccentPaletteKey, value: string) => {
+      clearCreateState();
+      const nextPalette = { ...theme.accentPalette, [key]: value };
+      theme.setAccent(nextPalette);
+      if (key === "accent") setCustomAccent(cssColorToHex(value, customAccent));
+    };
+
+    const saveCurrentThemeUpdate = () => {
+      if (!canUpdateCurrentTheme) return;
+      const key = modeValue;
+      const previousPreset = theme.themes[key];
+      const currentMeta = getActiveThemeMeta();
+      const meta = {
+        ...currentMeta,
+        label: saveAsName.trim() || currentMeta.label || defaultCreateThemeName || fallbackPresetLabel(key),
+        description: saveAsDescription.trim(),
+      };
+      const preset = createPresetFromCurrentTheme(meta, previousPreset);
+      const presetOption: ThemePanelPresetOption = { key, label: meta.label, description: meta.description, preset };
+      const nextThemes = { ...theme.themes, [key]: preset };
+      theme.update({
+        themes: nextThemes,
+        mode: key,
+        colorScheme: preset.base,
+        accent: preset.accent,
+        density: preset.density,
+        intensity: preset.intensity,
+        radius: preset.radius,
+        font: preset.font,
+        tokens: preset.tokens,
+      });
+      setCreatedThemeMeta((current) => ({ ...current, [key]: meta }));
+      onUpdateTheme?.({ ...meta, preset, previousPreset, presetOption });
+    };
+
+    const saveCurrentThemeAsNew = () => {
+      if (!canSaveCurrentThemeAsNew) return;
+      clearCreateState();
+      const sourceMeta = getActiveThemeMeta();
+      const label =
+        saveAsName.trim() ||
+        (isCurrentSavedTheme ? sourceMeta.label || defaultCreateThemeName : createSaveAsLabel(sourceMeta.label, defaultCreateThemeName));
+      const description = saveAsDescription.trim();
+      const key = createThemeKey(label, theme.themes, createThemeKeyPrefix);
+      const meta = { key, label, description };
+      const preset = createPresetFromCurrentTheme(meta, undefined, liveAdvancedTokens);
+      const presetOption: ThemePanelPresetOption = { key, label, description, preset };
+      const nextThemes = { ...theme.themes, [String(key)]: preset };
+      setCreatedThemeMeta((current) => ({ ...current, [String(key)]: meta }));
+      theme.update({
+        themes: nextThemes,
+        mode: key,
+        colorScheme: preset.base,
+        accent: preset.accent,
+        density: preset.density,
+        intensity: preset.intensity,
+        radius: preset.radius,
+        font: preset.font,
+        tokens: preset.tokens,
+      });
+      onCreateTheme?.({ ...meta, preset, presetOption });
+    };
+
     const beginCreateTheme = () => {
       const root = rootRef.current;
       const base = theme.colorScheme;
@@ -747,10 +935,11 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
       setDraftFont(theme.font ?? "sf");
       setAdvancedFontMode(toFontKey(theme.font) === theme.font ? "preset" : "custom");
       setCreateMode("simple");
-      setCustomAccent(accent);
-      setPreviewDraft(true);
-      setIsCreatingTheme(true);
-    };
+        setCustomAccent(accent);
+        setPreviewDraft(true);
+        setAdvancedOpen(false);
+        setIsCreatingTheme(true);
+      };
 
     const cancelCreateTheme = () => {
       restorePreviewSnapshot();
@@ -846,6 +1035,186 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
     const updateThemeToken = (key: ShadowTokenKey, value: string) => {
       theme.setTokens({ ...theme.tokens, [key]: value });
     };
+
+    const renderAdvancedEditor = ({
+      font,
+      fontMode,
+      tokens,
+      accentPalette,
+      surfaceFallback,
+      accentFallback,
+      onFontModeChange,
+      onFontChange,
+      onTokenChange,
+      onAccentSlotChange,
+    }: {
+      font: NonNullable<ThemeConfig["font"]>;
+      fontMode: AdvancedFontMode;
+      tokens: NonNullable<ThemePreset["tokens"]>;
+      accentPalette: AccentPalette;
+      surfaceFallback: string;
+      accentFallback: string;
+      onFontModeChange: (mode: AdvancedFontMode) => void;
+      onFontChange: (font: NonNullable<ThemeConfig["font"]>) => void;
+      onTokenChange: (key: ThemeTokenKey, value: string) => void;
+      onAccentSlotChange: (key: AccentPaletteKey, value: string) => void;
+    }) => (
+      <div className="theme-panel-advanced">
+        <div className="theme-panel-advanced-section compact">
+          <div className="theme-panel-advanced-title">
+            <span>字体</span>
+            <small>{fontMode === "preset" ? "选择内置字体" : "填写 CSS font-family"}</small>
+          </div>
+          <RadioGroup
+            className="theme-panel-create-mode"
+            variant="segmented"
+            size="sm"
+            value={fontMode}
+            options={ADVANCED_FONT_MODE_OPTIONS.map((option) => ({
+              value: option.value,
+              label: option.label,
+            }))}
+            onChange={(value) => {
+              onFontModeChange(value);
+              if (value === "preset") onFontChange(toFontKey(font));
+            }}
+          />
+          {fontMode === "custom" && (
+            <div className="theme-panel-create-field">
+              <span>字体栈</span>
+              <Input
+                size="sm"
+                value={fontConfigToText(font)}
+                onValueChange={(value) => onFontChange(value || "system")}
+                placeholder="CSS font-family"
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="theme-panel-advanced-section">
+          <div className="theme-panel-advanced-title">
+            <span>表面 tokens</span>
+            <small>完整覆写 --bg / --fg</small>
+          </div>
+          <div className="theme-panel-token-grid">
+            {SURFACE_TOKEN_FIELDS.map((field) => (
+              <div className="theme-panel-token-field" key={field.key}>
+                <span className="theme-panel-token-label">
+                  <span>{field.label}</span>
+                  <code>--{field.key}</code>
+                </span>
+                <span className="theme-panel-token-input">
+                  <ColorPicker
+                    className="theme-panel-token-picker"
+                    value={tokenPickerValue(tokens[field.key], surfaceFallback)}
+                    onChange={(value) => onTokenChange(field.key, value)}
+                    placement="left"
+                    aria-label={`选择 ${field.label}`}
+                  >
+                    <span className="theme-panel-token-swatch" style={{ background: tokens[field.key] }} />
+                  </ColorPicker>
+                  <Input
+                    size="sm"
+                    value={tokens[field.key] ?? ""}
+                    onValueChange={(value) => onTokenChange(field.key, value)}
+                  />
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="theme-panel-advanced-section">
+          <div className="theme-panel-advanced-title">
+            <span>阴影系统</span>
+            <small>暗/亮阴影与层级缩放</small>
+          </div>
+          <div className="theme-panel-token-grid">
+            {SHADOW_TOKEN_FIELDS.map((field) =>
+              field.kind === "color" ? (
+                <div className="theme-panel-token-field" key={field.key}>
+                  <span className="theme-panel-token-label">
+                    <span>{field.label}</span>
+                    <code>--{field.key}</code>
+                  </span>
+                  <span className="theme-panel-token-input">
+                    <ColorPicker
+                      className="theme-panel-token-picker"
+                      value={tokenPickerValue(tokens[field.key], surfaceFallback)}
+                      onChange={(value) => onTokenChange(field.key, value)}
+                      placement="left"
+                      aria-label={`选择 ${field.label}`}
+                    >
+                      <span className="theme-panel-token-swatch" style={{ background: tokens[field.key] }} />
+                    </ColorPicker>
+                    <Input
+                      size="sm"
+                      value={tokens[field.key] ?? ""}
+                      onValueChange={(value) => onTokenChange(field.key, value)}
+                    />
+                  </span>
+                </div>
+              ) : (
+                <div className="theme-panel-token-field scale" key={field.key}>
+                  <span className="theme-panel-token-label">
+                    <span>{field.label}</span>
+                    <code>--{field.key}</code>
+                  </span>
+                  <span className="theme-panel-token-scale">
+                    <Input
+                      size="sm"
+                      value={tokens[field.key] ?? "1"}
+                      onValueChange={(value) => onTokenChange(field.key, value || "1")}
+                    />
+                    <Slider
+                      value={parseScaleToken(tokens[field.key])}
+                      onChange={(value) => onTokenChange(field.key, formatScaleToken(value))}
+                      min={0.6}
+                      max={field.key === "shadow-float-scale" ? 1.8 : 1.6}
+                      step={0.05}
+                    />
+                  </span>
+                </div>
+              )
+            )}
+          </div>
+        </div>
+
+        <div className="theme-panel-advanced-section">
+          <div className="theme-panel-advanced-title">
+            <span>强调 palette</span>
+            <small>完整覆写 accent / ink / soft / glow</small>
+          </div>
+          <div className="theme-panel-token-grid">
+            {ACCENT_PALETTE_FIELDS.map((field) => (
+              <div className="theme-panel-token-field" key={field.key}>
+                <span className="theme-panel-token-label">
+                  <span>{field.label}</span>
+                  <code>accent.{field.key}</code>
+                </span>
+                <span className="theme-panel-token-input">
+                  <ColorPicker
+                    className="theme-panel-token-picker"
+                    value={tokenPickerValue(accentPalette[field.key], accentFallback)}
+                    onChange={(value) => onAccentSlotChange(field.key, value)}
+                    placement="left"
+                    aria-label={`选择 ${field.label}`}
+                  >
+                    <span className="theme-panel-token-swatch" style={{ background: accentPalette[field.key] }} />
+                  </ColorPicker>
+                  <Input
+                    size="sm"
+                    value={accentPalette[field.key]}
+                    onValueChange={(value) => onAccentSlotChange(field.key, value)}
+                  />
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
 
     return (
       <div ref={setRootRef} className={rootClass} {...rest}>
@@ -1025,172 +1394,19 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
                     onChange={(value) => setDraftFont(value as FontKey)}
                   />
                 </div>
-                {createMode === "advanced" && (
-                  <div className="theme-panel-advanced">
-                    <div className="theme-panel-advanced-section compact">
-                      <div className="theme-panel-advanced-title">
-                        <span>字体</span>
-                        <small>{advancedFontMode === "preset" ? "选择内置字体" : "填写 CSS font-family"}</small>
-                      </div>
-                      <RadioGroup
-                        className="theme-panel-create-mode"
-                        variant="segmented"
-                        size="sm"
-                        value={advancedFontMode}
-                        options={ADVANCED_FONT_MODE_OPTIONS.map((option) => ({
-                          value: option.value,
-                          label: option.label,
-                        }))}
-                        onChange={(value) => {
-                          setAdvancedFontMode(value);
-                          if (value === "preset") setDraftFont(toFontKey(draftFont));
-                        }}
-                      />
-                      {advancedFontMode === "custom" && (
-                        <div className="theme-panel-create-field">
-                          <span>字体栈</span>
-                          <Input
-                            size="sm"
-                            value={fontConfigToText(draftFont)}
-                            onValueChange={(value) => setDraftFont(value || "system")}
-                            placeholder="CSS font-family"
-                          />
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="theme-panel-advanced-section">
-                      <div className="theme-panel-advanced-title">
-                        <span>表面 tokens</span>
-                        <small>完整覆写 --bg / --fg</small>
-                      </div>
-                      <div className="theme-panel-token-grid">
-                        {SURFACE_TOKEN_FIELDS.map((field) => (
-                          <div className="theme-panel-token-field" key={field.key}>
-                            <span className="theme-panel-token-label">
-                              <span>{field.label}</span>
-                              <code>--{field.key}</code>
-                            </span>
-                            <span className="theme-panel-token-input">
-                              <ColorPicker
-                                className="theme-panel-token-picker"
-                                value={tokenPickerValue(draftTokens[field.key], draftSurface)}
-                                onChange={(value) => updateDraftToken(field.key, value)}
-                                placement="left"
-                                aria-label={`选择 ${field.label}`}
-                              >
-                                <span
-                                  className="theme-panel-token-swatch"
-                                  style={{ background: draftTokens[field.key] }}
-                                />
-                              </ColorPicker>
-                              <Input
-                                size="sm"
-                                value={draftTokens[field.key] ?? ""}
-                                onValueChange={(value) => updateDraftToken(field.key, value)}
-                              />
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="theme-panel-advanced-section">
-                      <div className="theme-panel-advanced-title">
-                        <span>阴影系统</span>
-                        <small>暗/亮阴影与层级缩放</small>
-                      </div>
-                      <div className="theme-panel-token-grid">
-                        {SHADOW_TOKEN_FIELDS.map((field) =>
-                          field.kind === "color" ? (
-                            <div className="theme-panel-token-field" key={field.key}>
-                              <span className="theme-panel-token-label">
-                                <span>{field.label}</span>
-                                <code>--{field.key}</code>
-                              </span>
-                              <span className="theme-panel-token-input">
-                                <ColorPicker
-                                  className="theme-panel-token-picker"
-                                  value={tokenPickerValue(draftTokens[field.key], draftSurface)}
-                                  onChange={(value) => updateDraftToken(field.key, value)}
-                                  placement="left"
-                                  aria-label={`选择 ${field.label}`}
-                                >
-                                  <span
-                                    className="theme-panel-token-swatch"
-                                    style={{ background: draftTokens[field.key] }}
-                                  />
-                                </ColorPicker>
-                                <Input
-                                  size="sm"
-                                  value={draftTokens[field.key] ?? ""}
-                                  onValueChange={(value) => updateDraftToken(field.key, value)}
-                                />
-                              </span>
-                            </div>
-                          ) : (
-                            <div className="theme-panel-token-field scale" key={field.key}>
-                              <span className="theme-panel-token-label">
-                                <span>{field.label}</span>
-                                <code>--{field.key}</code>
-                              </span>
-                              <span className="theme-panel-token-scale">
-                                <Input
-                                  size="sm"
-                                  value={draftTokens[field.key] ?? "1"}
-                                  onValueChange={(value) => updateDraftToken(field.key, value || "1")}
-                                />
-                                <Slider
-                                  value={parseScaleToken(draftTokens[field.key])}
-                                  onChange={(value) => updateDraftToken(field.key, formatScaleToken(value))}
-                                  min={0.6}
-                                  max={field.key === "shadow-float-scale" ? 1.8 : 1.6}
-                                  step={0.05}
-                                />
-                              </span>
-                            </div>
-                          )
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="theme-panel-advanced-section">
-                      <div className="theme-panel-advanced-title">
-                        <span>强调 palette</span>
-                        <small>完整覆写 accent / ink / soft / glow</small>
-                      </div>
-                      <div className="theme-panel-token-grid">
-                        {ACCENT_PALETTE_FIELDS.map((field) => (
-                          <div className="theme-panel-token-field" key={field.key}>
-                            <span className="theme-panel-token-label">
-                              <span>{field.label}</span>
-                              <code>accent.{field.key}</code>
-                            </span>
-                            <span className="theme-panel-token-input">
-                              <ColorPicker
-                                className="theme-panel-token-picker"
-                                value={tokenPickerValue(draftAccentPalette[field.key], draftAccent)}
-                                onChange={(value) => updateDraftAccentSlot(field.key, value)}
-                                placement="left"
-                                aria-label={`选择 ${field.label}`}
-                              >
-                                <span
-                                  className="theme-panel-token-swatch"
-                                  style={{ background: draftAccentPalette[field.key] }}
-                                />
-                              </ColorPicker>
-                              <Input
-                                size="sm"
-                                value={draftAccentPalette[field.key]}
-                                onValueChange={(value) => updateDraftAccentSlot(field.key, value)}
-                              />
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
+                {createMode === "advanced" &&
+                  renderAdvancedEditor({
+                    font: draftFont,
+                    fontMode: advancedFontMode,
+                    tokens: draftTokens,
+                    accentPalette: draftAccentPalette,
+                    surfaceFallback: draftSurface,
+                    accentFallback: draftAccent,
+                    onFontModeChange: setAdvancedFontMode,
+                    onFontChange: setDraftFont,
+                    onTokenChange: updateDraftToken,
+                    onAccentSlotChange: updateDraftAccentSlot,
+                  })}
                 <div
                   className="theme-panel-create-preview"
                   style={{
@@ -1340,6 +1556,111 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
               options={DENSITY_OPTIONS.map((option) => ({ value: option.value, label: option.label }))}
               onChange={theme.setDensity}
             />
+          </div>
+        )}
+
+        {sections.includes("advanced") && !isCreatingTheme && (
+          <div className="theme-panel-row theme-panel-advanced-row">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              icon="sliders"
+              trailingIcon={advancedOpen ? "chevUp" : "chevDown"}
+              block
+              className="theme-panel-advanced-toggle"
+              onClick={() => setAdvancedOpen((open) => !open)}
+              aria-expanded={advancedOpen}
+            >
+              高级调整
+            </Button>
+            {advancedOpen && (
+              <div className="theme-panel-live-advanced">
+                <div className="theme-panel-create-field">
+                  <span>基底</span>
+                  <RadioGroup
+                    variant="segmented"
+                    size="sm"
+                    value={theme.colorScheme}
+                    options={[
+                      { value: "light", label: "浅" },
+                      { value: "dark", label: "深" },
+                    ]}
+                    onChange={updateLiveBase}
+                  />
+                </div>
+                {renderAdvancedEditor({
+                  font: theme.font,
+                  fontMode: liveAdvancedFontMode,
+                  tokens: liveAdvancedTokens,
+                  accentPalette: theme.accentPalette,
+                  surfaceFallback: cssColorToHex(
+                    liveAdvancedTokens.bg ?? DEFAULT_SURFACE_BY_BASE[theme.colorScheme],
+                    DEFAULT_SURFACE_BY_BASE[theme.colorScheme]
+                  ),
+                  accentFallback: cssColorToHex(theme.accentPalette.accent, customAccent),
+                  onFontModeChange: setLiveAdvancedFontMode,
+                  onFontChange: (font) => theme.setFont(font),
+                  onTokenChange: updateLiveToken,
+                  onAccentSlotChange: updateLiveAccentSlot,
+                })}
+                <div className="theme-panel-advanced-actions">
+                  {canSaveCurrentThemeAsNew && (
+                    <div className="theme-panel-save-as-field">
+                      <span>{isCurrentSavedTheme ? "主题名" : "新主题名"}</span>
+                      <Input
+                        size="sm"
+                        value={saveAsName}
+                        onValueChange={setSaveAsName}
+                        placeholder={suggestedSaveAsName}
+                        leadingIcon="palette"
+                        allowClear
+                      />
+                    </div>
+                  )}
+                  {canSaveCurrentThemeAsNew && (
+                    <div className="theme-panel-save-as-field">
+                      <span>副标题</span>
+                      <Input
+                        size="sm"
+                        value={saveAsDescription}
+                        onValueChange={setSaveAsDescription}
+                        placeholder={suggestedSaveAsDescription}
+                        leadingIcon="edit"
+                        allowClear
+                      />
+                    </div>
+                  )}
+                  <div className="theme-panel-advanced-footer">
+                    <span>
+                      {isCurrentSavedTheme
+                        ? `当前预设: ${getActiveThemeMeta().label}`
+                        : canSaveCurrentThemeAsNew
+                          ? "默认预设会保存为新主题"
+                          : "当前调整仅运行时生效"}
+                    </span>
+                    <div className="theme-panel-advanced-buttons">
+                      {canUpdateCurrentTheme && (
+                        <Button type="button" variant="primary" size="sm" icon="check" onClick={saveCurrentThemeUpdate}>
+                          保存修改
+                        </Button>
+                      )}
+                      {canSaveCurrentThemeAsNew && (
+                        <Button
+                          type="button"
+                          variant={canUpdateCurrentTheme ? "ghost" : "primary"}
+                          size="sm"
+                          icon="copy"
+                          onClick={saveCurrentThemeAsNew}
+                        >
+                          {isCurrentSavedTheme ? "另存为" : "保存为新主题"}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

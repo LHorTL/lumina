@@ -2,6 +2,12 @@
 
 > 两栏之间可拖拽的分隔条,支持横向、纵向与嵌套。
 
+## 导入
+
+```tsx
+import { Splitter } from "@fangxinyan/lumina";
+```
+
 ## 示例
 
 ### 水平分栏

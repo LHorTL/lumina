@@ -2,6 +2,12 @@
 
 > 桌面应用风格的右键上下文菜单。
 
+## 导入
+
+```tsx
+import { ContextMenu } from "@fangxinyan/lumina";
+```
+
 ## 示例
 
 ### 基础

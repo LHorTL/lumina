@@ -2,6 +2,12 @@
 
 > 全局命令搜索与执行入口。
 
+## 导入
+
+```tsx
+import { CommandPalette } from "@fangxinyan/lumina";
+```
+
 ## 示例
 
 ### 基础 + 快捷键

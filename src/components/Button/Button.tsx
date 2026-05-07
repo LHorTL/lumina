@@ -32,6 +32,13 @@ export interface ButtonProps
   children?: React.ReactNode;
 }
 
+export interface IconButtonProps
+  extends Omit<ButtonProps, "children" | "iconOnly" | "trailingIcon"> {
+  /** Icon rendered in the square button. Accepts a built-in icon name or custom React node. */
+  icon: IconSlot;
+  children?: never;
+}
+
 /**
  * `Button` — the primary action surface.
  *
@@ -96,3 +103,16 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   }
 );
 Button.displayName = "Button";
+
+/**
+ * `IconButton` — square icon-only command button.
+ *
+ * @example
+ * <IconButton icon="settings" tip="设置" />
+ */
+export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
+  ({ icon, ...rest }, ref) => (
+    <Button ref={ref} icon={icon} iconOnly {...rest} />
+  )
+);
+IconButton.displayName = "IconButton";

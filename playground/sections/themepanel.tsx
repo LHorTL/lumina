@@ -9,6 +9,7 @@ import {
   ThemeProvider,
   type ThemePanelCreateThemePayload,
   type ThemePanelDeleteThemePayload,
+  type ThemePanelUpdateThemePayload,
   type ThemePresets,
 } from "lumina";
 import { DocPage } from "../docs";
@@ -119,10 +120,29 @@ const PersistentThemePanelDemo: React.FC = () => {
     setSavedThemes((current) => current.filter((entry) => String(entry.key) !== String(payload.key)));
   }, []);
 
+  const handleUpdateTheme = React.useCallback((payload: ThemePanelUpdateThemePayload) => {
+    setSavedThemes((current) =>
+      current.map((entry) =>
+        String(entry.key) === String(payload.key)
+          ? {
+              key: payload.key,
+              label: payload.label,
+              description: payload.description,
+              preset: payload.preset,
+            }
+          : entry
+      )
+    );
+  }, []);
+
   return (
     <ThemeProvider target="scope" as="div" themes={themes} storageKey="lumina:theme-panel-demo:active-theme">
       <div style={{ display: "grid", gridTemplateColumns: "minmax(280px, 340px) minmax(0, 1fr)", gap: 18, alignItems: "start" }}>
-        <ThemePanel onCreateTheme={handleCreateTheme} onDeleteTheme={handleDeleteTheme} />
+        <ThemePanel
+          onCreateTheme={handleCreateTheme}
+          onDeleteTheme={handleDeleteTheme}
+          onUpdateTheme={handleUpdateTheme}
+        />
         <Surface padding="lg" radius="xl" bordered>
           <Card title="外部主题库" description={`已保存 ${savedThemes.length} 个主题`}>
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -182,7 +202,8 @@ const SectionThemePanel: React.FC<SectionCtx> = () => (
       <>
         <p>
           ThemePanel 是可直接放进应用的主题快速控制面板。它读取最近的 ThemeProvider,
-          并通过 useTheme 修改 mode、命名主题、强调色、阴影、圆角、字体和密度,也可以基于当前主题快照保存新的命名主题。
+          并通过 useTheme 修改 mode、命名主题、强调色、阴影、圆角、字体和密度。默认折叠的高级调整区可继续编辑 token / palette,
+          也可以基于当前主题快照保存新的命名主题。
         </p>
         <ul className="doc-usecase-list">
           <li>开发期/内部工具想快速调试主题</li>
@@ -196,7 +217,7 @@ const SectionThemePanel: React.FC<SectionCtx> = () => (
       {
         id: "basic",
         title: "完整面板",
-        description: "默认包含浅色、深色、瓷白、助手、助手暗五个主题卡片,并提供简洁/深度两档新建主题入口;其余控制项直接驱动 useTheme。",
+        description: "默认包含浅色、深色、瓷白、助手、助手暗五个主题卡片,并提供简洁/深度两档新建主题入口;高级调整区可编辑当前主题的 token、palette 和自定义字体,默认主题另存时可填写新主题名和副标题,非默认主题可直接改名、修改副标题后保存。",
         span: 2,
         code: `<ThemeProvider>
   <ThemePanel />
@@ -206,7 +227,7 @@ const SectionThemePanel: React.FC<SectionCtx> = () => (
       {
         id: "persistence",
         title: "外部保存与回灌",
-        description: "onCreateTheme / onDeleteTheme 会把新建和删除事件交给业务侧;业务侧保存后通过 ThemeProvider themes 回灌。",
+        description: "onCreateTheme / onUpdateTheme / onDeleteTheme 会把新建、另存为、更新和删除事件交给业务侧;主题名和卡片第二行副标题会分别通过 payload.label / payload.description 传出,业务侧保存后通过 ThemeProvider themes 回灌。",
         span: 2,
         code: `import { ThemeProvider, ThemePanel, type ThemePresets } from "lumina";
 
@@ -227,6 +248,13 @@ const [themes, setThemes] = React.useState<ThemePresets>({});
         return next;
       });
       deleteThemeFromServerOrStorage(payload);
+    }}
+    onUpdateTheme={(payload) => {
+      setThemes((current) => ({
+        ...current,
+        [String(payload.key)]: payload.preset,
+      }));
+      saveThemeToServerOrStorage(payload);
     }}
   />
 </ThemeProvider>`,
@@ -253,16 +281,18 @@ const [themes, setThemes] = React.useState<ThemePresets>({});
         rows: [
           { prop: "title", description: "面板标题;传 null 可隐藏标题文本", type: "ReactNode", default: `"主题"` },
           { prop: "description", description: "面板副标题", type: "ReactNode", default: `"快速调整当前 Lumina 主题"` },
-          { prop: "sections", description: "展示的控制区及顺序;shadow 区同时控制 intensity / shadow-scale / shadow-float-scale", type: "ThemePanelSection[]" },
+          { prop: "sections", description: "展示的控制区及顺序;advanced 区提供完整 token / palette 编辑,shadow 区同时控制 intensity / shadow-scale / shadow-float-scale", type: "ThemePanelSection[]" },
           { prop: "modeOptions", description: "模式切换项", type: "ThemePanelModeOption[]" },
           { prop: "presetOptions", description: "命名主题预设卡片;不传时使用浅色/深色/瓷白/助手/助手暗 + theme.themes,也可完全由业务侧控制", type: "ThemePanelPresetOption[]" },
           { prop: "defaultCustomAccent", description: "自定义强调色初始值", type: "string", default: `"#845ef7"` },
           { prop: "allowCreateTheme", description: "在预设区显示新建主题流程", type: "boolean", default: "true" },
           { prop: "defaultCreateThemeName", description: "新建主题的默认名称", type: "string", default: `"我的主题"` },
           { prop: "createThemeKeyPrefix", description: "生成自建主题 mode key 时使用的前缀", type: "string", default: `"user"` },
-          { prop: "onCreateTheme", description: "保存自建主题后的回调,业务侧可把 payload.preset 存起来并通过 ThemeProvider themes 回灌", type: "(payload: ThemePanelCreateThemePayload) => void" },
+          { prop: "onCreateTheme", description: "保存自建主题或高级区命名另存为后的回调;主题名和副标题通过 payload.label / payload.description 传出,业务侧可把 payload.preset 存起来并通过 ThemeProvider themes 回灌", type: "(payload: ThemePanelCreateThemePayload) => void" },
           { prop: "allowDeleteTheme", description: "为非默认主题显示删除按钮;默认主题不会显示删除入口", type: "boolean", default: "true" },
           { prop: "onDeleteTheme", description: "删除非默认主题后的回调,业务侧可同步删除外部存储", type: "(payload: ThemePanelDeleteThemePayload) => void" },
+          { prop: "allowUpdateTheme", description: "在高级调整区为非默认主题显示保存修改能力;默认主题保存时会另存为新主题", type: "boolean", default: "true" },
+          { prop: "onUpdateTheme", description: "覆盖保存非默认主题修改后的回调;名称和副标题修改通过 payload.label / payload.description 传出,另存为仍走 onCreateTheme", type: "(payload: ThemePanelUpdateThemePayload) => void" },
           { prop: "showReset", description: "显示重置按钮", type: "boolean", default: "true" },
           { prop: "compact", description: "紧凑布局", type: "boolean", default: "false" },
         ],
@@ -288,9 +318,20 @@ const [themes, setThemes] = React.useState<ThemePresets>({});
         rows: [
           { prop: "key", description: "保存后注册到 ThemeProvider 的 mode key", type: "ThemeMode" },
           { prop: "label", description: "用户输入的主题名称", type: "string" },
-          { prop: "description", description: "ThemePanel 生成的说明文案,如自建亮/自建暗", type: "string" },
+          { prop: "description", description: "用户输入的主题副标题,会显示在主题卡片第二行", type: "string" },
           { prop: "preset", description: "最终保存到 theme.themes 的主题配置", type: "ThemePreset" },
           { prop: "presetOption", description: "可直接追加到受控 presetOptions 的卡片配置", type: "ThemePanelPresetOption" },
+        ],
+      },
+      {
+        title: "ThemePanelUpdateThemePayload",
+        rows: [
+          { prop: "key", description: "被更新的主题 mode key", type: "ThemeMode" },
+          { prop: "label", description: "被更新主题的展示名称", type: "string" },
+          { prop: "description", description: "被更新主题的副标题,会显示在主题卡片第二行", type: "string" },
+          { prop: "preset", description: "从当前面板状态生成的新主题配置", type: "ThemePreset" },
+          { prop: "previousPreset", description: "更新前的主题配置", type: "ThemePreset" },
+          { prop: "presetOption", description: "可直接回灌到受控 presetOptions 的卡片配置", type: "ThemePanelPresetOption" },
         ],
       },
       {

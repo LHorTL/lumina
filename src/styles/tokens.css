@@ -126,6 +126,27 @@
   --dur-slow: 360ms;
 }
 
+/* Explicit light reset for scoped ThemeProvider instances.
+   :root already has these defaults, but nested [data-theme="light"] must not
+   inherit a dark or custom parent surface. */
+:root[data-theme="light"],
+[data-theme="light"] {
+  --bg: #e8eef5;
+  --bg-raised: #edf2f8;
+  --bg-sunken: #dde4ed;
+  --fg: #3a4558;
+  --fg-muted: #7b8599;
+  --fg-subtle: #9ca7ba;
+  --border: rgba(130, 148, 175, 0.14);
+  --divider: rgba(130, 148, 175, 0.18);
+  --shadow-dark: rgba(163, 177, 198, 0.55);
+  --shadow-light: rgba(255, 255, 255, 0.95);
+  --shadow-offset: calc(6px * var(--d) * var(--shadow-scale));
+  --shadow-blur: calc(16px * var(--d) * var(--shadow-scale));
+  --shadow-inset-offset: calc(4px * var(--d) * var(--shadow-scale));
+  --shadow-inset-blur: calc(10px * var(--d) * var(--shadow-scale));
+}
+
 /* ---- Dark theme ----
    深色模式的拟态不能照搬浅色思路:白色高光会变成刺眼的白圈。
    这里做法:保留深色阴影给"下沉"深度,把"上凸高光"压到很低 alpha,

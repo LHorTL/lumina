@@ -2,6 +2,12 @@
 
 > 窗口底部状态栏,展示分支、编码、行列等应用元信息。
 
+## 导入
+
+```tsx
+import { StatusBar, StatusBarItem } from "@fangxinyan/lumina";
+```
+
 ## 示例
 
 ### 基础
