@@ -19,10 +19,19 @@
 
 - **TypeScript 优先** — 全量类型定义，IDE 智能提示完善
 - **拟态设计语言** — 统一的凸起/凹陷/柔光阴影系统，通过 CSS 变量自定义
-- **25+ 基础组件** — Button、Input、Table、Modal、Toast、Calendar …
+- **45+ 公共组件** — Button、Input、Table、Modal、Message、Calendar …
 - **Electron 原生感** — `TitleBar`、`Sidebar`、`AppShell` 直接拼出窗口布局
 - **主题化** — 明/暗模式、6 套强调色、3 档密度（紧凑/标准/宽松）
 - **零运行时依赖** — 只依赖 React；样式纯 CSS 变量驱动
+
+## Why Lumina matters for AI-assisted development
+
+Lumina 不只是把组件打成 npm 包，也把“AI 能按需读懂组件”的上下文一起发布出去。
+
+- **内置 LLM 文档** — 每个组件都有独立 `docs/llms/<id>.md`，覆盖导入方式、可复制示例和完整 Props 表，AI 不必一次读取整份 API。
+- **按需组件文档** — `@fangxinyan/lumina/llms.md` 提供全局约定和组件索引，`@fangxinyan/lumina/llms/button.md` 这类子路径可直接定位到单组件。
+- **零运行时依赖** — 运行时只依赖 React / React DOM，组件逻辑、主题 token 和样式入口都更容易被 AI 审查、迁移和解释。
+- **Electron 场景优先** — `TitleBar`、`WindowControls`、`Sidebar`、`StatusBar`、`AppShell` 等桌面应用原语减少了业务侧临时拼装窗口 UI 的成本。
 
 ## 📦 安装
 
@@ -60,7 +69,7 @@ export default function App() {
 ## 🛠 本地开发（下载即用）
 
 ```bash
-cd package
+cd lumina
 npm install
 npm run dev          # 启动 Playground（http://localhost:5173）
 npm run typecheck    # 类型检查
@@ -73,16 +82,18 @@ npm run build:lib    # 构建库 → dist/（ESM + CJS + .d.ts）
 项目结构：
 
 ```
-package/
+lumina/
 ├── src/
-│   ├── components/       # 所有 .tsx 组件源码
+│   ├── components/       # 每个组件一个目录，包含 .tsx / .css / index.ts
 │   ├── styles/
 │   │   ├── tokens.css    # 设计令牌（主题 / 颜色 / 阴影 / 间距）
 │   │   ├── base.css      # 基础样式（body / scrollbar / focus）
-│   │   └── components/   # 每个组件对应一个 .css 文件
+│   │   ├── shared.css    # 共享动画 / 跨组件样式
+│   │   └── index.css     # 完整样式入口
 │   └── index.ts          # 公共出口
 ├── playground/           # 本地演示应用（Vite）
 ├── docs/                 # 组件文档 & API 文档
+├── scripts/              # 文档生成 / 公开 API 校验脚本
 ├── tsup.config.ts        # 库构建配置
 └── vite.config.ts        # Playground 开发服务器
 ```
@@ -112,7 +123,7 @@ package/
 
 ## 📚 文档
 
-- **[🤖 AI / LLM 组件参考(索引)](./docs/llms.md)** — 全局约定 + 39 个组件的链接
+- **[🤖 AI / LLM 组件参考(索引)](./docs/llms.md)** — 全局约定 + 完整组件索引
 - **[单组件文档](./docs/llms/)** — 每个组件一份 `.md`,AI 按需读取(例如 [`llms/button.md`](./docs/llms/button.md))
 - [设计令牌](./docs/tokens.md)
 - [Electron 集成](./docs/electron.md)
