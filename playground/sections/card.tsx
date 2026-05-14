@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Avatar, Button, Card, Tag } from "lumina";
+import { Avatar, Button, Card, Skeleton, Tag } from "lumina";
 import { DocPage } from "../docs";
 import { defineSection, type SectionCtx } from "./_types";
 
@@ -127,24 +127,38 @@ const SectionCard: React.FC<SectionCtx> = () => (
       {
         id: "loading",
         title: "加载覆盖",
-        description: "loading 会在正文区域显示内建 overlay；loadingOverlay 可替换默认 Spin。",
-        code: `<Card loading loadingOverlay="正在同步...">
+        description: "loading 会在正文区域显示中性 overlay；默认 Spin 跟随主题色，loadingOverlay 可替换内容。",
+        code: `<Card loading>
   ...
 </Card>`,
         render: () => (
-          <Card
-            title="资源面板"
-            description="正文覆盖层"
-            loading
-            loadingOverlay="正在同步..."
-            bodyStyle={{ minHeight: 120 }}
-          >
-            <div style={{ display: "grid", gap: 8 }}>
-              <div style={{ height: 16, borderRadius: "var(--r-sm)", boxShadow: "var(--neu-shadow-inset)" }} />
-              <div style={{ height: 16, borderRadius: "var(--r-sm)", boxShadow: "var(--neu-shadow-inset)" }} />
-              <div style={{ height: 16, width: "72%", borderRadius: "var(--r-sm)", boxShadow: "var(--neu-shadow-inset)" }} />
-            </div>
-          </Card>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+            <Card
+              title="默认遮罩"
+              description="内建 Spin"
+              loading
+              bodyStyle={{ minHeight: 120 }}
+            >
+              <div style={{ display: "grid", gap: 8 }}>
+                <Skeleton animation="none" height={16} />
+                <Skeleton animation="none" height={16} />
+                <Skeleton animation="none" height={16} width="72%" />
+              </div>
+            </Card>
+            <Card
+              title="自定义遮罩"
+              description="loadingOverlay"
+              loading
+              loadingOverlay="正在同步..."
+              bodyStyle={{ minHeight: 120 }}
+            >
+              <div style={{ display: "grid", gap: 8 }}>
+                <Skeleton animation="none" height={16} />
+                <Skeleton animation="none" height={16} />
+                <Skeleton animation="none" height={16} width="72%" />
+              </div>
+            </Card>
+          </div>
         ),
       },
     ]}

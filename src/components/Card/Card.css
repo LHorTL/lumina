@@ -66,8 +66,10 @@
   border-radius: var(--r-md);
   display: grid;
   place-items: center;
-  background: color-mix(in oklch, var(--bg) 82%, transparent);
-  box-shadow: var(--neu-shadow-inset);
+  background: color-mix(in srgb, var(--bg) 72%, var(--bg-sunken));
+  box-shadow:
+    inset calc(var(--shadow-inset-offset) * 0.45) calc(var(--shadow-inset-offset) * 0.45) calc(var(--shadow-inset-blur) * 0.45) color-mix(in oklch, var(--shadow-dark) 55%, transparent),
+    inset calc(var(--shadow-inset-offset) * -0.45) calc(var(--shadow-inset-offset) * -0.45) calc(var(--shadow-inset-blur) * 0.45) color-mix(in oklch, var(--shadow-light) 72%, transparent);
   color: var(--fg-muted);
   z-index: 1;
 }
