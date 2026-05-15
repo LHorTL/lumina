@@ -501,6 +501,15 @@ const TableInner = <Row extends Record<string, any> = any>({
                 const canExpand =
                   hasExpandable && (expandable?.rowExpandable?.(row) ?? true);
                 const isExpanded = canExpand && expandedKeys.includes(k);
+                const cardSurfaceTarget = showExpandCol
+                  ? "__expand"
+                  : showSelCol
+                    ? "__select"
+                    : columns[0]?.key;
+                const cardRowSurface =
+                  v === "cards" ? (
+                    <span className="card-row-surface" aria-hidden="true" />
+                  ) : null;
                 return (
                   <React.Fragment key={k}>
                     <tr
@@ -515,6 +524,7 @@ const TableInner = <Row extends Record<string, any> = any>({
                             if (canExpand) toggleExpand(row, k);
                           }}
                         >
+                          {cardSurfaceTarget === "__expand" && cardRowSurface}
                           {canExpand && (
                             <button
                               type="button"
@@ -539,6 +549,7 @@ const TableInner = <Row extends Record<string, any> = any>({
                             toggleRow(row, k);
                           }}
                         >
+                          {cardSurfaceTarget === "__select" && cardRowSurface}
                           {selectionType === "radio" ? (
                             <button
                               type="button"
@@ -564,6 +575,7 @@ const TableInner = <Row extends Record<string, any> = any>({
                         const val = c.dataIndex ? row[c.dataIndex] : undefined;
                         return (
                           <td key={c.key} style={{ textAlign: c.align ?? "left" }}>
+                            {cardSurfaceTarget === c.key && cardRowSurface}
                             {c.render ? c.render(val, row, i) : (val as React.ReactNode)}
                           </td>
                         );

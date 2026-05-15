@@ -79,11 +79,10 @@
   isolation: isolate;
   transition: transform var(--dur-fast) var(--ease);
 }
-.table.cards tbody tr::before {
-  content: "";
+.table.cards .card-row-surface {
   position: absolute;
   inset: 0;
-  z-index: 0;
+  z-index: -1;
   border-radius: var(--r-md);
   background: var(--bg);
   box-shadow: var(--neu-shadow-control);
@@ -105,6 +104,7 @@
   box-shadow: none;
 }
 .table.cards tbody td:first-child {
+  position: static;
   border-radius: var(--r-md) 0 0 var(--r-md);
 }
 .table.cards tbody td:last-child {
@@ -113,7 +113,7 @@
 .table.cards.hoverable tbody tr:hover {
   transform: translateY(-1px);
 }
-.table.cards.hoverable tbody tr:hover::before { box-shadow: var(--neu-shadow-panel); }
+.table.cards.hoverable tbody tr:hover .card-row-surface { box-shadow: var(--neu-shadow-panel); }
 .table.cards.hoverable tbody tr:hover td { background: transparent; }
 
 .table .row-check { width: 44px; }
