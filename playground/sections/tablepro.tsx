@@ -175,6 +175,50 @@ const SectionTablePro: React.FC<SectionCtx> = () => {
           ),
         },
         {
+          id: "cardsPagination",
+          title: "卡片行分页",
+          span: 2,
+          description: "variant='cards' 与内置 pagination 共用 TablePro 容器背景,分页区不会单独变成另一块底色。",
+          code: `<TablePro
+  variant="cards"
+  rowKey="id"
+  data={rows}
+  pagination={{ pageSize: 4 }}
+  columns={[...]}
+/>`,
+          render: () => (
+            <TablePro
+              rowKey="id"
+              title="卡片行分页"
+              variant="cards"
+              data={raw}
+              pagination={{ pageSize: 4 }}
+              columns={[
+                { key: "name", title: "姓名", dataIndex: "name", render: (v) => <Tag tone="accent">{v}</Tag> },
+                { key: "role", title: "部门", dataIndex: "role" },
+                { key: "level", title: "级别", dataIndex: "level" },
+                {
+                  key: "status",
+                  title: "状态",
+                  dataIndex: "status",
+                  render: (v) => (
+                    <Tag tone={v === "在线" ? "success" : v === "忙碌" ? "warning" : "neutral"} dot>
+                      {v}
+                    </Tag>
+                  ),
+                },
+                {
+                  key: "progress",
+                  title: "完成度",
+                  dataIndex: "progress",
+                  align: "right",
+                  render: (v) => <Tag tone="info">{v}%</Tag>,
+                },
+              ]}
+            />
+          ),
+        },
+        {
           id: "withExpand",
           title: "带可展开行",
           span: 2,

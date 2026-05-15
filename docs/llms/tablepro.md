@@ -25,6 +25,20 @@ import { TablePro } from "@fangxinyan/lumina";
 />
 ```
 
+### 卡片行分页
+
+variant='cards' 与内置 pagination 共用 TablePro 容器背景,分页区不会单独变成另一块底色。
+
+```tsx
+<TablePro
+  variant="cards"
+  rowKey="id"
+  data={rows}
+  pagination={{ pageSize: 4 }}
+  columns={[...]}
+/>
+```
+
 ### 带可展开行
 
 TablePro 直接透传 expandable 到 Table。

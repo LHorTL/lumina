@@ -55,11 +55,11 @@ export interface PaginationConfig {
   total?: number;
   /** Fired when user picks a page or changes page size. */
   onChange?: (page: number, pageSize: number) => void;
-  /** Reserved for future: jump-to-page input. */
+  /** Show a jump-to-page input. */
   showQuickJumper?: boolean;
-  /** Reserved for future: page size dropdown. */
+  /** Show a page size dropdown. */
   showSizeChanger?: boolean;
-  /** Reserved for future: selectable page sizes. */
+  /** Selectable page sizes for the size dropdown. */
   pageSizeOptions?: number[];
 }
 
@@ -310,9 +310,22 @@ const TableInner = <Row extends Record<string, any> = any>({
     return filteredData.slice(start, start + curPageSize);
   }, [pagEnabled, filteredData, curPage, curPageSize, pagCfg.total, pageControlled]);
 
+  const skipNextPaginationChangeRef = React.useRef(false);
+
   const onPageChange = (p: number) => {
+    if (skipNextPaginationChangeRef.current) {
+      skipNextPaginationChangeRef.current = false;
+      return;
+    }
     if (!pageControlled) setInnerPage(p);
     pagCfg.onChange?.(p, curPageSize);
+  };
+
+  const onPageSizeChange = (_current: number, size: number) => {
+    skipNextPaginationChangeRef.current = true;
+    if (!pageControlled) setInnerPage(1);
+    if (pagCfg.pageSize === undefined) setInnerPageSize(size);
+    pagCfg.onChange?.(1, size);
   };
 
   // ---------- Expandable ----------
@@ -579,6 +592,10 @@ const TableInner = <Row extends Record<string, any> = any>({
             pageSize={curPageSize}
             page={curPage}
             onChange={onPageChange}
+            showQuickJumper={pagCfg.showQuickJumper}
+            showSizeChanger={pagCfg.showSizeChanger}
+            pageSizeOptions={pagCfg.pageSizeOptions}
+            onShowSizeChange={onPageSizeChange}
           />
         </div>
       )}

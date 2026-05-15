@@ -69,10 +69,26 @@
 /* Card-row variant: each row is its own raised pill */
 .table.cards {
   border-collapse: separate;
-  border-spacing: 0 10px;
-  padding: 10px;
+  border-spacing: 0 14px;
+  padding: 12px;
   background: transparent;
   box-shadow: none;
+}
+.table.cards tbody tr {
+  position: relative;
+  isolation: isolate;
+  transition: transform var(--dur-fast) var(--ease);
+}
+.table.cards tbody tr::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: var(--r-md);
+  background: var(--bg);
+  box-shadow: var(--neu-shadow-control);
+  pointer-events: none;
+  transition: box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
 .table.cards thead th {
   background: transparent;
@@ -81,22 +97,24 @@
   padding-bottom: 6px;
 }
 .table.cards tbody td {
-  background: var(--bg);
+  position: relative;
+  z-index: 1;
+  background: transparent;
   border-bottom: none;
   padding: 14px 18px;
+  box-shadow: none;
 }
 .table.cards tbody td:first-child {
   border-radius: var(--r-md) 0 0 var(--r-md);
-  box-shadow: -4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
 }
 .table.cards tbody td:last-child {
   border-radius: 0 var(--r-md) var(--r-md) 0;
-  box-shadow: 4px 4px 8px var(--shadow-dark), 4px -4px 8px var(--shadow-light);
 }
-.table.cards tbody td:not(:first-child):not(:last-child) {
-  box-shadow: 0 4px 8px var(--shadow-dark), 0 -4px 8px var(--shadow-light);
+.table.cards.hoverable tbody tr:hover {
+  transform: translateY(-1px);
 }
-.table.cards.hoverable tbody tr:hover td { background: var(--bg); transform: translateY(-1px); }
+.table.cards.hoverable tbody tr:hover::before { box-shadow: var(--neu-shadow-panel); }
+.table.cards.hoverable tbody tr:hover td { background: transparent; }
 
 .table .row-check { width: 44px; }
 .table .row-check .checkbox { display: inline-flex; }
