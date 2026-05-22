@@ -56,6 +56,64 @@ const SectionCard: React.FC<SectionCtx> = () => (
         ),
       },
       {
+        id: "background",
+        title: "自定义背景色",
+        description: "background 可覆盖卡片根节点背景，纯色、主题 token、color-mix 与渐变都走同一个字段。",
+        span: 2,
+        code: `<Card background="color-mix(in oklch, var(--accent-soft) 70%, var(--bg))">
+  主题强调底色
+</Card>`,
+        render: () => (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
+            <Card background="color-mix(in oklch, var(--accent-soft) 70%, var(--bg))">
+              <div style={{ fontWeight: 600, marginBottom: 4 }}>强调底色</div>
+              <div style={{ fontSize: 12, color: "var(--fg-muted)" }}>使用主题 token 混合，跟随明暗模式变化。</div>
+            </Card>
+            <Card variant="flat" background="var(--bg-raised)">
+              <div style={{ fontWeight: 600, marginBottom: 4 }}>Raised surface</div>
+              <div style={{ fontSize: 12, color: "var(--fg-muted)" }}>用 token 快速切换局部卡片表面。</div>
+            </Card>
+          </div>
+        ),
+      },
+      {
+        id: "gradients",
+        title: "渐变背景",
+        description: "background 支持完整 CSS 背景值，适合给看板、概览指标或状态卡片做轻量分层。",
+        span: 2,
+        code: `<Card background="linear-gradient(135deg, var(--bg-raised), var(--accent-soft))">
+  渐变卡片
+</Card>`,
+        render: () => (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
+            <Card
+              background="linear-gradient(135deg, color-mix(in oklch, var(--accent-soft) 82%, var(--bg)) 0%, var(--bg-raised) 58%, var(--bg) 100%)"
+              bodyLayout="stack"
+            >
+              <Tag tone="info">Overview</Tag>
+              <div style={{ fontSize: 24, fontWeight: 700, color: "var(--fg)" }}>82%</div>
+              <div style={{ fontSize: 12, color: "var(--fg-muted)", lineHeight: 1.6 }}>适合放在仪表盘首屏的柔和概览卡。</div>
+            </Card>
+            <Card
+              background="radial-gradient(circle at 18% 14%, color-mix(in oklch, var(--accent) 18%, transparent) 0%, transparent 48%), linear-gradient(145deg, var(--bg-raised), var(--bg-sunken))"
+              bodyLayout="stack"
+            >
+              <Tag tone="warning">Focus</Tag>
+              <div style={{ fontSize: 24, fontWeight: 700, color: "var(--fg)" }}>12</div>
+              <div style={{ fontSize: 12, color: "var(--fg-muted)", lineHeight: 1.6 }}>径向高光可提示当前需要关注的状态。</div>
+            </Card>
+            <Card
+              background="linear-gradient(120deg, var(--bg) 0%, color-mix(in oklch, var(--success) 18%, var(--bg-raised)) 48%, color-mix(in oklch, var(--accent) 16%, var(--bg)) 100%)"
+              bodyLayout="stack"
+            >
+              <Tag tone="success">Synced</Tag>
+              <div style={{ fontSize: 24, fontWeight: 700, color: "var(--fg)" }}>Live</div>
+              <div style={{ fontSize: 12, color: "var(--fg-muted)", lineHeight: 1.6 }}>多段线性渐变适合表达平稳推进的任务。</div>
+            </Card>
+          </div>
+        ),
+      },
+      {
         id: "header",
         title: "带标题",
         description: "带标题、描述、操作区。",
@@ -167,6 +225,7 @@ const SectionCard: React.FC<SectionCtx> = () => (
         title: "Card",
         rows: [
           { prop: "variant", description: "视觉变体", type: `"raised" | "flat" | "sunken"`, default: `"raised"` },
+          { prop: "background", description: "自定义卡片根节点背景，支持主题 token / color-mix / linear-gradient / radial-gradient 等 CSS 背景值", type: `CSSProperties["background"]` },
           { prop: "padding", description: "内边距", type: `"none" | "sm" | "md" | "lg"`, default: `"md"` },
           { prop: "hoverable", description: "悬浮时抬起", type: "boolean", default: "false" },
           { prop: "title", description: "标题", type: "ReactNode" },

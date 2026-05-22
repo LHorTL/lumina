@@ -16,6 +16,8 @@ type CardBodyProps = Omit<
 export interface CardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
   /** Visual variant. `raised` protrudes; `sunken` recesses; `flat` is subtle. */
   variant?: "raised" | "sunken" | "flat";
+  /** Custom card background. Accepts CSS colors, theme tokens, color-mix and gradients. */
+  background?: React.CSSProperties["background"];
   /** Inner padding. */
   padding?: "none" | "sm" | "md" | "lg";
   /** When true, the card raises and lifts on hover. */
@@ -54,6 +56,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
     title,
     description,
     actions,
+    background,
     fill = false,
     bodyLayout,
     bodyClassName = "",
@@ -62,6 +65,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
     loading = false,
     loadingOverlay,
     className = "",
+    style,
     children,
     ...rest
   }, ref) => {
@@ -85,8 +89,14 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
     ]
       .filter(Boolean)
       .join(" ");
+    const cardStyle = background
+      ? ({
+          "--card-bg": background,
+          ...style,
+        } as React.CSSProperties)
+      : style;
     return (
-      <div ref={ref} className={cls} aria-busy={loading || undefined} {...rest}>
+      <div ref={ref} className={cls} style={cardStyle} aria-busy={loading || undefined} {...rest}>
         {(title || description || actions) && (
           <div className="card-head">
             <div className="card-titles">

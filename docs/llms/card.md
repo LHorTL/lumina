@@ -28,6 +28,26 @@ hoverable 在鼠标悬浮时轻微上移并加强阴影,适合可点击的卡片
 <Card hoverable>可点击卡片</Card>
 ```
 
+### 自定义背景色
+
+background 可覆盖卡片根节点背景，纯色、主题 token、color-mix 与渐变都走同一个字段。
+
+```tsx
+<Card background="color-mix(in oklch, var(--accent-soft) 70%, var(--bg))">
+  主题强调底色
+</Card>
+```
+
+### 渐变背景
+
+background 支持完整 CSS 背景值，适合给看板、概览指标或状态卡片做轻量分层。
+
+```tsx
+<Card background="linear-gradient(135deg, var(--bg-raised), var(--accent-soft))">
+  渐变卡片
+</Card>
+```
+
 ### 带标题
 
 带标题、描述、操作区。
@@ -76,6 +96,7 @@ loading 会在正文区域显示中性 overlay；默认 Spin 跟随主题色，l
 | Prop | 类型 | 默认 | 说明 |
 | --- | --- | --- | --- |
 | variant | `"raised" | "flat" | "sunken"` | `"raised"` | 视觉变体 |
+| background | `CSSProperties["background"]` | — | 自定义卡片根节点背景，支持主题 token / color-mix / linear-gradient / radial-gradient 等 CSS 背景值 |
 | padding | `"none" | "sm" | "md" | "lg"` | `"md"` | 内边距 |
 | hoverable | `boolean` | `false` | 悬浮时抬起 |
 | title | `ReactNode` | — | 标题 |

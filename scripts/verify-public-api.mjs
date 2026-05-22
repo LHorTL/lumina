@@ -49,6 +49,7 @@ function verifyTypeSmoke() {
   const smokeSource = `import * as React from "react";
 import {
   Button,
+  Card,
   IconButton,
   Badge,
   Collapse,
@@ -77,6 +78,7 @@ import {
   ThemeProvider,
   type BadgeProps,
   type ButtonProps,
+  type CardProps,
   type IconButtonProps,
   type CascaderProps,
   type ImageProps,
@@ -123,6 +125,17 @@ const buttonProps: ButtonProps = {
   variant: "primary",
   className: "btn-check",
   style: { opacity: 0.9 },
+};
+
+const cardProps: CardProps = {
+  background: "linear-gradient(135deg, var(--bg-raised), var(--accent-soft))",
+  className: "card-check",
+  style: { minHeight: 120 },
+};
+
+const invalidCardProps: CardProps = {
+  // @ts-expect-error Card uses a single background prop for colors and gradients.
+  backgroundColor: "var(--bg-raised)",
 };
 
 const iconButtonProps: ButtonProps = {
@@ -308,6 +321,7 @@ const themePanelProps: ThemePanelProps = {
 
 const Example = () => {
   const buttonRef = React.useRef<HTMLButtonElement>(null);
+  const cardRef = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const surfaceRef = React.useRef<HTMLDivElement>(null);
   const themePanelRef = React.useRef<HTMLDivElement>(null);
@@ -356,6 +370,14 @@ const Example = () => {
         {...customIconButtonProps}
         data-testid="custom-icon-btn"
       />
+      <Card
+        ref={cardRef}
+        {...cardProps}
+        data-testid="card"
+        aria-label="card"
+      >
+        custom background
+      </Card>
       <Input
         ref={inputRef}
         {...inputProps}
@@ -442,6 +464,7 @@ const Example = () => {
 };
 
 void Example;
+void invalidCardProps;
 void message.success("Ready");
 const modalHandle: ModalStaticHandle = Modal.confirm({ title: "Confirm", content: "Sure?" });
 modalHandle.update({ content: "Updated" });
