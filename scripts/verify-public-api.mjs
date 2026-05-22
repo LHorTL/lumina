@@ -54,6 +54,7 @@ import {
   Badge,
   Collapse,
   Cascader,
+  Drawer,
   Input,
   Image,
   ImageGrid,
@@ -84,7 +85,9 @@ import {
   type ImageProps,
   type LayeredImageProps,
   type CollapseProps,
+  type DrawerProps,
   type InputProps,
+  type ModalProps,
   type ModalStaticHandle,
   type PopoverProps,
   type RadioGroupProps,
@@ -186,6 +189,11 @@ const imageProps: ImageProps = {
   width: 48,
   height: 48,
   preview: false,
+  previewClassName: "image-preview-check",
+  previewStyle: {
+    background: "var(--mask-bg)",
+    backdropFilter: "none",
+  },
   objectFit: "contain",
 };
 
@@ -218,6 +226,26 @@ const popoverProps: Omit<PopoverProps, "children"> = {
   content: <span>Content</span>,
   placement: "bottomLeft",
   overlayClassName: "popover-check",
+};
+
+const modalProps: ModalProps = {
+  open: false,
+  title: "Hidden",
+  maskClassName: "mask-check",
+  maskStyle: {
+    background: "var(--mask-bg)",
+    backdropFilter: "none",
+  },
+};
+
+const drawerProps: DrawerProps = {
+  open: false,
+  title: "Drawer",
+  maskClassName: "drawer-mask-check",
+  maskStyle: {
+    background: "var(--mask-bg)",
+    backdropFilter: "none",
+  },
 };
 
 const collapseProps: CollapseProps = {
@@ -421,9 +449,12 @@ const Example = () => {
       <Popover {...popoverProps}>
         <Button>pop</Button>
       </Popover>
-      <Modal open={false} title="Hidden" onClose={() => {}}>
+      <Modal {...modalProps} onClose={() => {}}>
         body
       </Modal>
+      <Drawer {...drawerProps} onClose={() => {}}>
+        drawer body
+      </Drawer>
       <Spin {...spinProps} data-testid="spin" />
       <Radio {...radioProps} data-testid="radio" />
       <RadioGroup {...radioGroupProps} data-testid="radio-group" />

@@ -16,6 +16,18 @@ import { Image, ImageGrid, SpriteImage, LayeredImage } from "@fangxinyan/lumina"
 <Image src={url} width={240} height={160} />
 ```
 
+### 预览遮罩
+
+全屏预览默认使用中性 --mask-bg,previewClassName / previewStyle 可单独控制预览蒙层。
+
+```tsx
+<Image
+  src={url}
+  previewClassName="asset-preview-mask"
+  previewStyle={{ background: "var(--mask-bg)", backdropFilter: "none" }}
+/>
+```
+
 ### 图标 / 原始资源
 
 variant="icon" 会默认去掉外层 padding,适合 1:1 装备、物品、头像缩略图；variant="raw" 保留原始图片比例。
@@ -68,6 +80,8 @@ LayeredImage 将多张图片叠在同一个盒子里,适合头像 + 头像框、
 | padding | `number | string` | — | 外层留白,raw/icon 默认 0 |
 | objectFit / objectPosition | `CSSProperties` | — | 底层 img 的 object-fit / object-position |
 | preview | `boolean` | `true` | 支持点击全屏预览 |
+| previewClassName | `string` | — | 预览蒙层 className |
+| previewStyle | `CSSProperties` | — | 预览蒙层内联样式 |
 | hover | `boolean` | `true` | 悬浮放大 |
 | placeholder | `ReactNode` | — | 占位/错误时内容 |
 | imgProps | `ImgHTMLAttributes` | — | 透传到底层 img 的属性 |

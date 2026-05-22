@@ -26,6 +26,7 @@
 | `--fg` | `#3a4558` | `#d8deeb` |
 | `--fg-muted` | `#7b8599` | `#8b94ab` |
 | `--fg-subtle` | `#9ca7ba` | `#5f6a82` |
+| `--mask-bg` | `color-mix(in oklch, black 18%, transparent)` | `color-mix(in oklch, black 55%, transparent)` |
 
 ### 强调 Accent
 当前主题色族（随 `data-accent` 变化）：

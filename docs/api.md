@@ -191,6 +191,8 @@ import { Button, Input, Modal, message } from "lumina";
 | `footer` | `ReactNode` | 自定义底部（不传时默认：取消 / 确定） |
 | `width` | `number \| string` | 宽度 |
 | `maskClosable` | `boolean` | 点击遮罩关闭，默认 true |
+| `maskClassName` | `string` | 遮罩层 className |
+| `maskStyle` | `CSSProperties` | 遮罩层内联样式 |
 | `escClosable` | `boolean` | Esc 关闭，默认 true |
 
 静态 API：
@@ -206,6 +208,8 @@ Modal.warning({ title: "容量不足", content: "请先清理缓存" });
 |---|---|---|
 | `placement` | `"left" \| "right" \| "top" \| "bottom"` | 方向 |
 | `size` | `number \| string` | 宽/高 |
+| `maskClassName` | `string` | 遮罩层 className |
+| `maskStyle` | `CSSProperties` | 遮罩层内联样式 |
 
 其余同 `Modal`。
 

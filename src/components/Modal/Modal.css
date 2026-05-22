@@ -2,7 +2,7 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: color-mix(in oklch, var(--bg-sunken) 60%, transparent);
+  background: var(--modal-mask-bg, var(--mask-bg));
   backdrop-filter: blur(8px);
   display: grid;
   place-items: center;

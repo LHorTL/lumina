@@ -27,6 +27,10 @@ export interface DrawerProps
   mask?: boolean;
   /** Close when clicking the mask. Default true. Ignored when `mask` is false. */
   maskClosable?: boolean;
+  /** Class name forwarded to the mask overlay. */
+  maskClassName?: string;
+  /** Inline style forwarded to the mask overlay. */
+  maskStyle?: React.CSSProperties;
   /** Close on Escape key. Default true. */
   keyboard?: boolean;
   /** Show the close (×) button in the header. Default true. */
@@ -60,6 +64,8 @@ export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(({
   children,
   mask = true,
   maskClosable = true,
+  maskClassName = "",
+  maskStyle,
   keyboard = true,
   closable = true,
   closeIcon,
@@ -102,13 +108,19 @@ export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(({
   const panelStyle: React.CSSProperties = isV ? { width: size } : { height: size };
   if (zIndex != null) panelStyle.zIndex = zIndex;
   Object.assign(panelStyle, style);
+  const overlayStyle: React.CSSProperties | undefined =
+    zIndex != null || maskStyle
+      ? { ...maskStyle, ...(zIndex != null ? { zIndex: zIndex - 1 } : {}) }
+      : undefined;
 
   return ReactDOM.createPortal(
     <>
       {mask && (
         <div
-          className={`drawer-overlay ${open ? "" : "hidden"}`}
-          style={zIndex != null ? { zIndex: zIndex - 1 } : undefined}
+          className={["drawer-overlay", open ? "" : "hidden", maskClassName]
+            .filter(Boolean)
+            .join(" ")}
+          style={overlayStyle}
           onClick={() => maskClosable && onClose?.()}
         />
       )}

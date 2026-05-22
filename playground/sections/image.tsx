@@ -5,67 +5,122 @@ import { Row } from "./_shared";
 import { defineSection, type SectionCtx } from "./_types";
 
 const SectionImage: React.FC<SectionCtx> = () => {
-  const mkSvg = (h1: number, h2: number) =>
-    `data:image/svg+xml;utf8,` +
-    encodeURIComponent(
-      `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'>
-      <defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
-        <stop offset='0' stop-color='hsl(${h1}, 60%, 72%)'/>
-        <stop offset='1' stop-color='hsl(${h2}, 55%, 58%)'/>
-      </linearGradient></defs>
-      <rect width='400' height='300' fill='url(%23g)'/>
-    </svg>`
+  const rng = (seed: number) => {
+    let value = seed >>> 0;
+    return () => {
+      value += 0x6d2b79f5;
+      let t = value;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  };
+  const hsl = (hue: number, sat = 72, light = 58) =>
+    `hsl(${Math.round(hue % 360)}, ${sat}%, ${light}%)`;
+  const mkSvg = (seed: number, label: string) => {
+    const rand = rng(seed);
+    const h1 = rand() * 360;
+    const h2 = h1 + 60 + rand() * 120;
+    const h3 = h1 + 180 + rand() * 100;
+    const circles = Array.from({ length: 5 }, (_, index) => {
+      const cx = Math.round(rand() * 420 - 10);
+      const cy = Math.round(rand() * 320 - 10);
+      const r = Math.round(28 + rand() * 86);
+      const opacity = (0.18 + rand() * 0.36).toFixed(2);
+      return `<circle cx='${cx}' cy='${cy}' r='${r}' fill='${hsl(h3 + index * 34, 84, 68)}' opacity='${opacity}'/>`;
+    }).join("");
+    const bars = Array.from({ length: 4 }, (_, index) => {
+      const x = Math.round(rand() * 360 - 40);
+      const y = Math.round(rand() * 250 - 20);
+      const width = Math.round(110 + rand() * 180);
+      const height = Math.round(18 + rand() * 42);
+      const rotate = Math.round(-24 + rand() * 48);
+      return `<rect x='${x}' y='${y}' width='${width}' height='${height}' rx='${Math.round(height / 2)}' fill='white' opacity='${(0.14 + rand() * 0.2).toFixed(2)}' transform='rotate(${rotate} 200 150)'/>`;
+    }).join("");
+    return (
+      `data:image/svg+xml;utf8,` +
+      encodeURIComponent(
+        `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'>
+          <defs>
+            <linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
+              <stop offset='0' stop-color='${hsl(h1, 86, 70)}'/>
+              <stop offset='0.54' stop-color='${hsl(h2, 74, 58)}'/>
+              <stop offset='1' stop-color='${hsl(h3, 68, 46)}'/>
+            </linearGradient>
+            <radialGradient id='r' cx='22%' cy='18%' r='70%'>
+              <stop offset='0' stop-color='rgba(255,255,255,.78)'/>
+              <stop offset='1' stop-color='rgba(255,255,255,0)'/>
+            </radialGradient>
+          </defs>
+          <rect width='400' height='300' fill='url(%23g)'/>
+          <rect width='400' height='300' fill='url(%23r)'/>
+          ${circles}
+          ${bars}
+          <path d='M0 238 C82 196 146 308 226 250 C292 202 330 210 400 166 L400 300 L0 300 Z' fill='rgba(0,0,0,.18)'/>
+          <text x='24' y='270' font-size='23' font-family='ui-sans-serif, system-ui, sans-serif' font-weight='800' fill='rgba(255,255,255,.88)' letter-spacing='3'>${label}</text>
+        </svg>`
+      )
     );
-  const images = [
-    { src: mkSvg(210, 260), alt: "Image 1" },
-    { src: mkSvg(30, 80), alt: "Image 2" },
-    { src: mkSvg(140, 180), alt: "Image 3" },
-    { src: mkSvg(340, 20), alt: "Image 4" },
-    { src: mkSvg(90, 140), alt: "Image 5" },
-    { src: mkSvg(280, 320), alt: "Image 6" },
-  ];
-  const mkIconSvg = (h: number, mark: string) =>
-    `data:image/svg+xml;utf8,` +
-    encodeURIComponent(
-      `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'>
-        <defs>
-          <linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
-            <stop offset='0' stop-color='hsl(${h}, 76%, 72%)'/>
-            <stop offset='1' stop-color='hsl(${h + 42}, 70%, 48%)'/>
-          </linearGradient>
-        </defs>
-        <rect x='5' y='5' width='54' height='54' rx='14' fill='url(%23g)'/>
-        <text x='32' y='40' font-size='24' text-anchor='middle' font-family='Arial' font-weight='700' fill='white'>${mark}</text>
-      </svg>`
+  };
+  const images = Array.from({ length: 6 }, (_, index) => ({
+    src: mkSvg(4200 + index * 37, `FAKE ${index + 1}`),
+    alt: `Random color image ${index + 1}`,
+  }));
+  const mkIconSvg = (seed: number, mark: string) => {
+    const rand = rng(seed);
+    const h1 = rand() * 360;
+    const h2 = h1 + 80 + rand() * 100;
+    return (
+      `data:image/svg+xml;utf8,` +
+      encodeURIComponent(
+        `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'>
+          <defs>
+            <linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
+              <stop offset='0' stop-color='${hsl(h1, 88, 72)}'/>
+              <stop offset='1' stop-color='${hsl(h2, 78, 48)}'/>
+            </linearGradient>
+          </defs>
+          <rect x='5' y='5' width='54' height='54' rx='15' fill='url(%23g)'/>
+          <circle cx='18' cy='18' r='13' fill='rgba(255,255,255,.22)'/>
+          <path d='M46 8 L59 34 L36 59 L14 46 Z' fill='rgba(0,0,0,.14)'/>
+          <text x='32' y='40' font-size='24' text-anchor='middle' font-family='Arial' font-weight='700' fill='white'>${mark}</text>
+        </svg>`
+      )
     );
-  const iconUrls = [mkIconSvg(14, "A"), mkIconSvg(150, "B"), mkIconSvg(220, "C")];
-  const spriteSheet =
-    `data:image/svg+xml;utf8,` +
-    encodeURIComponent(
-      `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 32'>
-        <rect width='32' height='32' fill='hsl(18, 78%, 58%)'/>
-        <rect x='32' width='32' height='32' fill='hsl(154, 58%, 46%)'/>
-        <rect x='64' width='32' height='32' fill='hsl(216, 66%, 56%)'/>
-        <path d='M16 7l3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z' fill='white'/>
-        <circle cx='48' cy='16' r='9' fill='white'/>
-        <path d='M72 8h16v16H72z' fill='white'/>
-      </svg>`
+  };
+  const iconUrls = [mkIconSvg(710, "A"), mkIconSvg(880, "B"), mkIconSvg(990, "C")];
+  const spriteSheet = (() => {
+    const marks = ["*", "o", "#"];
+    const tiles = marks
+      .map((mark, index) => {
+        const rand = rng(1200 + index * 91);
+        const h1 = rand() * 360;
+        const h2 = h1 + 96 + rand() * 80;
+        const x = index * 32;
+        return `
+          <defs>
+            <linearGradient id='tile-${index}' x1='0' y1='0' x2='1' y2='1'>
+              <stop offset='0' stop-color='${hsl(h1, 82, 68)}'/>
+              <stop offset='1' stop-color='${hsl(h2, 72, 48)}'/>
+            </linearGradient>
+          </defs>
+          <rect x='${x}' width='32' height='32' fill='url(%23tile-${index})'/>
+          <circle cx='${x + 10}' cy='9' r='9' fill='rgba(255,255,255,.2)'/>
+          <text x='${x + 16}' y='22' font-size='15' text-anchor='middle' font-family='Arial' font-weight='700' fill='white'>${mark}</text>`;
+      })
+      .join("");
+    return (
+      `data:image/svg+xml;utf8,` +
+      encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 32'>${tiles}</svg>`)
     );
-  const headUrl =
-    `data:image/svg+xml;utf8,` +
-    encodeURIComponent(
-      `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'>
-        <defs><linearGradient id='h' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='hsl(210, 76%, 72%)'/><stop offset='1' stop-color='hsl(260, 62%, 48%)'/></linearGradient></defs>
-        <circle cx='40' cy='40' r='32' fill='url(%23h)'/>
-        <circle cx='30' cy='33' r='4' fill='white'/><circle cx='50' cy='33' r='4' fill='white'/>
-        <path d='M28 50c7 6 17 6 24 0' stroke='white' stroke-width='5' fill='none' stroke-linecap='round'/>
-      </svg>`
-    );
+  })();
+  const headUrl = mkSvg(1808, "AVTR");
   const frameUrl =
     `data:image/svg+xml;utf8,` +
     encodeURIComponent(
       `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'>
-        <circle cx='40' cy='40' r='36' fill='none' stroke='hsl(43, 88%, 62%)' stroke-width='7'/>
+        <defs><linearGradient id='f' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='${hsl(44, 92, 66)}'/><stop offset='1' stop-color='${hsl(322, 74, 58)}'/></linearGradient></defs>
+        <circle cx='40' cy='40' r='36' fill='none' stroke='url(%23f)' stroke-width='7'/>
         <circle cx='40' cy='40' r='27' fill='none' stroke='rgba(255,255,255,.75)' stroke-width='2'/>
       </svg>`
     );
@@ -83,6 +138,26 @@ const SectionImage: React.FC<SectionCtx> = () => {
               <Image width={160} height={160} placeholder={<Icon name="image" size={28} />} />
               <Image src="https://broken.fake" width={160} height={160} />
             </Row>
+          ),
+        },
+        {
+          id: "preview-mask",
+          title: "预览遮罩",
+          description: "全屏预览默认使用中性 --mask-bg,previewClassName / previewStyle 可单独控制预览蒙层。",
+          code: `<Image
+  src={url}
+  previewClassName="asset-preview-mask"
+  previewStyle={{ background: "var(--mask-bg)", backdropFilter: "none" }}
+/>`,
+          render: () => (
+            <Image
+              src={images[2].src}
+              alt="preview mask"
+              width={240}
+              height={160}
+              previewClassName="demo-image-preview-mask"
+              previewStyle={{ background: "var(--mask-bg)", backdropFilter: "none" }}
+            />
           ),
         },
         {
@@ -194,6 +269,8 @@ const SectionImage: React.FC<SectionCtx> = () => {
             { prop: "padding", description: "外层留白,raw/icon 默认 0", type: "number | string" },
             { prop: "objectFit / objectPosition", description: "底层 img 的 object-fit / object-position", type: "CSSProperties" },
             { prop: "preview", description: "支持点击全屏预览", type: "boolean", default: "true" },
+            { prop: "previewClassName", description: "预览蒙层 className", type: "string" },
+            { prop: "previewStyle", description: "预览蒙层内联样式", type: "CSSProperties" },
             { prop: "hover", description: "悬浮放大", type: "boolean", default: "true" },
             { prop: "placeholder", description: "占位/错误时内容", type: "ReactNode" },
             { prop: "imgProps", description: "透传到底层 img 的属性", type: "ImgHTMLAttributes" },

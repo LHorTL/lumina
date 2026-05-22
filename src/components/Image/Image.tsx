@@ -24,6 +24,10 @@ export interface ImageProps extends React.HTMLAttributes<HTMLDivElement> {
   objectPosition?: React.CSSProperties["objectPosition"];
   /** Allow click-to-zoom preview overlay. */
   preview?: boolean;
+  /** Class name forwarded to the full-screen preview overlay. */
+  previewClassName?: string;
+  /** Inline style forwarded to the full-screen preview overlay. */
+  previewStyle?: React.CSSProperties;
   /** Hover scale-up. */
   hover?: boolean;
   /** Custom placeholder while loading or on error. */
@@ -51,6 +55,8 @@ export const Image = React.forwardRef<HTMLDivElement, ImageProps>(({
   objectFit,
   objectPosition,
   preview,
+  previewClassName = "",
+  previewStyle,
   hover = true,
   placeholder,
   imgProps,
@@ -138,7 +144,11 @@ export const Image = React.forwardRef<HTMLDivElement, ImageProps>(({
       {open &&
         typeof document !== "undefined" &&
         ReactDOM.createPortal(
-          <div className="image-preview-overlay" onClick={() => setOpen(false)}>
+          <div
+            className={["image-preview-overlay", previewClassName].filter(Boolean).join(" ")}
+            style={previewStyle}
+            onClick={() => setOpen(false)}
+          >
             <img src={src} alt={alt} onClick={(e) => e.stopPropagation()} />
           </div>,
           document.body

@@ -144,6 +144,32 @@ const SectionDrawer: React.FC<SectionCtx> = () => {
             );
           },
         },
+        {
+          id: "mask-style",
+          title: "遮罩定制",
+          description: "默认遮罩使用中性 --mask-bg,不跟随 --bg-sunken 的色相;maskClassName / maskStyle 可定制遮罩层。",
+          code: `<Drawer
+  maskClassName="settings-drawer-mask"
+  maskStyle={{ background: "var(--mask-bg)", backdropFilter: "none" }}
+/>`,
+          render: () => {
+            const [open, setOpen] = React.useState(false);
+            return (
+              <>
+                <Button onClick={() => setOpen(true)}>中性遮罩抽屉</Button>
+                <Drawer
+                  open={open}
+                  onClose={() => setOpen(false)}
+                  title="遮罩不跟随凹陷背景"
+                  maskClassName="demo-drawer-mask"
+                  maskStyle={{ background: "var(--mask-bg)", backdropFilter: "none" }}
+                >
+                  抽屉遮罩和 Modal 使用同一套中性 mask token。
+                </Drawer>
+              </>
+            );
+          },
+        },
       ]}
       api={[
         {
@@ -157,6 +183,8 @@ const SectionDrawer: React.FC<SectionCtx> = () => {
             { prop: "extra", description: "标题右侧的附加操作区", type: "ReactNode" },
             { prop: "mask", description: "是否渲染遮罩", type: "boolean", default: "true" },
             { prop: "maskClosable", description: "点击遮罩关闭", type: "boolean", default: "true" },
+            { prop: "maskClassName", description: "遮罩层 className", type: "string" },
+            { prop: "maskStyle", description: "遮罩层内联样式", type: "CSSProperties" },
             { prop: "keyboard", description: "Esc 关闭", type: "boolean", default: "true" },
             { prop: "closable", description: "右上角 ×", type: "boolean", default: "true" },
             { prop: "closeIcon", description: "自定义关闭图标", type: "ReactNode" },

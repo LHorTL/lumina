@@ -44,6 +44,17 @@ placement 控制滑出方向;top / bottom 用 size 控高度。
 <Drawer mask={false} />
 ```
 
+### 遮罩定制
+
+默认遮罩使用中性 --mask-bg,不跟随 --bg-sunken 的色相;maskClassName / maskStyle 可定制遮罩层。
+
+```tsx
+<Drawer
+  maskClassName="settings-drawer-mask"
+  maskStyle={{ background: "var(--mask-bg)", backdropFilter: "none" }}
+/>
+```
+
 ## API
 
 **Drawer**
@@ -58,6 +69,8 @@ placement 控制滑出方向;top / bottom 用 size 控高度。
 | extra | `ReactNode` | — | 标题右侧的附加操作区 |
 | mask | `boolean` | `true` | 是否渲染遮罩 |
 | maskClosable | `boolean` | `true` | 点击遮罩关闭 |
+| maskClassName | `string` | — | 遮罩层 className |
+| maskStyle | `CSSProperties` | — | 遮罩层内联样式 |
 | keyboard | `boolean` | `true` | Esc 关闭 |
 | closable | `boolean` | `true` | 右上角 × |
 | closeIcon | `ReactNode` | — | 自定义关闭图标 |

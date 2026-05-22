@@ -41,6 +41,10 @@ export interface ModalProps
   closeIcon?: React.ReactNode;
   /** Close when clicking the mask. Default true. */
   maskClosable?: boolean;
+  /** Class name forwarded to the mask overlay. */
+  maskClassName?: string;
+  /** Inline style forwarded to the mask overlay. */
+  maskStyle?: React.CSSProperties;
   /** Close on Escape key. Default true. */
   escClosable?: boolean;
   /** Label for the default OK button. */
@@ -130,6 +134,8 @@ const ModalBase = React.forwardRef<HTMLDivElement, ModalProps>(({
   closable = true,
   closeIcon,
   maskClosable = true,
+  maskClassName = "",
+  maskStyle,
   escClosable = true,
   okText = "确定",
   cancelText = "取消",
@@ -183,7 +189,9 @@ const ModalBase = React.forwardRef<HTMLDivElement, ModalProps>(({
   if (!open && destroyOnClose) return null;
 
   const overlayStyle: React.CSSProperties | undefined =
-    zIndex != null ? { zIndex } : undefined;
+    zIndex != null || maskStyle
+      ? { ...maskStyle, ...(zIndex != null ? { zIndex } : {}) }
+      : undefined;
 
   const defaultFooter = (
     <>
@@ -205,7 +213,9 @@ const ModalBase = React.forwardRef<HTMLDivElement, ModalProps>(({
 
   return ReactDOM.createPortal(
     <div
-      className={`modal-overlay ${open ? "" : "hidden"} ${className}`}
+      className={["modal-overlay", open ? "" : "hidden", className, maskClassName]
+        .filter(Boolean)
+        .join(" ")}
       style={overlayStyle}
       onClick={() => maskClosable && handleCancel()}
       role="presentation"

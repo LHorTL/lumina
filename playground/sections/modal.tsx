@@ -76,6 +76,33 @@ Modal.warning({ title: "容量不足", content: "请先清理缓存。" });`,
           ),
         },
         {
+          id: "mask-style",
+          title: "遮罩定制",
+          description: "默认遮罩使用中性 --mask-bg,不跟随 --bg-sunken 的色相;maskClassName / maskStyle 可定制遮罩层。",
+          code: `<Modal
+  maskClassName="settings-mask"
+  maskStyle={{ background: "var(--mask-bg)", backdropFilter: "none" }}
+/>`,
+          render: () => {
+            const [open, setOpen] = React.useState(false);
+            return (
+              <>
+                <Button onClick={() => setOpen(true)}>中性遮罩</Button>
+                <Modal
+                  open={open}
+                  onClose={() => setOpen(false)}
+                  title="遮罩不跟随凹陷背景"
+                  description="适合自定义主题里 --bg-sunken 带明显色相的场景。"
+                  maskClassName="demo-modal-mask"
+                  maskStyle={{ background: "var(--mask-bg)", backdropFilter: "none" }}
+                >
+                  遮罩层可用 maskStyle 单独控制,不用在业务侧覆盖 .modal-overlay。
+                </Modal>
+              </>
+            );
+          },
+        },
+        {
           id: "confirm",
           title: "确认操作 (footer 自定义)",
           description: "用 footer 自定义底部按钮。传 null 可以去掉 footer。",
@@ -275,6 +302,8 @@ Modal.warning({ title: "容量不足", content: "请先清理缓存。" });`,
             { prop: "closable", description: "显示右上角 ×", type: "boolean", default: "true" },
             { prop: "closeIcon", description: "自定义关闭图标", type: "ReactNode" },
             { prop: "maskClosable", description: "点击遮罩关闭", type: "boolean", default: "true" },
+            { prop: "maskClassName", description: "遮罩层 className", type: "string" },
+            { prop: "maskStyle", description: "遮罩层内联样式", type: "CSSProperties" },
             { prop: "escClosable", description: "Esc 关闭", type: "boolean", default: "true" },
             { prop: "width", description: "宽度", type: "number | string", default: "440" },
             { prop: "destroyOnClose", description: "关闭时卸载子树", type: "boolean", default: "false" },

@@ -114,7 +114,7 @@
 .n-image:hover .image-hint { opacity: 1; transform: translateY(0); }
 .image-preview-overlay {
   position: fixed; inset: 0;
-  background: color-mix(in oklch, var(--bg-sunken) 82%, transparent);
+  background: var(--image-preview-mask-bg, var(--mask-bg));
   backdrop-filter: blur(16px);
   display: grid; place-items: center;
   z-index: 500;

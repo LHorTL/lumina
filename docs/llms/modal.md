@@ -34,6 +34,17 @@ Modal.confirm({
 Modal.warning({ title: "容量不足", content: "请先清理缓存。" });
 ```
 
+### 遮罩定制
+
+默认遮罩使用中性 --mask-bg,不跟随 --bg-sunken 的色相;maskClassName / maskStyle 可定制遮罩层。
+
+```tsx
+<Modal
+  maskClassName="settings-mask"
+  maskStyle={{ background: "var(--mask-bg)", backdropFilter: "none" }}
+/>
+```
+
 ### 确认操作 (footer 自定义)
 
 用 footer 自定义底部按钮。传 null 可以去掉 footer。
@@ -115,6 +126,8 @@ bodyClassName / bodyStyle / bodyProps 可直接作用到正文容器；bodyOverf
 | closable | `boolean` | `true` | 显示右上角 × |
 | closeIcon | `ReactNode` | — | 自定义关闭图标 |
 | maskClosable | `boolean` | `true` | 点击遮罩关闭 |
+| maskClassName | `string` | — | 遮罩层 className |
+| maskStyle | `CSSProperties` | — | 遮罩层内联样式 |
 | escClosable | `boolean` | `true` | Esc 关闭 |
 | width | `number | string` | `440` | 宽度 |
 | destroyOnClose | `boolean` | `false` | 关闭时卸载子树 |

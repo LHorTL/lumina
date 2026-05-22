@@ -2,7 +2,7 @@
 .drawer-overlay {
   position: fixed;
   inset: 0;
-  background: color-mix(in oklch, var(--bg-sunken) 50%, transparent);
+  background: var(--drawer-mask-bg, var(--mask-bg));
   backdrop-filter: blur(4px);
   z-index: 150;
   animation: fadeIn var(--dur) var(--ease);

@@ -13,6 +13,7 @@
   --fg-subtle: #9ca7ba;
   --border: rgba(130, 148, 175, 0.14);
   --divider: rgba(130, 148, 175, 0.18);
+  --mask-bg: color-mix(in oklch, black 18%, transparent);
 
   /* ---- Shadows ---- */
   --shadow-dark: rgba(163, 177, 198, 0.55);
@@ -139,6 +140,7 @@
   --fg-subtle: #9ca7ba;
   --border: rgba(130, 148, 175, 0.14);
   --divider: rgba(130, 148, 175, 0.18);
+  --mask-bg: color-mix(in oklch, black 18%, transparent);
   --shadow-dark: rgba(163, 177, 198, 0.55);
   --shadow-light: rgba(255, 255, 255, 0.95);
   --shadow-offset: calc(6px * var(--d) * var(--shadow-scale));
@@ -161,6 +163,7 @@
   --fg-subtle: #5f6a82;
   --border: rgba(0, 0, 0, 0.35);
   --divider: rgba(255, 255, 255, 0.06);
+  --mask-bg: color-mix(in oklch, black 55%, transparent);
   /* 强 dark shadow 提供深度;light 高光几乎不可见,去掉白圈效果 */
   --shadow-dark: rgba(0, 0, 0, 0.55);
   --shadow-light: rgba(130, 145, 180, 0.06);
