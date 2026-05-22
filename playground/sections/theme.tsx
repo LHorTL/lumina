@@ -274,7 +274,7 @@ function Root() {
       accent="violet"      // 预设 或 自定义颜色
       themes={{ graphite: { base: "dark", tokens: {} } }}
       density="comfortable"
-      intensity={5}        // 1..10 阴影强度
+      intensity={5}        // 0..20 阴影强度
       radius={20}          // 圆角基准 px
       font="sf"            // 字体预设
       storageKey="app:theme"   // 持久化到 localStorage
@@ -432,12 +432,12 @@ applyTheme(document.documentElement, {
           { prop: "colorScheme", description: "自定义模式使用的 light/dark 基底", type: `"light" | "dark"`, default: `"light"` },
           { prop: "accent", description: "强调色,预设或自定义", type: "AccentKey | CustomAccentInput", default: `"sky"` },
           { prop: "density", description: "密度", type: `"compact" | "comfortable" | "spacious"`, default: `"comfortable"` },
-          { prop: "intensity", description: "阴影强度 1-10", type: "number", default: "5" },
+          { prop: "intensity", description: "阴影强度;ThemePanel 默认调节范围 0-20", type: "number", default: "5" },
           { prop: "radius", description: "圆角基准 px", type: "number", default: "20" },
           { prop: "font", description: "字体预设或 CSS 栈", type: "FontConfig", default: `"sf"` },
           {
             prop: "tokens",
-            description: "任意 CSS 变量覆写;推荐用语义阴影 token 和 shadow-scale / shadow-float-scale 控制阴影系统",
+            description: "任意 CSS 变量覆写;推荐用语义阴影 token 和 shadow-scale(0.2-3) / shadow-float-scale(0.2-4) 控制阴影系统",
             type: "Record<string, string>",
           },
           { prop: "themes", description: "命名自定义模式 preset", type: "Record<string, ThemePreset>" },

@@ -24,7 +24,7 @@ function Root() {
       accent="violet"      // 预设 或 自定义颜色
       themes={{ graphite: { base: "dark", tokens: {} } }}
       density="comfortable"
-      intensity={5}        // 1..10 阴影强度
+      intensity={5}        // 0..20 阴影强度
       radius={20}          // 圆角基准 px
       font="sf"            // 字体预设
       storageKey="app:theme"   // 持久化到 localStorage
@@ -189,10 +189,10 @@ applyTheme(document.documentElement, {
 | colorScheme | `"light" | "dark"` | `"light"` | 自定义模式使用的 light/dark 基底 |
 | accent | `AccentKey | CustomAccentInput` | `"sky"` | 强调色,预设或自定义 |
 | density | `"compact" | "comfortable" | "spacious"` | `"comfortable"` | 密度 |
-| intensity | `number` | `5` | 阴影强度 1-10 |
+| intensity | `number` | `5` | 阴影强度;ThemePanel 默认调节范围 0-20 |
 | radius | `number` | `20` | 圆角基准 px |
 | font | `FontConfig` | `"sf"` | 字体预设或 CSS 栈 |
-| tokens | `Record<string, string>` | — | 任意 CSS 变量覆写;推荐用语义阴影 token 和 shadow-scale / shadow-float-scale 控制阴影系统 |
+| tokens | `Record<string, string>` | — | 任意 CSS 变量覆写;推荐用语义阴影 token 和 shadow-scale(0.2-3) / shadow-float-scale(0.2-4) 控制阴影系统 |
 | themes | `Record<string, ThemePreset>` | — | 命名自定义模式 preset |
 | ThemePreset.label / description | `string` | — | 可选展示元信息;ThemePanel 会读取它作为卡片标题和说明 |
 | target | `"root" | "scope"` | `"root"` | 应用到根还是局部 |

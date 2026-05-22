@@ -154,6 +154,7 @@ type ThemeTokenKey = (typeof THEME_TOKEN_KEYS)[number];
 type AccentPaletteKey = keyof AccentPalette;
 type ThemeCreateMode = "simple" | "advanced";
 type AdvancedFontMode = "preset" | "custom";
+type NumericRange = { min: number; max: number; step: number };
 
 const DEFAULT_SECTIONS: ThemePanelSection[] = [
   "mode",
@@ -219,6 +220,16 @@ const ACCENT_PALETTE_FIELDS: { key: AccentPaletteKey; label: string }[] = [
   { key: "soft", label: "柔和底" },
   { key: "glow", label: "光晕" },
 ];
+
+const THEME_PANEL_RANGES: Record<"intensity" | "radius" | "shadowScale" | "shadowFloatScale", NumericRange> = {
+  intensity: { min: 0, max: 20, step: 1 },
+  radius: { min: 0, max: 64, step: 2 },
+  shadowScale: { min: 0.2, max: 3, step: 0.05 },
+  shadowFloatScale: { min: 0.2, max: 4, step: 0.05 },
+};
+
+const getShadowScaleRange = (key: ShadowTokenKey) =>
+  key === "shadow-float-scale" ? THEME_PANEL_RANGES.shadowFloatScale : THEME_PANEL_RANGES.shadowScale;
 
 function accentFromPreset(preset: ThemePreset | undefined): string {
   const accent = preset?.accent ?? "sky";
@@ -483,9 +494,13 @@ function tokenPickerValue(value: string | undefined, fallback: string): string {
   return cssColorToHex(value ?? fallback, fallback);
 }
 
-function parseScaleToken(value: string | undefined, fallback = 1): number {
+function parseScaleToken(
+  value: string | undefined,
+  fallback = 1,
+  range = THEME_PANEL_RANGES.shadowScale
+): number {
   const parsed = Number.parseFloat(value ?? "");
-  return Number.isFinite(parsed) ? Math.min(2, Math.max(0.2, parsed)) : fallback;
+  return Number.isFinite(parsed) ? Math.min(range.max, Math.max(range.min, parsed)) : fallback;
 }
 
 function formatScaleToken(value: number): string {
@@ -1027,10 +1042,14 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
       .filter(Boolean)
       .join(" ");
     const shadowScale = parseScaleToken(
-      theme.tokens["shadow-scale"] ?? readCssVar(rootRef.current, "--shadow-scale", "1")
+      theme.tokens["shadow-scale"] ?? readCssVar(rootRef.current, "--shadow-scale", "1"),
+      1,
+      THEME_PANEL_RANGES.shadowScale
     );
     const shadowFloatScale = parseScaleToken(
-      theme.tokens["shadow-float-scale"] ?? readCssVar(rootRef.current, "--shadow-float-scale", "1")
+      theme.tokens["shadow-float-scale"] ?? readCssVar(rootRef.current, "--shadow-float-scale", "1"),
+      1,
+      THEME_PANEL_RANGES.shadowFloatScale
     );
     const updateThemeToken = (key: ShadowTokenKey, value: string) => {
       theme.setTokens({ ...theme.tokens, [key]: value });
@@ -1168,11 +1187,11 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
                       onValueChange={(value) => onTokenChange(field.key, value || "1")}
                     />
                     <Slider
-                      value={parseScaleToken(tokens[field.key])}
+                      value={parseScaleToken(tokens[field.key], 1, getShadowScaleRange(field.key))}
                       onChange={(value) => onTokenChange(field.key, formatScaleToken(value))}
-                      min={0.6}
-                      max={field.key === "shadow-float-scale" ? 1.8 : 1.6}
-                      step={0.05}
+                      min={getShadowScaleRange(field.key).min}
+                      max={getShadowScaleRange(field.key).max}
+                      step={getShadowScaleRange(field.key).step}
                     />
                   </span>
                 </div>
@@ -1367,12 +1386,24 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
                     <span>阴影强度</span>
                     <span>{draftIntensity}</span>
                   </div>
-                  <Slider value={draftIntensity} onChange={setDraftIntensity} min={1} max={10} step={1} />
+                  <Slider
+                    value={draftIntensity}
+                    onChange={setDraftIntensity}
+                    min={THEME_PANEL_RANGES.intensity.min}
+                    max={THEME_PANEL_RANGES.intensity.max}
+                    step={THEME_PANEL_RANGES.intensity.step}
+                  />
                   <div className="theme-panel-label">
                     <span>圆角</span>
                     <span>{draftRadius}px</span>
                   </div>
-                  <Slider value={draftRadius} onChange={setDraftRadius} min={8} max={36} step={2} />
+                  <Slider
+                    value={draftRadius}
+                    onChange={setDraftRadius}
+                    min={THEME_PANEL_RANGES.radius.min}
+                    max={THEME_PANEL_RANGES.radius.max}
+                    step={THEME_PANEL_RANGES.radius.step}
+                  />
                 </div>
                 <div className="theme-panel-create-field">
                   <span>密度</span>
@@ -1483,7 +1514,13 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
               <span>阴影强度</span>
               <span>{theme.intensity}</span>
             </div>
-            <Slider value={theme.intensity} onChange={theme.setIntensity} min={1} max={10} step={1} />
+            <Slider
+              value={theme.intensity}
+              onChange={theme.setIntensity}
+              min={THEME_PANEL_RANGES.intensity.min}
+              max={THEME_PANEL_RANGES.intensity.max}
+              step={THEME_PANEL_RANGES.intensity.step}
+            />
             <div className="theme-panel-label">
               <span>阴影扩散</span>
               <span>{formatScaleToken(shadowScale)}x</span>
@@ -1491,9 +1528,9 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
             <Slider
               value={shadowScale}
               onChange={(value) => updateThemeToken("shadow-scale", formatScaleToken(value))}
-              min={0.6}
-              max={1.6}
-              step={0.05}
+              min={THEME_PANEL_RANGES.shadowScale.min}
+              max={THEME_PANEL_RANGES.shadowScale.max}
+              step={THEME_PANEL_RANGES.shadowScale.step}
             />
             <div className="theme-panel-label">
               <span>浮层深度</span>
@@ -1502,9 +1539,9 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
             <Slider
               value={shadowFloatScale}
               onChange={(value) => updateThemeToken("shadow-float-scale", formatScaleToken(value))}
-              min={0.6}
-              max={1.8}
-              step={0.05}
+              min={THEME_PANEL_RANGES.shadowFloatScale.min}
+              max={THEME_PANEL_RANGES.shadowFloatScale.max}
+              step={THEME_PANEL_RANGES.shadowFloatScale.step}
             />
           </div>
         )}
@@ -1515,7 +1552,13 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
               <span>阴影</span>
               <span>{theme.intensity}</span>
             </div>
-            <Slider value={theme.intensity} onChange={theme.setIntensity} min={1} max={10} step={1} />
+            <Slider
+              value={theme.intensity}
+              onChange={theme.setIntensity}
+              min={THEME_PANEL_RANGES.intensity.min}
+              max={THEME_PANEL_RANGES.intensity.max}
+              step={THEME_PANEL_RANGES.intensity.step}
+            />
           </div>
         )}
 
@@ -1525,7 +1568,13 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
               <span>圆角</span>
               <span>{theme.radius}px</span>
             </div>
-            <Slider value={theme.radius} onChange={theme.setRadius} min={8} max={36} step={2} />
+            <Slider
+              value={theme.radius}
+              onChange={theme.setRadius}
+              min={THEME_PANEL_RANGES.radius.min}
+              max={THEME_PANEL_RANGES.radius.max}
+              step={THEME_PANEL_RANGES.radius.step}
+            />
           </div>
         )}
 

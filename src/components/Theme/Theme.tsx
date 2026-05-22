@@ -75,7 +75,7 @@ export interface ThemeConfig {
   colorScheme?: ThemeBaseMode;
   accent?: AccentKey | CustomAccentInput;
   density?: DensityMode;
-  /** Shadow strength, 1..10. Maps to `--d` (0.4..1.6). */
+  /** Shadow strength. ThemePanel exposes 0..20, mapping to `--d` (0.4..2.8). */
   intensity?: number;
   /** Base radius in px — generates the full `--r-*` scale. */
   radius?: number;
@@ -381,7 +381,7 @@ export function applyTheme(target: HTMLElement, config: ThemeConfig): void {
   target.style.setProperty("--accent-soft", palette.soft);
   target.style.setProperty("--accent-glow", palette.glow);
 
-  // Shadow intensity (1..10 → 0.4..1.6)
+  // Shadow intensity. ThemePanel exposes 0..20 → 0.4..2.8; callers may still pass custom values.
   const intensity = cfg.intensity ?? DEFAULT_CONFIG.intensity;
   target.style.setProperty("--d", String(0.4 + intensity * 0.12));
   applyShadowTokens(target, colorScheme);

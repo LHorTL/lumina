@@ -67,12 +67,13 @@
 
 ### 强度调节
 
-通过 `--d` 乘数统一缩放,也可以用 `--shadow-scale` / `--shadow-float-scale` 做主题级微调：
+通过 `--d` 乘数统一缩放,也可以用 `--shadow-scale` / `--shadow-float-scale` 做主题级微调。ThemePanel 默认把阴影强度开放到 `0-20`,把 `--shadow-scale` 开放到 `0.2-3`,把 `--shadow-float-scale` 开放到 `0.2-4`：
 
 ```css
 .app { --d: 0.8; }  /* 更柔和 */
 .app { --d: 1.2; }  /* 更夸张 */
 .app { --shadow-scale: 0.9; --shadow-float-scale: 1.15; }
+.app { --shadow-scale: 2.4; --shadow-float-scale: 3.2; } /* 更强实验范围 */
 ```
 
 ## 圆角 Radius

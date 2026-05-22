@@ -18,7 +18,7 @@
   --shadow-dark: rgba(163, 177, 198, 0.55);
   --shadow-light: rgba(255, 255, 255, 0.95);
 
-  /* Distance multiplier — driven by ThemeProvider `intensity` (1..10 → 0.4..1.6). */
+  /* Distance multiplier — driven by ThemeProvider `intensity` (ThemePanel: 0..20 → 0.4..2.8). */
   --d: 1;
   --shadow-scale: 1;
   --shadow-float-scale: 1;
