@@ -8,7 +8,7 @@ const SectionCalendar: React.FC<SectionCtx> = () => {
   const [workDate, setWorkDate] = React.useState<Date>(new Date());
   return (
     <DocPage
-      whenToUse={<p>查看与选择日期。</p>}
+      whenToUse={<p>查看与选择日期。标题里的年份和月份可直接点击,用于快速切换年份或月份。</p>}
       demos={[
         {
           id: "basic",
@@ -30,7 +30,7 @@ const SectionCalendar: React.FC<SectionCtx> = () => {
                 >
                   {date.toISOString().slice(0, 10)}
                 </div>
-                <div style={{ color: "var(--fg-muted)", fontSize: 13 }}>点击日期切换。</div>
+                <div style={{ color: "var(--fg-muted)", fontSize: 13 }}>点击年份或月份可快速切换视图。</div>
               </div>
             </div>
           ),
@@ -75,6 +75,7 @@ const SectionCalendar: React.FC<SectionCtx> = () => {
           title: "Calendar",
           rows: [
             { prop: "value / defaultValue", description: "受控/初始日期", type: "Date" },
+            { prop: "viewDate", description: "外部日期变化时同步可视月份", type: "Date" },
             { prop: "onChange", description: "选择回调", type: "(date: Date) => void" },
             { prop: "min / max", description: "可选范围", type: "Date" },
             {
@@ -96,6 +97,6 @@ export default defineSection({
   label: "Calendar 日历",
   eyebrow: "DATA DISPLAY",
   title: "Calendar 日历",
-  desc: "查看与选择日期。",
+  desc: "查看与选择日期,支持快速切换年份和月份。",
   Component: SectionCalendar,
 });

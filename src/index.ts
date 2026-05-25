@@ -26,7 +26,10 @@ export * from "./components/Alert";
 export * from "./components/Table";
 export * from "./components/TablePro";
 export * from "./components/Pagination";
+export * from "./components/DatePicker";
+export * from "./components/DateTimePicker";
 export * from "./components/Calendar";
+export * from "./components/TimePicker";
 export * from "./components/List";
 export * from "./components/AppShell";
 export * from "./components/StatusBar";
@@ -49,4 +52,4 @@ export * from "./components/ThemePanel";
 export * from "./components/Timeline";
 
 /** Package version — bumped by release scripts. */
-export const VERSION = "0.6.14";
+export const VERSION = "0.6.15";

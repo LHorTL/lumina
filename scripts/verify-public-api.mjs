@@ -54,6 +54,8 @@ import {
   Badge,
   Collapse,
   Cascader,
+  DatePicker,
+  DateTimePicker,
   Drawer,
   Input,
   Image,
@@ -73,6 +75,7 @@ import {
   Textarea,
   TextArea,
   ThemePanel,
+  TimePicker,
   THEME_PANEL_DEFAULT_PRESET_OPTIONS,
   THEME_PANEL_DEFAULT_THEME_PRESETS,
   Tooltip,
@@ -82,6 +85,8 @@ import {
   type CardProps,
   type IconButtonProps,
   type CascaderProps,
+  type DatePickerProps,
+  type DateTimePickerProps,
   type ImageProps,
   type LayeredImageProps,
   type CollapseProps,
@@ -103,6 +108,7 @@ import {
   type ThemePanelCreateThemePayload,
   type ThemePanelPresetOption,
   type ThemePanelProps,
+  type TimePickerProps,
   type TooltipProps,
 } from "@fangxinyan/lumina";
 import { IconButton as SubpathIconButton } from "@fangxinyan/lumina/IconButton";
@@ -183,6 +189,37 @@ const cascaderProps: CascaderProps = {
   popupClassName: "cascader-check",
 };
 
+const datePickerProps: DatePickerProps = {
+  value: new Date(2026, 4, 25),
+  allowClear: true,
+  min: new Date(2026, 0, 1),
+  max: new Date(2026, 11, 31),
+  className: "date-picker-check",
+  style: { width: 220 },
+  onChange: (date, dateString) => {
+    void date?.getFullYear();
+    void dateString;
+  },
+  disabledDate: (date) => date.getDay() === 0,
+};
+
+const dateTimePickerProps: DateTimePickerProps = {
+  value: new Date(2026, 4, 25, 14, 30),
+  allowClear: true,
+  showSecond: true,
+  minuteStep: 15,
+  min: new Date(2026, 4, 1, 8),
+  max: new Date(2026, 4, 31, 20, 30),
+  className: "date-time-picker-check",
+  style: { width: 260 },
+  onChange: (date, dateString) => {
+    void date?.getHours();
+    void dateString;
+  },
+  disabledDate: (date) => date.getDay() === 0,
+  disabledTime: (time, date) => time.hour < 8 || time.hour > 20 || date.getDay() === 6,
+};
+
 const imageProps: ImageProps = {
   variant: "icon",
   src: "/asset.png",
@@ -261,6 +298,21 @@ const spinProps: SpinProps = {
 const textareaProps: TextareaProps = {
   rows: 3,
   placeholder: "Notes",
+};
+
+const timePickerProps: TimePickerProps = {
+  value: "09:30",
+  format: "HH:mm:ss",
+  showSecond: true,
+  minuteStep: 15,
+  allowClear: true,
+  className: "time-picker-check",
+  style: { width: 220 },
+  onChange: (value, time) => {
+    void value;
+    void time.hour;
+  },
+  disabledTime: (time) => time.hour < 8 || time.hour > 20,
 };
 
 const badgeProps: BadgeProps = {
@@ -351,10 +403,13 @@ const Example = () => {
   const buttonRef = React.useRef<HTMLButtonElement>(null);
   const cardRef = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const datePickerRef = React.useRef<HTMLDivElement>(null);
+  const dateTimePickerRef = React.useRef<HTMLDivElement>(null);
   const surfaceRef = React.useRef<HTMLDivElement>(null);
   const themePanelRef = React.useRef<HTMLDivElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
   const tableProRef = React.useRef<HTMLDivElement>(null);
+  const timePickerRef = React.useRef<HTMLDivElement>(null);
 
   return (
     <ThemeProvider>
@@ -436,6 +491,18 @@ const Example = () => {
       <Collapse {...collapseProps} data-testid="collapse" />
       <Select {...selectProps} data-testid="select" />
       <Cascader {...cascaderProps} data-testid="cascader" />
+      <DatePicker
+        ref={datePickerRef}
+        {...datePickerProps}
+        data-testid="date-picker"
+        aria-label="date picker"
+      />
+      <DateTimePicker
+        ref={dateTimePickerRef}
+        {...dateTimePickerProps}
+        data-testid="date-time-picker"
+        aria-label="date time picker"
+      />
       <Image {...imageProps} data-testid="image" />
       <ImageGrid images={[{ src: "/one.png", alt: "One", variant: "icon" }]} data-testid="image-grid" />
       <SpriteImage {...spriteImageProps} data-testid="sprite-image" />
@@ -466,6 +533,12 @@ const Example = () => {
         {...textareaProps}
         data-testid="textarea"
         aria-label="textarea"
+      />
+      <TimePicker
+        ref={timePickerRef}
+        {...timePickerProps}
+        data-testid="time-picker"
+        aria-label="time picker"
       />
       <Badge {...badgeProps} data-testid="badge">
         inbox

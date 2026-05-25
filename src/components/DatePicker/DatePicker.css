@@ -1,0 +1,60 @@
+/* ============ DatePicker ============ */
+.date-picker {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  min-width: 180px;
+}
+
+.date-picker.disabled {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.date-picker.readonly .input-wrap {
+  cursor: default;
+}
+
+.date-picker .input-wrap {
+  width: 100%;
+}
+
+.date-picker.open .input-wrap {
+  box-shadow: var(--neu-shadow-inset);
+}
+
+.date-picker-panel {
+  position: fixed;
+  z-index: 1000;
+  width: 344px;
+  padding: var(--gap-3);
+  border-radius: var(--r-md);
+  background: var(--bg);
+  box-shadow: var(--neu-shadow-float);
+  animation: menuIn var(--dur) var(--ease);
+}
+
+.date-picker-panel .calendar {
+  width: 100%;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.date-picker-panel .calendar-head {
+  padding: 0 0 var(--gap-3);
+}
+
+.date-picker-footer {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-2);
+  margin-top: var(--gap-3);
+  padding-top: var(--gap-3);
+  border-top: 1px solid var(--divider);
+}
+
+.date-picker-footer-spacer {
+  flex: 1;
+  min-width: 0;
+}

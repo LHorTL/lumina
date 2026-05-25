@@ -1,6 +1,6 @@
 # Calendar 日历
 
-> 查看与选择日期。
+> 查看与选择日期,支持快速切换年份和月份。
 
 ## 导入
 
@@ -35,6 +35,7 @@ import { Calendar } from "@fangxinyan/lumina";
 | Prop | 类型 | 默认 | 说明 |
 | --- | --- | --- | --- |
 | value / defaultValue | `Date` | — | 受控/初始日期 |
+| viewDate | `Date` | — | 外部日期变化时同步可视月份 |
 | onChange | `(date: Date) => void` | — | 选择回调 |
 | min / max | `Date` | — | 可选范围 |
 | disabledDate | `(date: Date) => boolean` | — | 自定义禁用判断,返回 true 的日期不可选 |

@@ -3,7 +3,7 @@
 > 拟态风格的 React 18 组件库,目标是 Electron 桌面应用。**写给 AI 编程助手**的按需文档 —— 每个组件单独一个 `.md`,避免一次性读取全部。示例源自 playground 的 demo,可直接复制运行。
 
 - **包名**: `@fangxinyan/lumina`
-- **版本**: `0.6.14`
+- **版本**: `0.6.15`
 - **React 最低版本**: 18
 - **环境**: 带打包器的 React 工程(Vite / Next.js / Webpack / Remix / Electron + Vite 等)
 - **零运行时依赖**: 只依赖 `react` / `react-dom` (peer deps)
@@ -64,6 +64,9 @@
 - [Select 下拉选择](./llms/select.md) — 下拉选择,支持单/多选、搜索、分组、加载态。
 - [AutoComplete 自动补全](./llms/autocomplete.md) — 输入时展示建议下拉,不限定必须从候选中选。
 - [Cascader 级联选择](./llms/cascader.md) — 层级关联数据集合中的多级选择。
+- [DatePicker 日期选择](./llms/datepicker.md) — 输入框触发的日期选择器,复用 Calendar 并支持范围、禁用日期和格式化。
+- [DateTimePicker 日期时间选择](./llms/datetimepicker.md) — 输入框触发的日期时间选择器,把 Calendar 与时分秒列组合在同一个浮层内。
+- [TimePicker 时间选择](./llms/timepicker.md) — 输入框触发的时分秒选择器,支持步进、范围、禁用时间和秒级选择。
 - [ColorPicker 颜色选择](./llms/colorpicker.md) — 拟态风格的颜色选择器:HSV 色域、色相、hex 输入、预设调色板。
 - [Form 表单](./llms/form.md) — 受控表单,字段绑定 + 校验。
 
@@ -83,7 +86,7 @@
 - [Pagination 分页](./llms/pagination.md) — 分页控件,支持快速跳转与每页条数切换。
 - [Tabs 选项卡](./llms/tabs.md) — 同一层级的内容分组,通过标签切换。
 - [Collapse 折叠面板](./llms/collapse.md) — 纵向折叠面板。
-- [Calendar 日历](./llms/calendar.md) — 查看与选择日期。
+- [Calendar 日历](./llms/calendar.md) — 查看与选择日期,支持快速切换年份和月份。
 
 ### 反馈
 

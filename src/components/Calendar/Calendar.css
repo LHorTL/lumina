@@ -19,6 +19,36 @@
   transition: all var(--dur-fast) var(--ease);
 }
 .calendar-title:hover { background: var(--bg); box-shadow: var(--neu-shadow-subtle); }
+.calendar-title.static {
+  cursor: default;
+}
+.calendar-title.static:hover {
+  background: transparent;
+  box-shadow: none;
+}
+.calendar-title-group {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-1);
+}
+.calendar-title-part {
+  border: none;
+  border-radius: var(--r-sm);
+  padding: 6px 8px;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+  font: 600 14px var(--font-sans);
+  transition:
+    color var(--dur-fast) var(--ease),
+    background var(--dur-fast) var(--ease),
+    box-shadow var(--dur-fast) var(--ease);
+}
+.calendar-title-part:hover {
+  color: var(--accent-ink);
+  background: var(--bg);
+  box-shadow: var(--neu-shadow-subtle);
+}
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -63,3 +93,38 @@
 }
 .calendar-cell.disabled { color: var(--fg-subtle); opacity: 0.4; cursor: not-allowed; }
 .calendar-cell.disabled:hover { background: transparent; box-shadow: none; }
+.calendar-select-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--gap-2);
+  min-height: 244px;
+  align-content: center;
+}
+.calendar-select-option {
+  height: 42px;
+  border: none;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+  font: 600 var(--fs-md) var(--font-mono);
+  transition:
+    color var(--dur-fast) var(--ease),
+    background var(--dur-fast) var(--ease),
+    box-shadow var(--dur-fast) var(--ease);
+}
+.calendar-select-option:hover:not(:disabled) {
+  color: var(--accent-ink);
+  background: var(--bg);
+  box-shadow: var(--neu-shadow-subtle);
+}
+.calendar-select-option.selected {
+  color: var(--accent-ink);
+  background: var(--bg);
+  box-shadow: var(--neu-shadow-inset);
+}
+.calendar-select-option.disabled {
+  color: var(--fg-subtle);
+  cursor: not-allowed;
+  opacity: 0.4;
+}
