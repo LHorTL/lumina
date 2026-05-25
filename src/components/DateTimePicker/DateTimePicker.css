@@ -135,8 +135,8 @@
   gap: 4px;
   height: 220px;
   overflow-y: auto;
-  padding: 90px 5px;
-  scroll-padding: 90px 0;
+  padding: calc((220px - 28px) / 2) 5px;
+  scroll-padding: calc((220px - 28px) / 2) 0;
   scrollbar-width: none;
   -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 20px, black calc(100% - 20px), transparent 100%);
   mask-image: linear-gradient(to bottom, transparent 0, black 20px, black calc(100% - 20px), transparent 100%);
@@ -218,7 +218,7 @@
 
   .date-time-picker-time-list {
     height: 118px;
-    padding: 28px 8px;
-    scroll-padding: 28px 0;
+    padding: calc((118px - 28px) / 2) 8px;
+    scroll-padding: calc((118px - 28px) / 2) 0;
   }
 }
