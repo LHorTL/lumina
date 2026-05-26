@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import { Button } from "../Button";
 import { Input } from "../Input";
 import { useFloating } from "../../utils/useFloating";
+import { useInputTriggerToggle } from "../../utils/useInputTriggerToggle";
 
 export type TimePickerFormat = "HH:mm" | "HH:mm:ss";
 export type TimePickerSize = "sm" | "md" | "lg";
@@ -196,6 +197,12 @@ export const TimePicker = React.forwardRef<HTMLDivElement, TimePickerProps>(
       },
       [disabled, onOpenChange, openControlled, readOnly]
     );
+    const inputTriggerHandlers = useInputTriggerToggle({
+      open,
+      disabled,
+      readOnly,
+      setOpen,
+    });
 
     const rootRef = React.useRef<HTMLDivElement | null>(null);
     const panelRef = React.useRef<HTMLDivElement | null>(null);
@@ -467,8 +474,7 @@ export const TimePicker = React.forwardRef<HTMLDivElement, TimePickerProps>(
           invalid={invalid}
           allowClear={allowClear}
           leadingIcon="clock"
-          onFocus={() => setOpen(true)}
-          onClick={() => setOpen(true)}
+          {...inputTriggerHandlers}
           onValueChange={handleInputChange}
           onBlur={handleInputBlur}
           inputMode="numeric"

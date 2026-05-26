@@ -285,7 +285,15 @@ const SelectInner = <T extends string | number = string>(
     (props as MultiSelectProps<T>).onChange?.(next);
   };
 
-  const clearAll = (e: React.MouseEvent) => {
+  const stopClearActivation = (
+    e: React.MouseEvent<HTMLSpanElement> | React.PointerEvent<HTMLSpanElement>
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const clearAll = (e: React.MouseEvent<HTMLSpanElement>) => {
+    e.preventDefault();
     e.stopPropagation();
     if (isMulti) {
       if (!multiControlled) setInnerMulti([]);
@@ -437,7 +445,14 @@ const SelectInner = <T extends string | number = string>(
       >
         {renderTrigger()}
         {showClear && (
-          <span className="select-clear" role="button" aria-label="Clear" onClick={clearAll}>
+          <span
+            className="select-clear"
+            role="button"
+            aria-label="Clear"
+            onPointerDown={stopClearActivation}
+            onMouseDown={stopClearActivation}
+            onClick={clearAll}
+          >
             <Icon name="x" size={12} />
           </span>
         )}

@@ -7,6 +7,7 @@ import { Button } from "../Button";
 import { Calendar } from "../Calendar";
 import { Input } from "../Input";
 import { useFloating } from "../../utils/useFloating";
+import { useInputTriggerToggle } from "../../utils/useInputTriggerToggle";
 
 export type DatePickerFormat = "YYYY-MM-DD" | "YYYY/MM/DD" | "YYYY年MM月DD日";
 export type DatePickerSize = "sm" | "md" | "lg";
@@ -151,6 +152,12 @@ export const DatePicker = React.forwardRef<HTMLDivElement, DatePickerProps>(
       },
       [disabled, onOpenChange, openControlled, readOnly]
     );
+    const inputTriggerHandlers = useInputTriggerToggle({
+      open,
+      disabled,
+      readOnly,
+      setOpen,
+    });
 
     const rootRef = React.useRef<HTMLDivElement | null>(null);
     const panelRef = React.useRef<HTMLDivElement | null>(null);
@@ -284,8 +291,7 @@ export const DatePicker = React.forwardRef<HTMLDivElement, DatePickerProps>(
           invalid={invalid}
           allowClear={allowClear}
           leadingIcon="calendar"
-          onFocus={() => setOpen(true)}
-          onClick={() => setOpen(true)}
+          {...inputTriggerHandlers}
           onValueChange={handleInputChange}
           onBlur={handleInputBlur}
           inputMode="numeric"
