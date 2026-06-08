@@ -231,6 +231,13 @@ const imageProps: ImageProps = {
     background: "var(--mask-bg)",
     backdropFilter: "none",
   },
+  previewMaxWidth: "72vw",
+  previewMaxHeight: 420,
+  renderPreviewToolbar: ({ scale, fitToWindow }) => (
+    <button type="button" onClick={fitToWindow}>
+      {Math.round(scale * 100)}%
+    </button>
+  ),
   objectFit: "contain",
 };
 

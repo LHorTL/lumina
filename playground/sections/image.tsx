@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Icon, Image, ImageGrid, LayeredImage, SpriteImage } from "lumina";
+import { Button, Icon, Image, ImageGrid, LayeredImage, SpriteImage } from "lumina";
 import { DocPage } from "../docs";
 import { Row } from "./_shared";
 import { defineSection, type SectionCtx } from "./_types";
@@ -161,6 +161,38 @@ const SectionImage: React.FC<SectionCtx> = () => {
           ),
         },
         {
+          id: "detail-preview",
+          title: "精细预览",
+          description: "预览层内置放大、缩小、适配窗口、1:1、滚轮缩放和拖拽平移；previewMaxWidth / previewMaxHeight 控制适配态尺寸,renderPreviewToolbar 可追加业务按钮。",
+          code: `<Image
+  src={url}
+  width={260}
+  height={180}
+  previewMaxWidth="90vw"
+  previewMaxHeight="76vh"
+  renderPreviewToolbar={({ fitToWindow, scale }) => (
+    <Button size="sm" variant="ghost" icon="star" onClick={fitToWindow}>
+      标记 {Math.round(scale * 100)}%
+    </Button>
+  )}
+/>`,
+          render: () => (
+            <Image
+              src={images[3].src}
+              alt="detail preview"
+              width={260}
+              height={180}
+              previewMaxWidth="90vw"
+              previewMaxHeight="76vh"
+              renderPreviewToolbar={({ fitToWindow, scale }) => (
+                <Button size="sm" variant="ghost" icon="star" onClick={fitToWindow}>
+                  标记 {Math.round(scale * 100)}%
+                </Button>
+              )}
+            />
+          ),
+        },
+        {
           id: "asset-icons",
           title: "图标 / 原始资源",
           description: "variant=\"icon\" 会默认去掉外层 padding,适合 1:1 装备、物品、头像缩略图；variant=\"raw\" 保留原始图片比例。",
@@ -271,6 +303,8 @@ const SectionImage: React.FC<SectionCtx> = () => {
             { prop: "preview", description: "支持点击全屏预览", type: "boolean", default: "true" },
             { prop: "previewClassName", description: "预览蒙层 className", type: "string" },
             { prop: "previewStyle", description: "预览蒙层内联样式", type: "CSSProperties" },
+            { prop: "previewMaxWidth / previewMaxHeight", description: "预览适配态的最大尺寸", type: "number | string", default: `"80vw" / "80vh"` },
+            { prop: "renderPreviewToolbar", description: "在预览工具栏追加自定义按钮", type: "(controls) => ReactNode" },
             { prop: "hover", description: "悬浮放大", type: "boolean", default: "true" },
             { prop: "placeholder", description: "占位/错误时内容", type: "ReactNode" },
             { prop: "imgProps", description: "透传到底层 img 的属性", type: "ImgHTMLAttributes" },

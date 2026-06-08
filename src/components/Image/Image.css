@@ -117,14 +117,93 @@
   background: var(--image-preview-mask-bg, var(--mask-bg));
   backdrop-filter: blur(16px);
   display: grid; place-items: center;
+  overflow: hidden;
+  padding: min(8vh, 72px) var(--gap-8) var(--gap-8);
   z-index: 500;
   animation: fadeIn var(--dur) var(--ease);
 }
-.image-preview-overlay img {
+.image-preview-overlay:focus {
+  outline: none;
+}
+.image-preview-toolbar {
+  --image-preview-toolbar-ink: color-mix(in oklch, var(--accent) 42%, var(--fg-muted));
+  --image-preview-toolbar-ink-hover: color-mix(in oklch, var(--accent) 48%, var(--fg));
+  position: absolute;
+  top: var(--gap-5);
+  left: 50%;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--gap-2);
+  max-width: min(calc(100vw - 32px), 720px);
+  padding: 6px;
+  overflow-x: auto;
+  color: var(--image-preview-toolbar-ink);
+  border: 1px solid color-mix(in oklch, var(--accent) 14%, var(--border));
+  border-radius: var(--r-pill);
+  background: color-mix(in oklch, var(--bg-raised) 92%, var(--accent-soft));
+  box-shadow:
+    var(--neu-float),
+    0 0 0 1px color-mix(in oklch, var(--accent-glow) 22%, transparent);
+  backdrop-filter: blur(18px) saturate(1.2);
+  transform: translateX(-50%);
+}
+.image-preview-toolbar .btn {
+  flex: 0 0 auto;
+}
+.image-preview-toolbar .btn.ghost {
+  color: var(--image-preview-toolbar-ink);
+}
+.image-preview-toolbar .btn.ghost:hover {
+  color: var(--image-preview-toolbar-ink-hover);
+  background: color-mix(in oklch, var(--accent-soft) 36%, var(--bg));
+  box-shadow: var(--neu-shadow-subtle);
+}
+.image-preview-toolbar .btn.ghost:active,
+.image-preview-toolbar .btn.ghost.pressed {
+  color: var(--image-preview-toolbar-ink-hover);
+  background: color-mix(in oklch, var(--accent-soft) 48%, var(--bg));
+  box-shadow: var(--neu-shadow-inset-strong);
+}
+.image-preview-scale {
+  min-width: 48px;
+  color: var(--image-preview-toolbar-ink);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  line-height: 1;
+  text-align: center;
+}
+.image-preview-ratio {
+  min-width: 46px;
+  padding-inline: 10px;
+  font-family: var(--font-mono);
+}
+.image-preview-toolbar-slot {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: var(--gap-2);
+}
+.image-preview-img {
   max-width: 80vw;
   max-height: 80vh;
   border-radius: var(--r-lg);
   box-shadow: var(--neu-shadow-float);
+  transform-origin: center;
+  transition: transform var(--dur-fast) var(--ease);
+  user-select: none;
+  will-change: transform;
+}
+
+@media (max-width: 640px) {
+  .image-preview-overlay {
+    padding: 76px var(--gap-4) var(--gap-4);
+  }
+  .image-preview-toolbar {
+    top: var(--gap-4);
+    border-radius: var(--r-lg);
+  }
 }
 
 /* ============ SpriteImage / LayeredImage ============ */

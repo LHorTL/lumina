@@ -28,6 +28,25 @@ import { Image, ImageGrid, SpriteImage, LayeredImage } from "@fangxinyan/lumina"
 />
 ```
 
+### 精细预览
+
+预览层内置放大、缩小、适配窗口、1:1、滚轮缩放和拖拽平移；previewMaxWidth / previewMaxHeight 控制适配态尺寸,renderPreviewToolbar 可追加业务按钮。
+
+```tsx
+<Image
+  src={url}
+  width={260}
+  height={180}
+  previewMaxWidth="90vw"
+  previewMaxHeight="76vh"
+  renderPreviewToolbar={({ fitToWindow, scale }) => (
+    <Button size="sm" variant="ghost" icon="star" onClick={fitToWindow}>
+      标记 {Math.round(scale * 100)}%
+    </Button>
+  )}
+/>
+```
+
 ### 图标 / 原始资源
 
 variant="icon" 会默认去掉外层 padding,适合 1:1 装备、物品、头像缩略图；variant="raw" 保留原始图片比例。
@@ -82,6 +101,8 @@ LayeredImage 将多张图片叠在同一个盒子里,适合头像 + 头像框、
 | preview | `boolean` | `true` | 支持点击全屏预览 |
 | previewClassName | `string` | — | 预览蒙层 className |
 | previewStyle | `CSSProperties` | — | 预览蒙层内联样式 |
+| previewMaxWidth / previewMaxHeight | `number | string` | `"80vw" / "80vh"` | 预览适配态的最大尺寸 |
+| renderPreviewToolbar | `(controls) => ReactNode` | — | 在预览工具栏追加自定义按钮 |
 | hover | `boolean` | `true` | 悬浮放大 |
 | placeholder | `ReactNode` | — | 占位/错误时内容 |
 | imgProps | `ImgHTMLAttributes` | — | 透传到底层 img 的属性 |
