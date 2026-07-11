@@ -100,16 +100,26 @@ const SectionPagination: React.FC<SectionCtx> = () => {
             />
           ),
         },
+        {
+          id: "boundary-normalization",
+          title: "边界值归一",
+          description: "负数或非有限 total 按 0 处理；无效 pageSize 回退 10；页码会截断并夹紧到当前有效范围。",
+          span: 2,
+          code: `<Pagination total={-8} page={99} pageSize={0} siblings={-3} />`,
+          render: () => (
+            <Pagination total={-8} page={99} pageSize={0} siblings={-3} />
+          ),
+        },
       ]}
       api={[
         {
           title: "Pagination",
           rows: [
-            { prop: "total", description: "数据总条数", type: "number", required: true },
-            { prop: "pageSize", description: "每页条数", type: "number", default: "10" },
-            { prop: "page / defaultPage", description: "受控/初始页码", type: "number", default: "1" },
+            { prop: "total", description: "数据总条数；负数或非有限值按 0 处理并取整数", type: "number", required: true },
+            { prop: "pageSize", description: "每页条数；非正数或非有限值回退为 10 并取整数", type: "number", default: "10" },
+            { prop: "page / defaultPage", description: "受控/初始页码；取整数并夹紧到 1..总页数", type: "number", default: "1" },
             { prop: "onChange", description: "页码变化回调", type: "(page: number) => void" },
-            { prop: "siblings", description: "当前页两侧可见的页码数", type: "number", default: "1" },
+            { prop: "siblings", description: "当前页两侧可见页码数；负数归零、非有限值回退 1", type: "number", default: "1" },
             {
               prop: "showQuickJumper",
               description: "显示跳转输入框,按 Enter 跳转",

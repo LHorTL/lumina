@@ -3,7 +3,7 @@ import "../../styles/shared.css";
 import "./StatusBar.css";
 import * as React from "react";
 
-export interface StatusBarItemProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "children"> {
+export interface StatusBarItemProps extends Omit<React.HTMLAttributes<HTMLElement>, "children"> {
   /** Optional leading node (usually an `<Icon />`). */
   icon?: React.ReactNode;
   /** Visual tone — shifts color only. */
@@ -36,13 +36,14 @@ export const StatusBarItem = React.forwardRef<HTMLElement, StatusBarItemProps>((
         type="button"
         className={cls}
         onClick={onClick as React.MouseEventHandler<HTMLButtonElement>}
+        {...(rest as React.ButtonHTMLAttributes<HTMLButtonElement>)}
       >
         {content}
       </button>
     );
   }
   return (
-    <div ref={ref as React.ForwardedRef<HTMLDivElement>} className={cls} {...rest}>
+    <div ref={ref as React.ForwardedRef<HTMLDivElement>} className={cls} {...(rest as React.HTMLAttributes<HTMLDivElement>)}>
       {content}
     </div>
   );

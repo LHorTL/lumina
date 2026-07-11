@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen, within } from "@testing-library/rea
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { DatePicker } from "../src/components/DatePicker";
 import { DateTimePicker } from "../src/components/DateTimePicker";
+import { ColorPicker } from "../src/components/ColorPicker";
 import { Select } from "../src/components/Select";
 import { TimePicker } from "../src/components/TimePicker";
 
@@ -91,6 +92,20 @@ describe("picker regressions", () => {
     expect(onChange.mock.calls.at(-1)?.[0]).toEqual(new Date(2026, 4, 25, 8, 30));
   });
 
+  it("does not scan every second of the visible month when seconds are enabled", () => {
+    const disabledTime = vi.fn(() => true);
+    render(
+      <DateTimePicker
+        defaultOpen
+        defaultValue={new Date(2026, 4, 25, 9, 30, 15)}
+        showSecond
+        disabledTime={disabledTime}
+      />
+    );
+    expect(disabledTime.mock.calls.length).toBeGreaterThan(0);
+    expect(disabledTime.mock.calls.length).toBeLessThan(5_000);
+  });
+
   it("closes a DateTimePicker panel when clicking the open trigger again", () => {
     const { container } = render(<DateTimePicker />);
     const input = container.querySelector<HTMLInputElement>("input");
@@ -149,6 +164,68 @@ describe("picker regressions", () => {
     expect(onMouseDown).not.toHaveBeenCalled();
     expect(onChange).toHaveBeenCalledWith(undefined);
     expect(screen.queryByRole("listbox")).toBeNull();
+  });
+
+  it("keeps removable multi-select tags out of native button markup", () => {
+    const { container } = render(
+      <Select
+        multiple
+        defaultValue={["a"]}
+        options={[{ value: "a", label: "Alpha" }]}
+      />
+    );
+    expect(container.querySelector("button [role='button']")).toBeNull();
+    expect(screen.getByRole("combobox")).not.toBeNull();
+    expect(screen.getByRole("button", { name: "移除" })).not.toBeNull();
+  });
+
+  it("closes Select on Tab and does not reopen uncontrolled pickers after disabled toggles", () => {
+    const selectOpenChange = vi.fn();
+    const colorOpenChange = vi.fn();
+    const { rerender } = render(
+      <>
+        <Select
+          defaultOpen
+          searchable
+          onOpenChange={selectOpenChange}
+          options={[{ value: "a", label: "Alpha" }]}
+        />
+        <ColorPicker defaultOpen onOpenChange={colorOpenChange} />
+        <button type="button">外部焦点</button>
+      </>
+    );
+    const search = within(screen.getByRole("listbox")).getByRole("combobox");
+    fireEvent.keyDown(search, { key: "Tab" });
+    fireEvent.blur(search, { relatedTarget: screen.getByRole("button", { name: "外部焦点" }) });
+    expect(screen.queryByRole("listbox")).toBeNull();
+
+    rerender(
+      <>
+        <Select
+          defaultOpen
+          disabled
+          onOpenChange={selectOpenChange}
+          options={[{ value: "a", label: "Alpha" }]}
+        />
+        <ColorPicker defaultOpen disabled onOpenChange={colorOpenChange} />
+        <button type="button">外部焦点</button>
+      </>
+    );
+    expect(screen.queryByRole("dialog", { name: "选择颜色" })).toBeNull();
+    rerender(
+      <>
+        <Select
+          defaultOpen
+          onOpenChange={selectOpenChange}
+          options={[{ value: "a", label: "Alpha" }]}
+        />
+        <ColorPicker defaultOpen onOpenChange={colorOpenChange} />
+        <button type="button">外部焦点</button>
+      </>
+    );
+    expect(screen.queryByRole("listbox")).toBeNull();
+    expect(screen.queryByRole("dialog", { name: "选择颜色" })).toBeNull();
+    expect(colorOpenChange).toHaveBeenCalledWith(false);
   });
 
   it("disables TimePicker now action when the current time is outside constraints", () => {

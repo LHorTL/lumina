@@ -13,6 +13,8 @@ export interface ProgressProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Custom fill color. Overrides `tone`. */
   color?: string;
   size?: "sm" | "md" | "lg";
+  /** 不确定进度；隐藏具体数值并显示循环动画。 */
+  indeterminate?: boolean;
   className?: string;
 }
 
@@ -25,11 +27,15 @@ export const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(({
   tone = "accent",
   color,
   size = "md",
+  indeterminate = false,
   className = "",
   style,
   ...rest
 }, ref) => {
-  const pct = Math.max(0, Math.min(100, (value / max) * 100));
+  const safeMax = Number.isFinite(max) && max > 0 ? max : 100;
+  const safeValue = Number.isFinite(value) ? value : 0;
+  const normalizedValue = Math.max(0, Math.min(safeMax, safeValue));
+  const pct = (normalizedValue / safeMax) * 100;
   const rootStyle: React.CSSProperties = {
     ...(color
       ? {
@@ -40,15 +46,25 @@ export const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(({
     ...style,
   };
   return (
-    <div ref={ref} className={`progress ${size} ${tone} ${className}`} style={rootStyle} {...rest}>
+    <div
+      ref={ref}
+      className={`progress ${size} ${tone} ${indeterminate ? "indeterminate" : ""} ${className}`}
+      style={rootStyle}
+      role="progressbar"
+      aria-valuemin={0}
+      aria-valuemax={safeMax}
+      aria-valuenow={indeterminate ? undefined : normalizedValue}
+      aria-valuetext={indeterminate ? "加载中" : undefined}
+      {...rest}
+    >
       {(label || showValue) && (
         <div className="progress-label">
           {label ? <span>{label}</span> : <span />}
-          {showValue && <span className="v">{Math.round(pct)}%</span>}
+          {showValue && !indeterminate && <span className="v">{Math.round(pct)}%</span>}
         </div>
       )}
       <div className="progress-track">
-        <div className="progress-bar" style={{ width: `${pct}%` }} />
+        <div className="progress-bar" style={{ width: indeterminate ? "35%" : `${pct}%` }} />
       </div>
     </div>
   );

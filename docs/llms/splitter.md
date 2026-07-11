@@ -43,11 +43,11 @@ direction="vertical" 让面板上下排列,分隔条变成横条。
 
 ### 受控模式
 
-通过 size / onResize 可以持久化宽度或与其他状态联动。
+通过 size / onResize 与外部状态联动；storageKey 可直接持久化最后一次完成的尺寸。
 
 ```tsx
 const [w, setW] = useState(220);
-<Splitter size={w} onResize={setW}>...</Splitter>
+<Splitter size={w} onResize={setW} storageKey="workspace-sidebar">...</Splitter>
 ```
 
 ## API
@@ -62,6 +62,9 @@ const [w, setW] = useState(220);
 | onResizeEnd | `(n: number) => void` | — | 拖动结束回调 |
 | min / max | `number` | `80 / Infinity` | 尺寸限制 (px) |
 | step | `number` | `16` | 方向键步长 (px) |
+| secondMin | `number` | `24` | 第二面板保留的最小尺寸 |
+| storageKey | `string` | — | 持久化尺寸的本地存储键 |
+| handleProps | `HTMLAttributes<HTMLDivElement>` | — | 分隔手柄原生属性与 aria-label |
 | children \* | `[ReactNode, ReactNode]` | — | 必须恰好两个子节点 |
 
 

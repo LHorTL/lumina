@@ -29,20 +29,20 @@ import { Table } from "@fangxinyan/lumina";
 
 ### 内置分页
 
-传入 pagination 即可自动分页;data 会按当前页切片。传 false 关闭。
+传入 pagination 即可自动分页;这里从第 2 页开始,同时演示 defaultCurrent。传 false 关闭。
 
 ```tsx
 <Table
   rowKey="id"
   columns={[...]}
   data={data}
-  pagination={{ pageSize: 6 }}
+  pagination={{ defaultCurrent: 2, pageSize: 4 }}
 />
 ```
 
 ### 分页配置
 
-覆盖 current / defaultCurrent / pageSize / defaultPageSize / total / onChange / showQuickJumper / showSizeChanger / pageSizeOptions。
+用一个受控案例集中展示 current、pageSize、total、快速跳页和每页条数切换,避免重复堆叠相同表格。
 
 ```tsx
 <Table
@@ -59,11 +59,6 @@ import { Table } from "@fangxinyan/lumina";
       setPageSize(nextPageSize);
     },
   }}
-/>
-
-<Table
-  data={allRows}
-  pagination={{ defaultCurrent: 2, defaultPageSize: 4 }}
 />
 ```
 
@@ -208,6 +203,7 @@ filteredValue 由外部状态控制,适合和工具栏筛选器或 URL 状态同
       onFilter: (value, row) => row.status === value,
     },
   ]}
+  onChange={({ filters }) => setFilteredValue(filters.status ?? [])}
 />
 ```
 
@@ -244,6 +240,7 @@ empty 自定义空态;className / style / id / data-* / aria-* 透传到表格�
 | sortKey | `string` | — | 当前排序列 key |
 | sortDir | `"asc" | "desc"` | `"asc"` | 当前排序方向 |
 | onSort | `(key) => void` | — | 点击可排序表头时触发 |
+| onChange | `(info: TableChangeInfo) => void` | — | 排序、筛选、分页的统一状态回调 |
 | rowSelection | `RowSelectionConfig` | — | 行选择配置 |
 | selectable | `boolean` | — | 旧版多选开关,优先使用 rowSelection |
 | selected | `(string | number)[]` | — | 旧版受控选中 key |
@@ -251,6 +248,7 @@ empty 自定义空态;className / style / id / data-* / aria-* 透传到表格�
 | expandable | `ExpandableConfig` | — | 可展开行配置 |
 | pagination | `false | PaginationConfig` | — | 分页配置;false 关闭 |
 | scroll | `TableScrollConfig` | — | 滚动配置 |
+| tableProps / caption | `TableHTMLAttributes / ReactNode` | — | 透传原生 table 属性与语义标题 |
 | onRowClick | `(row, index) => void` | — | 点击行 |
 | empty | `ReactNode` | `"暂无数据"` | 空数据占位内容 |
 | className / style / id / data-* / aria-* | `native attrs` | — | 透传到外层 table-wrap 容器 |
@@ -286,6 +284,7 @@ empty 自定义空态;className / style / id / data-* / aria-* 透传到表格�
 | showQuickJumper | `boolean` | — | 显示跳页输入 |
 | showSizeChanger | `boolean` | — | 显示每页条数下拉选择 |
 | pageSizeOptions | `number[]` | — | 每页条数选项 |
+| mode | `"local" | "remote"` | — | 本地切片或远程预切片 |
 
 
 **TableScrollConfig**

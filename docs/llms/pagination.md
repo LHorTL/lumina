@@ -61,17 +61,25 @@ import { Pagination } from "@fangxinyan/lumina";
 />
 ```
 
+### 边界值归一
+
+负数或非有限 total 按 0 处理；无效 pageSize 回退 10；页码会截断并夹紧到当前有效范围。
+
+```tsx
+<Pagination total={-8} page={99} pageSize={0} siblings={-3} />
+```
+
 ## API
 
 **Pagination**
 
 | Prop | 类型 | 默认 | 说明 |
 | --- | --- | --- | --- |
-| total \* | `number` | — | 数据总条数 |
-| pageSize | `number` | `10` | 每页条数 |
-| page / defaultPage | `number` | `1` | 受控/初始页码 |
+| total \* | `number` | — | 数据总条数；负数或非有限值按 0 处理并取整数 |
+| pageSize | `number` | `10` | 每页条数；非正数或非有限值回退为 10 并取整数 |
+| page / defaultPage | `number` | `1` | 受控/初始页码；取整数并夹紧到 1..总页数 |
 | onChange | `(page: number) => void` | — | 页码变化回调 |
-| siblings | `number` | `1` | 当前页两侧可见的页码数 |
+| siblings | `number` | `1` | 当前页两侧可见页码数；负数归零、非有限值回退 1 |
 | showQuickJumper | `boolean` | `false` | 显示跳转输入框,按 Enter 跳转 |
 | showSizeChanger | `boolean` | `false` | 显示每页条数选择器,切换后回到第 1 页 |
 | pageSizeOptions | `number[]` | `[10, 20, 50, 100]` | 每页条数候选项 |

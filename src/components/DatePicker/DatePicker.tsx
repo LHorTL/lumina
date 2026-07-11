@@ -8,6 +8,8 @@ import { Calendar } from "../Calendar";
 import { Input } from "../Input";
 import { useFloating } from "../../utils/useFloating";
 import { useInputTriggerToggle } from "../../utils/useInputTriggerToggle";
+import { usePortalContainer } from "../../utils/portal";
+import { useOverlayLayer } from "../../utils/overlayStack";
 
 export type DatePickerFormat = "YYYY-MM-DD" | "YYYY/MM/DD" | "YYYY年MM月DD日";
 export type DatePickerSize = "sm" | "md" | "lg";
@@ -22,6 +24,8 @@ export interface DatePickerProps
   onChange?: (date: Date | null, dateString: string) => void;
   /** Display and input format. */
   format?: DatePickerFormat | ((date: Date) => string);
+  /** 自定义格式化函数对应的输入解析器；返回 null 表示输入无效。 */
+  parse?: (input: string) => Date | null;
   placeholder?: string;
   disabled?: boolean;
   readOnly?: boolean;
@@ -104,6 +108,7 @@ export const DatePicker = React.forwardRef<HTMLDivElement, DatePickerProps>(
       defaultValue = null,
       onChange,
       format = "YYYY-MM-DD",
+      parse,
       placeholder = "请选择日期",
       disabled,
       readOnly,
@@ -121,6 +126,12 @@ export const DatePicker = React.forwardRef<HTMLDivElement, DatePickerProps>(
       dropdownClassName = "",
       className = "",
       onKeyDown,
+      id: fieldId,
+      "aria-invalid": ariaInvalid,
+      "aria-describedby": ariaDescribedBy,
+      "aria-labelledby": ariaLabelledBy,
+      "aria-required": ariaRequired,
+      "aria-label": ariaLabel,
       ...rest
     },
     ref
@@ -160,12 +171,22 @@ export const DatePicker = React.forwardRef<HTMLDivElement, DatePickerProps>(
     });
 
     const rootRef = React.useRef<HTMLDivElement | null>(null);
-    const panelRef = React.useRef<HTMLDivElement | null>(null);
-    const { triggerRef, floatingStyle } = useFloating<HTMLDivElement>({
+    const panelId = React.useId();
+    const portalContainer = usePortalContainer();
+    const { triggerRef, floatingRef: panelRef, floatingStyle, zIndex: panelZIndex } = useFloating<HTMLDivElement, HTMLDivElement>({
       open,
       placement,
       panelWidth: 344,
       panelHeight: 404,
+    });
+
+    useOverlayLayer({
+      open: open && !disabled && !readOnly && portalContainer != null,
+      containerRef: panelRef,
+      ownerRef: triggerRef,
+      zIndex: panelZIndex,
+      onEscape: () => setOpen(false),
+      restoreFocus: true,
     });
 
     const setRootRef = React.useCallback(
@@ -219,14 +240,9 @@ export const DatePicker = React.forwardRef<HTMLDivElement, DatePickerProps>(
         if (panelRef.current?.contains(target)) return;
         setOpen(false);
       };
-      const onDocKey = (event: KeyboardEvent) => {
-        if (event.key === "Escape") setOpen(false);
-      };
       document.addEventListener("mousedown", onDown);
-      document.addEventListener("keydown", onDocKey);
       return () => {
         document.removeEventListener("mousedown", onDown);
-        document.removeEventListener("keydown", onDocKey);
       };
     }, [open, setOpen]);
 
@@ -240,12 +256,8 @@ export const DatePicker = React.forwardRef<HTMLDivElement, DatePickerProps>(
         setDraft(formattedCurrent);
         return;
       }
-      if (typeof format === "function") {
-        setDraft(formattedCurrent);
-        return;
-      }
-      const parsed = parseDateInput(draft);
-      if (!parsed || isDisabledDate(parsed)) {
+      const parsed = parse ? parse(draft) : typeof format === "function" ? null : parseDateInput(draft);
+      if (!isValidDate(parsed) || isDisabledDate(parsed)) {
         setDraft(formattedCurrent);
         return;
       }
@@ -283,6 +295,12 @@ export const DatePicker = React.forwardRef<HTMLDivElement, DatePickerProps>(
     return (
       <div ref={setRootRef} className={rootClassName} onKeyDown={handleRootKeyDown} {...rest}>
         <Input
+          id={fieldId}
+          aria-label={ariaLabel}
+          aria-labelledby={ariaLabelledBy}
+          aria-invalid={ariaInvalid}
+          aria-required={ariaRequired}
+          aria-describedby={ariaDescribedBy}
           value={draft}
           size={size}
           placeholder={placeholder}
@@ -297,16 +315,19 @@ export const DatePicker = React.forwardRef<HTMLDivElement, DatePickerProps>(
           inputMode="numeric"
           aria-expanded={open}
           aria-haspopup="dialog"
+          aria-controls={open ? panelId : undefined}
         />
         {open &&
           !disabled &&
           !readOnly &&
-          typeof document !== "undefined" &&
+          portalContainer &&
           createPortal(
             <div
               ref={panelRef}
+              id={panelId}
               className={`date-picker-panel ${mergedPanelClassName}`}
               role="dialog"
+              aria-label="选择日期"
               style={floatingStyle}
             >
               <Calendar
@@ -340,7 +361,7 @@ export const DatePicker = React.forwardRef<HTMLDivElement, DatePickerProps>(
                 </Button>
               </div>
             </div>,
-            document.body
+            portalContainer
           )}
       </div>
     );

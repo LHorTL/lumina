@@ -37,6 +37,19 @@ const SectionRadio: React.FC<SectionCtx> = () => {
           render: () => <Radio label="接收更新" defaultChecked />,
         },
         {
+          id: "native-group",
+          title: "原生同名分组",
+          description: "独立 Radio 传入相同 name 后仍保持原生互斥，并可用 value 参与表单提交。",
+          code: `<Radio name="billing" value="monthly" defaultChecked label="按月" />
+<Radio name="billing" value="yearly" label="按年" />`,
+          render: () => (
+            <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+              <Radio name="demo-billing" value="monthly" defaultChecked label="按月" />
+              <Radio name="demo-billing" value="yearly" label="按年" />
+            </div>
+          ),
+        },
+        {
           id: "horizontal",
           title: "水平排列",
           description: "direction='horizontal'。",
@@ -109,6 +122,8 @@ const SectionRadio: React.FC<SectionCtx> = () => {
             { prop: "checked / defaultChecked", description: "受控/初始选中", type: "boolean" },
             { prop: "onChange", description: "变更", type: "(checked: boolean) => void" },
             { prop: "label", description: "标签", type: "ReactNode" },
+            { prop: "name / value", description: "原生单选分组名与提交值;同名非受控 Radio 自动互斥", type: "string / string | number" },
+            { prop: "required / form", description: "原生表单必填约束与关联 form id", type: "boolean / string" },
             { prop: "disabled", description: "禁用", type: "boolean" },
           ],
         },
@@ -118,6 +133,8 @@ const SectionRadio: React.FC<SectionCtx> = () => {
             { prop: "options", description: "选项数组", type: "{ value, label, disabled? }[]", required: true },
             { prop: "value / defaultValue", description: "受控/初始", type: "T" },
             { prop: "onChange", description: "变更", type: "(value: T) => void" },
+            { prop: "name", description: "原生分组名;省略时自动生成", type: "string" },
+            { prop: "required / form", description: "整组的原生必填约束与关联 form id", type: "boolean / string" },
             { prop: "direction", description: "方向", type: `"vertical" | "horizontal"`, default: `"vertical"` },
             { prop: "variant", description: "外观", type: `"default" | "segmented"`, default: `"default"` },
             { prop: "size", description: "分段外观尺寸", type: `"sm" | "md" | "lg"`, default: `"md"` },

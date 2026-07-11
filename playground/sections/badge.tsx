@@ -50,6 +50,8 @@ const SectionBadge: React.FC<SectionCtx> = () => (
         rows: [
           { prop: "count", description: "显示数字", type: "number" },
           { prop: "dot", description: "圆点模式", type: "boolean", default: "false" },
+          { prop: "showZero", description: "count 为 0 时仍显示", type: "boolean", default: "false" },
+          { prop: "statusLabel", description: "徽标可访问文本", type: "string" },
           { prop: "max", description: "超过显示 max+", type: "number", default: "99" },
           { prop: "tone", description: "色调", type: `"neutral" | "accent" | ...`, default: `"danger"` },
         ],

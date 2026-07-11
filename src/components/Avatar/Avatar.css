@@ -34,6 +34,14 @@
 .avatar-status.busy    { background: var(--danger); }
 .avatar-status.away    { background: var(--warning); }
 .avatar-status.offline { background: var(--fg-subtle); }
+.avatar-status-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
 
 .avatar-group { display: inline-flex; }
 .avatar-group .avatar { border: 3px solid var(--bg); box-sizing: content-box; }

@@ -6,11 +6,12 @@ import { defineSection, type SectionCtx } from "./_types";
 
 const SectionTooltip: React.FC<SectionCtx> = () => (
   <DocPage
-    whenToUse={<p>对元素进行简短的辅助说明,鼠标悬浮触发。</p>}
+    whenToUse={<p>对元素进行简短的辅助说明,鼠标悬浮或键盘聚焦触发；显示时会为子元素合并 aria-describedby。</p>}
     demos={[
       {
         id: "basic",
         title: "基础",
+        description: "聚焦触发器同样会显示提示；Esc 只关闭当前最上层提示，不影响下面的 Modal / Drawer。",
         code: `<Tooltip content="新建文档"><Button icon="plus" /></Tooltip>`,
         render: () => (
           <Row>
@@ -70,9 +71,12 @@ const SectionTooltip: React.FC<SectionCtx> = () => (
           { prop: "placement", description: "位置,支持 bottomLeft 等细分方向", type: `"top" | "bottom" | "left" | "right" | ...`, default: `"top"` },
           { prop: "delay", description: "悬浮延时 (ms)", type: "number", default: "250" },
           { prop: "closeDelay", description: "离开触发器或提示浮层后的关闭延时 (ms)", type: "number", default: "300" },
-          { prop: "disabled", description: "禁用提示", type: "boolean", default: "false" },
-          { prop: "open / visible", description: "受控显示状态", type: "boolean" },
+          { prop: "disabled", description: "禁用提示；即使受控状态为 true 也不渲染浮层", type: "boolean", default: "false" },
+          { prop: "open / visible", description: "受控显示状态(open 优先)", type: "boolean" },
+          { prop: "defaultOpen", description: "非受控初始显示状态", type: "boolean", default: "false" },
+          { prop: "onOpenChange / onVisibleChange", description: "显示状态变化回调；重复状态不会重复触发", type: "(open: boolean) => void" },
           { prop: "overlayClassName / popupClassName", description: "浮层 className", type: "string" },
+          { prop: "className", description: "触发器包装节点 className", type: "string" },
         ],
       },
     ]}

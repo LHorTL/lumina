@@ -50,6 +50,7 @@ const TableProInner = <Row extends Record<string, any> = any>({
   sortKey,
   sortDir,
   onSort,
+  onChange,
   rowSelection,
   selectable,
   selected,
@@ -57,6 +58,8 @@ const TableProInner = <Row extends Record<string, any> = any>({
   expandable,
   pagination,
   scroll,
+  tableProps,
+  caption,
   onRowClick,
   empty,
   ...rootProps
@@ -87,6 +90,7 @@ const TableProInner = <Row extends Record<string, any> = any>({
         sortKey={sortKey}
         sortDir={sortDir}
         onSort={onSort}
+        onChange={onChange}
         rowSelection={rowSelection}
         selectable={selectable}
         selected={selected}
@@ -94,6 +98,8 @@ const TableProInner = <Row extends Record<string, any> = any>({
         expandable={expandable}
         pagination={pagination}
         scroll={scroll}
+        tableProps={tableProps}
+        caption={caption}
         onRowClick={onRowClick}
         empty={empty}
         className={innerTableClassName}

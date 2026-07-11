@@ -1,5 +1,5 @@
 import * as React from "react";
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Image } from "../src/components/Image";
 
@@ -303,5 +303,28 @@ describe("Image preview", () => {
     fireEvent.mouseMove(dialog, { clientX: 30, clientY: 37 });
     fireEvent.mouseUp(dialog);
     expect(previewImage.style.transform).toBe("translate3d(20px, 25px, 0) scale(1.2)");
+  });
+
+  it("traps preview lifecycle, restores focus, and closes when preview becomes unavailable", async () => {
+    const { container, rerender } = render(
+      <Image src="/lifecycle.png" alt="Lifecycle" width={180} height={120} />
+    );
+    fireEvent.load(container.querySelector("img")!);
+    const trigger = screen.getByRole("button", { name: "预览：Lifecycle" });
+    trigger.focus();
+    fireEvent.click(trigger);
+    expect(document.body.style.overflow).toBe("hidden");
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(screen.queryByRole("dialog", { name: "图片预览" })).toBeNull();
+    await waitFor(() => expect(document.activeElement).toBe(trigger));
+    expect(document.body.style.overflow).toBe("");
+
+    fireEvent.click(trigger);
+    expect(screen.getByRole("dialog", { name: "图片预览" })).not.toBeNull();
+    rerender(
+      <Image src="/lifecycle.png" alt="Lifecycle" width={180} height={120} preview={false} />
+    );
+    expect(screen.queryByRole("dialog", { name: "图片预览" })).toBeNull();
+    expect(document.body.style.overflow).toBe("");
   });
 });

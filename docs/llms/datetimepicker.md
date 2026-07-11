@@ -58,6 +58,12 @@ const [startAt, setStartAt] = useState<Date | null>(new Date(2026, 4, 25, 9, 30)
 <DateTimePicker size="lg" disabled />
 ```
 
+### 自定义格式与解析
+
+```tsx
+<DateTimePicker format={formatSlashDateTime} parse={parseSlashDateTime} />
+```
+
 ## API
 
 **DateTimePicker**
@@ -67,6 +73,7 @@ const [startAt, setStartAt] = useState<Date | null>(new Date(2026, 4, 25, 9, 30)
 | value / defaultValue | `Date | null` | — | 受控/初始日期时间 |
 | onChange | `(date: Date | null, dateString: string) => void` | — | 选择或清空时触发 |
 | format | `"YYYY-MM-DD HH:mm" | "YYYY-MM-DD HH:mm:ss" | ((date) => string)` | `"YYYY-MM-DD HH:mm"` | 显示格式或自定义格式化函数 |
+| parse | `(input: string) => Date | null` | — | 自定义 format 函数对应的输入解析器 |
 | showSecond | `boolean` | — | 显示秒列 |
 | hourStep / minuteStep / secondStep | `number` | `1` | 列选项步进 |
 | min / max | `Date` | — | 可选日期时间范围 |

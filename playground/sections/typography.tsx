@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Typography } from "lumina";
+import { Icon, Typography } from "lumina";
 import { DocPage } from "../docs";
 import { Row } from "./_shared";
 import { defineSection, type SectionCtx } from "./_types";
@@ -108,11 +108,15 @@ const SectionTypography: React.FC<SectionCtx> = () => {
         {
           id: "editable",
           title: "可编辑",
-          description: "点击图标或文本进入编辑状态，Enter 保存、Esc 取消。",
-          code: `<Typography.Text editable={{ onChange, triggerType: ["icon", "text"] }}>{value}</Typography.Text>`,
+          description: "点击图标或文本进入编辑状态，Enter 或确认按钮保存，Esc 或失焦取消。",
+          code: `<Typography.Text editable={{ onChange, triggerType: ["icon", "text"], enterIcon: <Icon name="check" /> }}>{value}</Typography.Text>`,
           render: () => (
             <Typography.Text
-              editable={{ onChange: setEditValue, triggerType: ["icon", "text"] }}
+              editable={{
+                onChange: setEditValue,
+                triggerType: ["icon", "text"],
+                enterIcon: <Icon name="check" size={12} />,
+              }}
             >
               {editValue}
             </Typography.Text>
@@ -122,13 +126,17 @@ const SectionTypography: React.FC<SectionCtx> = () => {
           id: "ellipsis",
           title: "省略截断",
           span: 2,
-          description: "多行截断支持「展开」，悬停时可查看完整内容。",
-          code: `<Typography.Paragraph ellipsis={{ rows: 2, expandable: true, tooltip: true }}>{long}</Typography.Paragraph>`,
+          description: "多行截断支持「展开」，悬停时可查看完整内容；suffix 会始终保留在裁切区域外。",
+          code: `<Typography.Paragraph ellipsis={{ rows: 2, expandable: true, tooltip: true }}>{long}</Typography.Paragraph>
+<Typography.Text ellipsis={{ suffix: "— Lumina" }}>{long}</Typography.Text>`,
           render: () => (
-            <div style={{ maxWidth: 520 }}>
+            <div style={{ maxWidth: 520, display: "grid", gap: 12 }}>
               <Typography.Paragraph ellipsis={{ rows: 2, expandable: true, tooltip: true }}>
                 {longText}
               </Typography.Paragraph>
+              <Typography.Text style={{ maxWidth: 360 }} ellipsis={{ suffix: "— Lumina" }}>
+                {longText}
+              </Typography.Text>
             </div>
           ),
         },
@@ -142,6 +150,7 @@ const SectionTypography: React.FC<SectionCtx> = () => {
               <Typography.Link href="https://github.com/LHorTL/lumina" target="_blank" external>
                 GitHub
               </Typography.Link>
+              <Typography.Link href="#" copyable editable>可复制编辑链接</Typography.Link>
               <Typography.Link disabled>禁用</Typography.Link>
             </Row>
           ),
@@ -168,6 +177,17 @@ const SectionTypography: React.FC<SectionCtx> = () => {
             { prop: "copyable", description: "显示复制按钮", type: "boolean | CopyableConfig" },
             { prop: "editable", description: "显示编辑按钮", type: "boolean | EditableConfig" },
             { prop: "ellipsis", description: "截断省略", type: "boolean | EllipsisConfig" },
+            { prop: "id / data-* / aria-* / 原生事件", description: "透传到实际标题、文本、段落或链接根节点", type: "native attrs" },
+          ],
+        },
+        {
+          title: "EditableConfig",
+          rows: [
+            { prop: "editing", description: "受控编辑状态", type: "boolean" },
+            { prop: "text", description: "编辑器受控文本来源", type: "string" },
+            { prop: "triggerType", description: "进入编辑态的触发方式", type: `Array<"icon" | "text">`, default: `["icon"]` },
+            { prop: "enterIcon", description: "单行编辑器的确认按钮内容；传 null 隐藏", type: "ReactNode", default: "check icon" },
+            { prop: "onChange / onCancel / onStart / onEnd", description: "编辑生命周期回调", type: "function" },
           ],
         },
         {
@@ -177,6 +197,16 @@ const SectionTypography: React.FC<SectionCtx> = () => {
             { prop: "expandable", description: "显示展开入口", type: "boolean", default: "false" },
             { prop: "tooltip", description: "悬停显示完整内容", type: "boolean | ReactNode", default: "false" },
             { prop: "symbol", description: "自定义展开文案", type: "ReactNode", default: "\"展开\"" },
+            { prop: "suffix", description: "追加到截断文本末尾的后缀", type: "string" },
+          ],
+        },
+        {
+          title: "CopyableConfig",
+          rows: [
+            { prop: "text", description: "覆盖复制文本", type: "string" },
+            { prop: "format", description: "剪贴板文本格式", type: `"text/plain" | "text/html"`, default: `"text/plain"` },
+            { prop: "onCopy", description: "浏览器确认复制成功后触发", type: "(event) => void" },
+            { prop: "onCopyError", description: "复制失败时触发", type: "(error) => void" },
           ],
         },
         {

@@ -16,6 +16,17 @@ import { Switch } from "@fangxinyan/lumina";
 <Switch checked={v} onChange={setV} label="开启通知" />
 ```
 
+### 原生表单
+
+开启后按 name / value 参与原生表单提交，required 可交给浏览器校验。
+
+```tsx
+<form onSubmit={(event) => event.preventDefault()}>
+  <Switch name="notifications" value="enabled" required label="开启通知" />
+  <Button type="submit">验证提交</Button>
+</form>
+```
+
 ### 尺寸
 
 提供 sm / md 两档。
@@ -53,6 +64,8 @@ checkedChildren / unCheckedChildren 在轨道内显示简短文字(如 ON/OFF)�
 | checkedChildren | `ReactNode` | — | 轨道内选中状态文本/图标 |
 | unCheckedChildren | `ReactNode` | — | 轨道内未选中状态文本/图标 |
 | size | `"sm" | "md"` | `"md"` | 尺寸 |
+| name / value | `string` | — | 原生表单字段名与开启时提交的值 |
+| required / form | `boolean / string` | — | 原生必填约束与关联 form id |
 | disabled | `boolean` | `false` | 禁用 |
 
 

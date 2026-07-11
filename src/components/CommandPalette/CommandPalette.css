@@ -8,7 +8,7 @@
   justify-content: center;
   align-items: flex-start;
   padding-top: 14vh;
-  animation: fadeIn 160ms var(--ease);
+  animation: fadeIn var(--dur-fast) var(--ease);
 }
 [data-theme="dark"] .cmdp-overlay { background: color-mix(in oklch, black 55%, transparent); }
 
@@ -22,7 +22,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: cmdpIn 220ms var(--ease);
+  animation: cmdpIn var(--dur) var(--ease);
 }
 @keyframes cmdpIn {
   from { opacity: 0; transform: translateY(-12px) scale(0.98); }

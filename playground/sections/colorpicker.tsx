@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Button, ColorPicker } from "lumina";
+import { Button, ColorPicker, Text } from "lumina";
 import { DocPage } from "../docs";
 import { Field, Row } from "./_shared";
 import { defineSection, type SectionCtx } from "./_types";
@@ -98,17 +98,22 @@ const SectionColorPicker: React.FC<SectionCtx> = () => {
         {
           id: "custom-trigger",
           title: "自定义触发器",
-          description: "将 children 作为触发器;色块容器会继承传入的交互元素。",
+          description: "将 children 作为触发器;纯文本或不能接收 ref 的组件会自动获得可访问的包装节点。",
           span: 2,
           code: `<ColorPicker value={brand} onChange={setBrand}>
   <Button icon="palette">品牌色 · {brand}</Button>
 </ColorPicker>`,
           render: () => (
-            <ColorPicker value={brand} onChange={setBrand}>
-              <Button icon="palette" variant="primary">
-                品牌色 · {brand}
-              </Button>
-            </ColorPicker>
+            <Row>
+              <ColorPicker value={brand} onChange={setBrand}>
+                <Button icon="palette" variant="primary">
+                  品牌色 · {brand}
+                </Button>
+              </ColorPicker>
+              <ColorPicker defaultValue="#845ef7">
+                <Text>文字触发器</Text>
+              </ColorPicker>
+            </Row>
           ),
         },
       ]}
@@ -125,7 +130,8 @@ const SectionColorPicker: React.FC<SectionCtx> = () => {
             { prop: "showText", description: "触发器右侧显示 hex", type: "boolean", default: "false" },
             { prop: "disabled", description: "禁用", type: "boolean", default: "false" },
             { prop: "open / defaultOpen / onOpenChange", description: "受控面板显隐", type: "—" },
-            { prop: "children", description: "自定义触发器", type: "ReactNode" },
+            { prop: "children", description: "自定义触发器;不能接收 ref 的节点会自动包装", type: "ReactNode" },
+            { prop: "ref", description: "实际触发节点;自定义内容可能返回包装节点", type: "Ref<ColorPickerTriggerElement>" },
           ],
         },
       ]}

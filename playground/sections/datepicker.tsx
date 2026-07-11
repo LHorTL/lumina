@@ -12,6 +12,18 @@ const formatLocalDate = (date: Date | null) => {
   return `${year}-${month}-${day}`;
 };
 
+/** 将日期格式化为点分隔文本。 */
+const formatDotDate = (date: Date) =>
+  `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`;
+
+/** 解析点分隔日期文本。 */
+const parseDotDate = (input: string): Date | null => {
+  const match = input.trim().match(/^(\d{4})\.(\d{1,2})\.(\d{1,2})$/);
+  if (!match) return null;
+  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
 const SectionDatePicker: React.FC<SectionCtx> = () => {
   const [date, setDate] = React.useState<Date | null>(new Date(2026, 4, 25));
   const [workday, setWorkday] = React.useState<Date | null>(new Date(2026, 4, 26));
@@ -108,6 +120,12 @@ const SectionDatePicker: React.FC<SectionCtx> = () => {
             </Row>
           ),
         },
+        {
+          id: "custom-parser",
+          title: "自定义格式与解析",
+          code: `<DatePicker format={formatDotDate} parse={parseDotDate} />`,
+          render: () => <DatePicker defaultValue={new Date(2026, 4, 25)} format={formatDotDate} parse={parseDotDate} />,
+        },
       ]}
       api={[
         {
@@ -116,6 +134,7 @@ const SectionDatePicker: React.FC<SectionCtx> = () => {
             { prop: "value / defaultValue", description: "受控/初始日期", type: "Date | null" },
             { prop: "onChange", description: "选择或清空时触发", type: "(date: Date | null, dateString: string) => void" },
             { prop: "format", description: "显示格式或自定义格式化函数", type: `"YYYY-MM-DD" | "YYYY/MM/DD" | "YYYY年MM月DD日" | ((date) => string)`, default: `"YYYY-MM-DD"` },
+            { prop: "parse", description: "自定义 format 函数对应的输入解析器", type: "(input: string) => Date | null" },
             { prop: "min / max", description: "可选日期范围", type: "Date" },
             { prop: "disabledDate", description: "自定义禁用日期", type: "(date: Date) => boolean" },
             { prop: "size", description: "输入框尺寸", type: `"sm" | "md" | "lg"`, default: `"md"` },

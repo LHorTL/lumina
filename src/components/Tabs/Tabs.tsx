@@ -22,6 +22,10 @@ export interface TabsProps
   className?: string;
 }
 
+/** 返回第一项未禁用标签的 key。 */
+const getFirstEnabledKey = (items: TabItem[]): string | undefined =>
+  items.find((item) => !item.disabled)?.key;
+
 /** `Tabs` — switchable sections. */
 export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(({
   items,
@@ -33,35 +37,75 @@ export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(({
   className = "",
   ...rest
 }, ref) => {
-  const [inner, setInner] = React.useState(defaultActiveKey ?? items[0]?.key);
+  const baseId = React.useId();
+  const tabRefs = React.useRef(new Map<string, HTMLButtonElement>());
+  const [inner, setInner] = React.useState(defaultActiveKey ?? getFirstEnabledKey(items));
   const isControlled = activeKey !== undefined;
-  const current = isControlled ? activeKey! : inner;
+  const requested = isControlled ? activeKey! : inner;
+  const current = items.some((item) => item.key === requested && !item.disabled)
+    ? requested
+    : getFirstEnabledKey(items);
 
   const select = (k: string) => {
+    if (items.find((item) => item.key === k)?.disabled) return;
     if (!isControlled) setInner(k);
     onChange?.(k);
   };
 
+  /** 按 WAI-ARIA Tabs 规则移动焦点并自动激活目标标签。 */
+  const handleTabKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+    const enabled = items.filter((item) => !item.disabled);
+    const index = enabled.findIndex((item) => item.key === current);
+    let target: TabItem | undefined;
+    if (event.key === "ArrowRight") target = enabled[(index + 1) % enabled.length];
+    if (event.key === "ArrowLeft") target = enabled[(index - 1 + enabled.length) % enabled.length];
+    if (event.key === "Home") target = enabled[0];
+    if (event.key === "End") target = enabled[enabled.length - 1];
+    if (!target) return;
+    event.preventDefault();
+    tabRefs.current.get(target.key)?.focus();
+    select(target.key);
+  };
+
   const active = items.find((i) => i.key === current);
+  const activeIndex = items.findIndex((item) => item.key === current);
 
   return (
     <div ref={ref} className={`tabs ${variant} ${centered ? "centered" : ""} ${className}`} {...rest}>
       <div className="tabs-nav" role="tablist">
-        {items.map((it) => (
+        {items.map((it, index) => (
           <button
+            ref={(node) => {
+              if (node) tabRefs.current.set(it.key, node);
+              else tabRefs.current.delete(it.key);
+            }}
             key={it.key}
             type="button"
             role="tab"
+            id={`${baseId}-tab-${index}`}
             aria-selected={current === it.key}
+            aria-controls={it.content !== undefined ? `${baseId}-panel-${index}` : undefined}
+            tabIndex={current === it.key ? 0 : -1}
             disabled={it.disabled}
             className={`tab ${current === it.key ? "active" : ""}`}
             onClick={() => select(it.key)}
+            onKeyDown={handleTabKeyDown}
           >
             {it.label}
           </button>
         ))}
       </div>
-      {active?.content !== undefined && <div className="tabs-content">{active.content}</div>}
+      {active?.content !== undefined && (
+        <div
+          id={`${baseId}-panel-${activeIndex}`}
+          className="tabs-content"
+          role="tabpanel"
+          aria-labelledby={`${baseId}-tab-${activeIndex}`}
+          tabIndex={0}
+        >
+          {active.content}
+        </div>
+      )}
     </div>
   );
 });

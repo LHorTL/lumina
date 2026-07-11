@@ -4,6 +4,7 @@ import "./Input.css";
 import * as React from "react";
 import { Icon, isIconName, renderIconSlot, type IconSlot } from "../Icon";
 import { Textarea, type TextareaProps } from "../Textarea";
+import { createValueOverrideTarget } from "../../utils/inputEvents";
 
 export interface InputProps
   extends Omit<
@@ -129,6 +130,15 @@ const InputBase = React.forwardRef<HTMLInputElement, InputProps>(
             size={14}
             className={className}
             onClick={handleIconClick(handler)}
+            role={handler ? "button" : undefined}
+            tabIndex={handler && !disabled ? 0 : undefined}
+            aria-label={handler ? (side === "lead" ? "Activate leading icon" : "Activate trailing icon") : undefined}
+            onKeyDown={handler ? (event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                handler(event as unknown as React.MouseEvent<SVGSVGElement>);
+              }
+            } : undefined}
           />
         );
       }
@@ -143,6 +153,15 @@ const InputBase = React.forwardRef<HTMLInputElement, InputProps>(
                 }
               : undefined
           }
+          role={handler ? "button" : undefined}
+          tabIndex={handler && !disabled ? 0 : undefined}
+          aria-label={handler ? (side === "lead" ? "Activate leading icon" : "Activate trailing icon") : undefined}
+          onKeyDown={handler ? (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              handler(event as unknown as React.MouseEvent<SVGSVGElement>);
+            }
+          } : undefined}
         >
           {renderIconSlot(icon)}
         </span>
@@ -155,15 +174,17 @@ const InputBase = React.forwardRef<HTMLInputElement, InputProps>(
       onValueChange?.(e.target.value, e);
     };
 
-    const handleClear = (e: React.MouseEvent<HTMLSpanElement>) => {
+    const handleClear = (e: React.MouseEvent<HTMLButtonElement>) => {
       e.stopPropagation();
       if (disabled) return;
       if (!isControlled) setInner("");
-      if (inputRef.current) inputRef.current.value = "";
+      if (!isControlled && inputRef.current) inputRef.current.value = "";
+      const clearedTarget = createValueOverrideTarget(inputRef.current, "");
       const synthetic = {
         ...e,
-        target: inputRef.current ?? { value: "" },
-        currentTarget: inputRef.current ?? { value: "" },
+        type: "change",
+        target: clearedTarget,
+        currentTarget: clearedTarget,
       } as unknown as React.ChangeEvent<HTMLInputElement>;
       onChange?.(synthetic);
       onValueChange?.("", synthetic);
@@ -189,16 +210,16 @@ const InputBase = React.forwardRef<HTMLInputElement, InputProps>(
         />
         {suffix && <span className="input-affix suffix">{suffix}</span>}
         {showClear && (
-          <span
+          <button
+            type="button"
             className="input-clear"
             role="button"
             aria-label="Clear"
-            tabIndex={-1}
             onMouseDown={(e) => e.preventDefault()}
             onClick={handleClear}
           >
             <Icon name="x" size={12} />
-          </span>
+          </button>
         )}
         {renderAffixIcon(trailingIcon, "trail", onTrailingIconClick)}
       </div>
@@ -244,7 +265,6 @@ export const InputPassword = React.forwardRef<HTMLInputElement, InputPasswordPro
         <button
           type="button"
           className="input-password-toggle"
-          tabIndex={-1}
           onMouseDown={(e) => e.preventDefault()}
           onClick={toggle}
           aria-label={visible ? "Hide password" : "Show password"}

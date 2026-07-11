@@ -6,15 +6,22 @@ import ReactDOM from "react-dom";
 import { createRoot, type Root } from "react-dom/client";
 import { Icon } from "../Icon";
 import { Button, type ButtonProps } from "../Button";
+import { OverlayZIndexProvider, useOverlayLayer, useOverlayZIndex } from "../../utils/overlayStack";
+import { usePortalContainer } from "../../utils/portal";
 
+/** 弹窗正文允许透传的 data-* 属性。 */
 type DataAttributes = {
   [K in `data-${string}`]?: string | number | boolean | undefined;
 };
+/** 弹窗正文包装节点可接收的原生属性。 */
 type ModalBodyProps = Omit<
   React.HTMLAttributes<HTMLDivElement>,
   "children" | "className" | "style"
 > &
   DataAttributes;
+
+/** 弹窗正文的边缘留白策略。 */
+export type ModalBodyInset = "safe" | "none";
 
 export interface ModalProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, "title" | "children" | "onClose"> {
@@ -66,6 +73,11 @@ export interface ModalProps
   /** Convenience overflow control for the body wrapper. */
   bodyOverflow?: React.CSSProperties["overflow"];
   /**
+   * 正文边缘留白策略。`safe` 会根据拟态阴影强度自动预留空间，
+   * `none` 适合图片、表格等需要贴边展示的内容。
+   */
+  bodyInset?: ModalBodyInset;
+  /**
    * When true the modal's children are unmounted every time it closes.
    * Default `false` — children stay mounted so internal state survives
    * reopens.
@@ -75,6 +87,7 @@ export interface ModalProps
   afterOpenChange?: (open: boolean) => void;
   /** Override the z-index of the overlay. */
   zIndex?: number;
+  /** 对话框面板的附加类名；遮罩层请使用 `maskClassName`。 */
   className?: string;
 }
 
@@ -146,6 +159,7 @@ const ModalBase = React.forwardRef<HTMLDivElement, ModalProps>(({
   bodyStyle,
   bodyProps,
   bodyOverflow,
+  bodyInset = "safe",
   destroyOnClose = false,
   afterOpenChange,
   zIndex,
@@ -154,6 +168,11 @@ const ModalBase = React.forwardRef<HTMLDivElement, ModalProps>(({
   onClick,
   ...rest
 }, ref) => {
+  const portalContainer = usePortalContainer();
+  const panelRef = React.useRef<HTMLDivElement | null>(null);
+  const titleId = React.useId();
+  const descriptionId = React.useId();
+  const overlayZIndex = useOverlayZIndex(open, zIndex);
   const [hasOpenedOnce, setHasOpenedOnce] = React.useState(open);
   React.useEffect(() => {
     if (open) setHasOpenedOnce(true);
@@ -164,34 +183,42 @@ const ModalBase = React.forwardRef<HTMLDivElement, ModalProps>(({
     else onClose?.();
   }, [onCancel, onClose]);
 
-  React.useEffect(() => {
-    if (!open || !escClosable) return;
-    const h = (e: KeyboardEvent) => {
-      if (e.key === "Escape") handleCancel();
-    };
-    window.addEventListener("keydown", h);
-    return () => window.removeEventListener("keydown", h);
-  }, [open, escClosable, handleCancel]);
+  useOverlayLayer({
+    open: open && portalContainer != null,
+    containerRef: panelRef,
+    zIndex: overlayZIndex,
+    onEscape: handleCancel,
+    escapeEnabled: escClosable,
+    trapFocus: true,
+    autoFocus: true,
+    restoreFocus: true,
+    lockScroll: true,
+  });
+
+  /** 同时维护内部面板引用和对外 ref。 */
+  const setPanelRef = React.useCallback((node: HTMLDivElement | null) => {
+    panelRef.current = node;
+    if (typeof ref === "function") ref(node);
+    else if (ref) ref.current = node;
+  }, [ref]);
 
   const prevOpen = React.useRef(open);
+  const afterOpenChangeRef = React.useRef(afterOpenChange);
+  afterOpenChangeRef.current = afterOpenChange;
   React.useEffect(() => {
     if (prevOpen.current !== open) {
       prevOpen.current = open;
-      if (afterOpenChange) {
-        const id = window.setTimeout(() => afterOpenChange(open), ANIM_MS);
-        return () => window.clearTimeout(id);
-      }
+      const id = window.setTimeout(() => afterOpenChangeRef.current?.(open), ANIM_MS);
+      return () => window.clearTimeout(id);
     }
-  }, [open, afterOpenChange]);
+  }, [open]);
 
-  if (typeof document === "undefined") return null;
+  if (!portalContainer) return null;
   if (!hasOpenedOnce) return null;
   if (!open && destroyOnClose) return null;
 
-  const overlayStyle: React.CSSProperties | undefined =
-    zIndex != null || maskStyle
-      ? { ...maskStyle, ...(zIndex != null ? { zIndex } : {}) }
-      : undefined;
+  const overlayStyle: React.CSSProperties = { ...maskStyle, zIndex: overlayZIndex };
+  const panelStyle: React.CSSProperties = { width, maxWidth: "92vw", ...style };
 
   const defaultFooter = (
     <>
@@ -212,58 +239,65 @@ const ModalBase = React.forwardRef<HTMLDivElement, ModalProps>(({
     bodyOverflow == null ? bodyStyle : { overflow: bodyOverflow, ...bodyStyle };
 
   return ReactDOM.createPortal(
-    <div
-      className={["modal-overlay", open ? "" : "hidden", className, maskClassName]
-        .filter(Boolean)
-        .join(" ")}
-      style={overlayStyle}
-      onClick={() => maskClosable && handleCancel()}
-      role="presentation"
-    >
+    <OverlayZIndexProvider zIndex={overlayZIndex}>
       <div
-        ref={ref}
-        className="modal"
-        style={{ width, ...style }}
-        onClick={(e) => {
-          onClick?.(e);
-          e.stopPropagation();
-        }}
-        role="dialog"
-        aria-modal
-        aria-hidden={!open}
-        {...rest}
+        className={["modal-overlay", open ? "" : "hidden", maskClassName]
+          .filter(Boolean)
+          .join(" ")}
+        style={overlayStyle}
+        onClick={() => maskClosable && handleCancel()}
+        role="presentation"
       >
-        {(title || description || closable) && (
-          <div className="modal-head">
-            <div className="modal-titles">
-              {title && <div className="modal-title">{title}</div>}
-              {description && <div className="modal-desc">{description}</div>}
-            </div>
-            {closable && (
-              <button
-                type="button"
-                className="modal-close"
-                onClick={handleCancel}
-                aria-label="Close"
-              >
-                {closeIcon ?? <Icon name="x" size={16} />}
-              </button>
-            )}
-          </div>
-        )}
         <div
-          {...bodyProps}
-          className={`modal-body ${bodyClassName}`.trim()}
-          style={modalBodyStyle}
+          ref={setPanelRef}
+          className={["modal", className].filter(Boolean).join(" ")}
+          style={panelStyle}
+          onClick={(e) => {
+            onClick?.(e);
+            e.stopPropagation();
+          }}
+          role="dialog"
+          aria-modal
+          aria-hidden={!open}
+          aria-labelledby={title ? titleId : undefined}
+          aria-describedby={description ? descriptionId : undefined}
+          tabIndex={-1}
+          {...rest}
         >
-          {children}
+          {(title || description || closable) && (
+            <div className="modal-head">
+              <div className="modal-titles">
+                {title && <div id={titleId} className="modal-title">{title}</div>}
+                {description && <div id={descriptionId} className="modal-desc">{description}</div>}
+              </div>
+              {closable && (
+                <button
+                  type="button"
+                  className="modal-close"
+                  onClick={handleCancel}
+                  aria-label="Close"
+                >
+                  {closeIcon ?? <Icon name="x" size={16} />}
+                </button>
+              )}
+            </div>
+          )}
+          <div
+            {...bodyProps}
+            className={["modal-body", `inset-${bodyInset}`, bodyClassName]
+              .filter(Boolean)
+              .join(" ")}
+            style={modalBodyStyle}
+          >
+            {children}
+          </div>
+          {footer === null ? null : (
+            <div className="modal-foot">{footer ?? defaultFooter}</div>
+          )}
         </div>
-        {footer === null ? null : (
-          <div className="modal-foot">{footer ?? defaultFooter}</div>
-        )}
       </div>
-    </div>,
-    document.body
+    </OverlayZIndexProvider>,
+    portalContainer
   );
 });
 ModalBase.displayName = "Modal";
@@ -327,7 +361,7 @@ const StaticModalHost: React.FC<StaticModalHostProps> = ({
       result
         .then((next) => {
           if (next !== false) destroy();
-        })
+        }, () => undefined)
         .finally(() => setLoading(false));
       return;
     }
@@ -372,7 +406,8 @@ const StaticModalHost: React.FC<StaticModalHostProps> = ({
       footer={mergedFooter}
       maskClosable={maskClosable ?? false}
       escClosable={escClosable ?? true}
-      className={`modal-static-overlay ${className}`}
+      className={className}
+      maskClassName={["modal-static-overlay", config.maskClassName].filter(Boolean).join(" ")}
     >
       <div className="modal-static-body">
         {icon !== false && (

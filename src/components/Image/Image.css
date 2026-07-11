@@ -73,7 +73,8 @@
   transform: translateY(-4px);
   transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
 }
-.n-image:hover .image-actions { opacity: 1; transform: translateY(0); }
+.n-image:hover .image-actions,
+.n-image:focus-within .image-actions { opacity: 1; transform: translateY(0); }
 .image-actions .ia-btn {
   width: 26px;
   height: 26px;
@@ -111,7 +112,8 @@
   transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
   pointer-events: none;
 }
-.n-image:hover .image-hint { opacity: 1; transform: translateY(0); }
+.n-image:hover .image-hint,
+.n-image:focus-visible .image-hint { opacity: 1; transform: translateY(0); }
 .image-preview-overlay {
   position: fixed; inset: 0;
   background: var(--image-preview-mask-bg, var(--mask-bg));

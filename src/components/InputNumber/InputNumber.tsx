@@ -38,6 +38,18 @@ export interface InputNumberProps
   suffix?: React.ReactNode;
 }
 
+/** 按范围与精度归一化数字。 */
+const normalizeNumber = (value: number, min: number, max: number, precision?: number): number => {
+  const clamped = Math.max(min, Math.min(max, value));
+  return precision != null ? Number(clamped.toFixed(precision)) : clamped;
+};
+
+/** 把精度限制到 Number.toFixed 支持的整数范围。 */
+const normalizePrecision = (precision: number | undefined): number | undefined =>
+  precision != null && Number.isFinite(precision)
+    ? Math.max(0, Math.min(100, Math.trunc(precision)))
+    : undefined;
+
 /**
  * `InputNumber` — numeric input with up/down stepper buttons. Arrow-key
  * and mouse-wheel increments; min / max clamping; optional rounding.
@@ -55,6 +67,8 @@ export const InputNumber = React.forwardRef<HTMLInputElement, InputNumberProps>(
       onChange,
       onBlur,
       onFocus,
+      onWheel,
+      onKeyDown,
       onPressEnter,
       min = -Infinity,
       max = Infinity,
@@ -72,26 +86,40 @@ export const InputNumber = React.forwardRef<HTMLInputElement, InputNumberProps>(
       autoFocus,
       id,
       name,
+      ...rest
     },
     ref
   ) => {
-    const [inner, setInner] = React.useState<number | null>(defaultValue ?? null);
+    const normalizedMin = Number.isFinite(min) ? min : -Infinity;
+    const normalizedMaxCandidate = Number.isFinite(max) ? max : Infinity;
+    const normalizedMax = Math.max(normalizedMin, normalizedMaxCandidate);
+    const normalizedStep = Number.isFinite(step) && step > 0 ? step : 1;
+    const normalizedPrecision = normalizePrecision(precision);
+    const [inner, setInner] = React.useState<number | null>(() =>
+      defaultValue == null || !Number.isFinite(defaultValue)
+        ? null
+        : normalizeNumber(defaultValue, normalizedMin, normalizedMax, normalizedPrecision)
+    );
     const isControlled = value !== undefined;
-    const current = isControlled ? (value as number | null) : inner;
+    const current = isControlled
+      ? typeof value === "number" && Number.isFinite(value)
+        ? normalizeNumber(value, normalizedMin, normalizedMax, normalizedPrecision)
+        : null
+      : inner;
 
     const [text, setText] = React.useState<string>(current == null ? "" : String(current));
 
     React.useEffect(() => {
-      if (isControlled) setText(value == null ? "" : String(value));
-    }, [value, isControlled]);
+      if (isControlled) setText(current == null ? "" : String(current));
+    }, [current, isControlled]);
 
     const clamp = React.useCallback(
-      (n: number) => Math.max(min, Math.min(max, n)),
-      [min, max]
+      (n: number) => Math.max(normalizedMin, Math.min(normalizedMax, n)),
+      [normalizedMax, normalizedMin]
     );
     const round = React.useCallback(
-      (n: number) => (precision != null ? Number(n.toFixed(precision)) : n),
-      [precision]
+      (n: number) => (normalizedPrecision != null ? Number(n.toFixed(normalizedPrecision)) : n),
+      [normalizedPrecision]
     );
 
     const commit = (next: number | null) => {
@@ -106,7 +134,7 @@ export const InputNumber = React.forwardRef<HTMLInputElement, InputNumberProps>(
         return;
       }
       const parsed = Number(v);
-      if (!Number.isNaN(parsed)) commit(clamp(round(parsed)));
+      if (Number.isFinite(parsed)) commit(clamp(round(parsed)));
     };
 
     const handleBlur: React.FocusEventHandler<HTMLInputElement> = (e) => {
@@ -126,23 +154,34 @@ export const InputNumber = React.forwardRef<HTMLInputElement, InputNumberProps>(
     };
 
     const handleKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
-      if (e.key === "ArrowUp")   { e.preventDefault(); increment(step); }
-      if (e.key === "ArrowDown") { e.preventDefault(); increment(-step); }
+      onKeyDown?.(e);
+      if (e.defaultPrevented) return;
+      if (e.key === "ArrowUp")   { e.preventDefault(); increment(normalizedStep); }
+      if (e.key === "ArrowDown") { e.preventDefault(); increment(-normalizedStep); }
       if (e.key === "Enter")     onPressEnter?.(e);
     };
 
-    const upDisabled = disabled || readOnly || (current != null && current >= max);
-    const downDisabled = disabled || readOnly || (current != null && current <= min);
+    /** 输入框聚焦时用滚轮按 step 调整数值。 */
+    const handleWheel: React.WheelEventHandler<HTMLInputElement> = (event) => {
+      onWheel?.(event);
+      if (event.defaultPrevented || document.activeElement !== event.currentTarget || disabled || readOnly) return;
+      event.preventDefault();
+      increment(event.deltaY < 0 ? normalizedStep : -normalizedStep);
+    };
+
+    const upDisabled = disabled || readOnly || (current != null && current >= normalizedMax);
+    const downDisabled = disabled || readOnly || (current != null && current <= normalizedMin);
 
     const stepperSuffix = controls ? (
-      <span className="ipn-steppers" aria-hidden>
+      <span className="ipn-steppers">
         <button
           type="button"
           className="ipn-step up"
           tabIndex={-1}
           disabled={upDisabled}
           onMouseDown={(e) => e.preventDefault()}
-          onClick={() => increment(step)}
+          onClick={() => increment(normalizedStep)}
+          aria-label="增加数值"
         >
           <Icon name="chevUp" size={10} stroke={2.5} />
         </button>
@@ -152,7 +191,8 @@ export const InputNumber = React.forwardRef<HTMLInputElement, InputNumberProps>(
           tabIndex={-1}
           disabled={downDisabled}
           onMouseDown={(e) => e.preventDefault()}
-          onClick={() => increment(-step)}
+          onClick={() => increment(-normalizedStep)}
+          aria-label="减少数值"
         >
           <Icon name="chevDown" size={10} stroke={2.5} />
         </button>
@@ -167,6 +207,7 @@ export const InputNumber = React.forwardRef<HTMLInputElement, InputNumberProps>(
     return (
       <Input
         ref={ref}
+        {...rest}
         id={id}
         name={name}
         size={size}
@@ -180,8 +221,13 @@ export const InputNumber = React.forwardRef<HTMLInputElement, InputNumberProps>(
         suffix={finalSuffix}
         className={`input-number ${className}`}
         inputMode="decimal"
+        role="spinbutton"
+        aria-valuemin={Number.isFinite(normalizedMin) ? normalizedMin : undefined}
+        aria-valuemax={Number.isFinite(normalizedMax) ? normalizedMax : undefined}
+        aria-valuenow={current ?? undefined}
         onValueChange={handleInput}
         onKeyDown={handleKeyDown}
+        onWheel={handleWheel}
         onBlur={handleBlur}
         onFocus={onFocus}
       />

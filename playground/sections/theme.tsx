@@ -2,11 +2,13 @@ import * as React from "react";
 import {
   Button,
   Input,
+  Select,
   Tag,
   Spin,
   ThemeProvider,
   useTheme,
   ACCENT_PRESETS,
+  LUMINA_THEME_PRESETS,
   type AccentKey,
   type ThemeMode,
   type ThemePresets,
@@ -128,45 +130,14 @@ const ThemeCustomDemo: React.FC = () => {
 
 const CUSTOM_MODE_THEMES = {
   graphite: {
+    ...LUMINA_THEME_PRESETS.graphite,
     label: "Graphite",
     description: "深色",
-    base: "dark",
-    accent: {
-      accent: "oklch(72% 0.13 190)",
-      ink: "oklch(85% 0.1 190)",
-      soft: "oklch(31% 0.05 190)",
-      glow: "oklch(72% 0.13 190 / 0.18)",
-    },
-    intensity: 4,
-    radius: 18,
-    tokens: {
-      bg: "#181b22",
-      "bg-raised": "#20242d",
-      "bg-sunken": "#11141a",
-      fg: "#edf1f7",
-      "fg-muted": "#a3adbd",
-      "shadow-dark": "rgba(0,0,0,.58)",
-      "shadow-light": "rgba(128,146,166,.07)",
-      "shadow-scale": "1",
-      "shadow-float-scale": "1",
-    },
   },
   porcelain: {
+    ...LUMINA_THEME_PRESETS.porcelain,
     label: "瓷白",
     description: "清亮",
-    base: "light",
-    accent: "mint",
-    intensity: 6,
-    radius: 24,
-    tokens: {
-      bg: "#edf3f1",
-      "bg-raised": "#f5faf8",
-      "bg-sunken": "#dfe8e5",
-      fg: "#33434a",
-      "fg-muted": "#75868c",
-      "shadow-dark": "rgba(143,163,168,.45)",
-      "shadow-light": "rgba(255,255,255,.96)",
-    },
   },
 } satisfies ThemePresets;
 
@@ -234,6 +205,15 @@ const ThemeScopeDemo: React.FC = () => (
           <ThemeProvider target="scope" accent="mint" as="div">
             <ThemePreviewBox label='再嵌一层 · accent="mint"'>
               <ThemePreviewControls />
+              <Select
+                aria-label="作用域主题下的 Portal 下拉框"
+                defaultValue="mint"
+                options={[
+                  { label: "Mint 浮层", value: "mint" },
+                  { label: "Coral 浮层", value: "coral" },
+                ]}
+                style={{ width: 180 }}
+              />
             </ThemePreviewBox>
           </ThemeProvider>
         </ThemePreviewBox>
@@ -346,31 +326,11 @@ t.setTokens({
       {
         id: "custom-mode",
         title: "自定义主题模式",
-        description: "mode 可以指向 themes 中的命名 preset。base 决定 light/dark 基底,tokens 决定完整视觉。",
-        code: `const themes = {
-  graphite: {
-    label: "Graphite",
-    description: "深色",
-    base: "dark",
-    accent: {
-      accent: "oklch(72% 0.13 190)",
-      ink: "oklch(85% 0.1 190)",
-      soft: "oklch(31% 0.05 190)",
-      glow: "oklch(72% 0.13 190 / 0.18)",
-    },
-    intensity: 4,
-    radius: 18,
-    tokens: {
-      bg: "#181b22",
-      "bg-raised": "#20242d",
-      "bg-sunken": "#11141a",
-      fg: "#edf1f7",
-      "shadow-dark": "rgba(0,0,0,.58)",
-      "shadow-light": "rgba(128,146,166,.07)",
-      "shadow-scale": "1",
-      "shadow-float-scale": "1",
-    },
-  },
+        description: "mode 可以指向 themes 中的命名 preset；可直接复用公开的 Lumina 内置预设。",
+        code: `import { LUMINA_THEME_PRESETS, ThemeProvider } from "lumina";
+
+const themes = {
+  graphite: LUMINA_THEME_PRESETS.graphite,
 };
 
 <ThemeProvider mode="graphite" themes={themes}>
@@ -381,7 +341,7 @@ t.setTokens({
       {
         id: "scope",
         title: "作用域嵌套",
-        description: "target=\"scope\" 只作用于子树,可以层层嵌套。",
+        description: "target=\"scope\" 只作用于子树,可以层层嵌套；Select 等 Portal 浮层也会继承所属作用域主题。",
         span: 2,
         code: `<ThemeProvider accent="sky">
   <Page />
@@ -391,6 +351,7 @@ t.setTokens({
 
     <ThemeProvider target="scope" accent="mint" as="div">
       <InnerCallout />
+      <Select options={[{ label: "Mint 浮层", value: "mint" }]} />
     </ThemeProvider>
   </ThemeProvider>
 </ThemeProvider>`,
@@ -441,10 +402,12 @@ applyTheme(document.documentElement, {
             type: "Record<string, string>",
           },
           { prop: "themes", description: "命名自定义模式 preset", type: "Record<string, ThemePreset>" },
+          { prop: "LUMINA_THEME_PRESETS", description: "可复用的 light/dark/porcelain/graphite/ember/assistant 内置预设", type: "Record<BuiltInLuminaThemePresetKey, ThemePreset>" },
+          { prop: "cloneLuminaThemePreset / pickLuminaThemePresets", description: "克隆单个或挑选多个内置主题，避免修改共享预设", type: "function" },
           { prop: "ThemePreset.label / description", description: "可选展示元信息;ThemePanel 会读取它作为卡片标题和说明", type: "string" },
           { prop: "target", description: "应用到根还是局部", type: `"root" | "scope"`, default: `"root"` },
           { prop: "as", description: "scope 模式的元素标签", type: "keyof JSX.IntrinsicElements", default: `"div"` },
-          { prop: "storageKey", description: "localStorage 持久化 key,包含当前主题状态与自定义 themes", type: "string" },
+          { prop: "storageKey", description: "带版本号的 localStorage 持久化 key；同源多窗口会自动同步当前主题与自定义 themes", type: "string" },
           { prop: "onChange", description: "主题值变更回调", type: "(value: ThemeValue) => void" },
         ],
       },

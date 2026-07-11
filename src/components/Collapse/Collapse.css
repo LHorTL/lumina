@@ -48,6 +48,11 @@
   border-radius: var(--r-xs);
   padding: 2px;
 }
+button.collapse-chev {
+  border: 0;
+  background: transparent;
+  font: inherit;
+}
 .collapse-chev.clickable { cursor: pointer; }
 .collapse-chev.clickable:hover { color: var(--fg); background: var(--bg); box-shadow: var(--neu-shadow-subtle); }
 .collapse-item.open .collapse-chev { transform: rotate(180deg); color: var(--accent); }

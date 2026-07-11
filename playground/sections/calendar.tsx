@@ -1,10 +1,11 @@
 import * as React from "react";
-import { Calendar } from "lumina";
+import { Button, Calendar } from "lumina";
 import { DocPage } from "../docs";
 import { defineSection, type SectionCtx } from "./_types";
 
 const SectionCalendar: React.FC<SectionCtx> = () => {
-  const [date, setDate] = React.useState<Date>(new Date());
+  const [date, setDate] = React.useState<Date | null>(new Date());
+  const [viewDate, setViewDate] = React.useState<Date>(new Date());
   const [workDate, setWorkDate] = React.useState<Date>(new Date());
   return (
     <DocPage
@@ -14,10 +15,13 @@ const SectionCalendar: React.FC<SectionCtx> = () => {
           id: "basic",
           title: "基础用法",
           span: 2,
-          code: `<Calendar value={date} onChange={setDate} />`,
+          description: "受控 value 可传 null 表示尚未选择，日历仍保留可操作的当前月份。",
+          code: `<Calendar value={date} viewDate={viewDate}
+  onChange={setDate} onViewChange={setViewDate} />
+<Button onClick={() => setDate(null)}>清空选择</Button>`,
           render: () => (
             <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
-              <Calendar value={date} onChange={setDate} />
+              <Calendar value={date} viewDate={viewDate} onChange={setDate} onViewChange={setViewDate} />
               <div style={{ display: "flex", flexDirection: "column", gap: 10, paddingTop: 8 }}>
                 <div className="showcase-label">已选日期</div>
                 <div
@@ -28,9 +32,12 @@ const SectionCalendar: React.FC<SectionCtx> = () => {
                     color: "var(--accent-ink)",
                   }}
                 >
-                  {date.toISOString().slice(0, 10)}
+                  {date ? date.toISOString().slice(0, 10) : "未选择"}
                 </div>
                 <div style={{ color: "var(--fg-muted)", fontSize: 13 }}>点击年份或月份可快速切换视图。</div>
+                <Button size="sm" variant="ghost" disabled={!date} onClick={() => setDate(null)}>
+                  清空选择
+                </Button>
               </div>
             </div>
           ),
@@ -74,8 +81,9 @@ const SectionCalendar: React.FC<SectionCtx> = () => {
         {
           title: "Calendar",
           rows: [
-            { prop: "value / defaultValue", description: "受控/初始日期", type: "Date" },
+            { prop: "value / defaultValue", description: "受控/初始日期;null 表示没有选中日期", type: "Date | null" },
             { prop: "viewDate", description: "外部日期变化时同步可视月份", type: "Date" },
+            { prop: "onViewChange", description: "用户切换可视月份或年份时回调", type: "(date: Date) => void" },
             { prop: "onChange", description: "选择回调", type: "(date: Date) => void" },
             { prop: "min / max", description: "可选范围", type: "Date" },
             {

@@ -52,10 +52,18 @@ export const Tag = React.forwardRef<HTMLSpanElement, TagProps>(({
         <span
           className="x"
           role="button"
-          aria-label="Remove"
+          aria-label="移除"
+          tabIndex={0}
           onClick={(e) => {
             e.stopPropagation();
             onRemove?.();
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              event.stopPropagation();
+              onRemove?.();
+            }
           }}
         >
           <Icon name="x" size={11} />

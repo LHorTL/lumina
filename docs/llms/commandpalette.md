@@ -12,7 +12,7 @@ import { CommandPalette } from "@fangxinyan/lumina";
 
 ### 基础 + 快捷键
 
-在当前页面按 ⌘K / Ctrl+K 打开。分组、快捷键提示、键盘导航都已内置。
+在当前页面按 ⌘K / Ctrl+K 打开。方向键、Home / End 会跳过禁用项；Esc 只关闭当前最上层浮层。
 
 ```tsx
 const [open, setOpen] = useState(false);
@@ -27,7 +27,13 @@ useEffect(() => {
   return () => window.removeEventListener("keydown", h);
 }, []);
 
-<CommandPalette open={open} onOpenChange={setOpen} items={[...]} />
+<CommandPalette
+  open={open}
+  onOpenChange={setOpen}
+  items={[...]}
+  className="app-command-panel"
+  overlayClassName="app-command-mask"
+/>
 ```
 
 ## API
@@ -43,6 +49,8 @@ useEffect(() => {
 | emptyText | `ReactNode` | — | 无结果占位 |
 | resetOnOpen | `boolean` | `true` | 打开时清空输入 |
 | footer | `ReactNode` | — | 底部区;null 隐藏 |
+| className | `string` | — | 命令面板节点 className(ref 同样指向该节点) |
+| overlayClassName | `string` | — | 全屏遮罩层 className |
 
 
 **CommandItem**

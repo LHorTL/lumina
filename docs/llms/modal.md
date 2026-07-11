@@ -12,6 +12,8 @@ import { Modal } from "@fangxinyan/lumina";
 
 ### 基础
 
+打开后自动聚焦并限制焦点，锁定页面滚动；关闭后把焦点归还给触发控件。
+
 ```tsx
 <Modal open={m} onClose={...} title="标题">...</Modal>
 ```
@@ -89,18 +91,26 @@ closable={false} 隐藏右上角 ×,closeIcon 可自定义。
 <Modal closeIcon={<Icon name="chevDown" />} />
 ```
 
-### 正文容器控制
+### 拟态阴影安全区
 
-bodyClassName / bodyStyle / bodyProps 可直接作用到正文容器；bodyOverflow 用于切换滚动或允许拟态阴影外溢。
+正文默认根据当前阴影强度预留安全区，Card 等凸起组件贴近边缘时不会再被滚动容器裁切；全宽图片或表格可用 bodyInset="none" 取消留白。
 
 ```tsx
 <Modal
-  bodyClassName="settings-modal-body"
-  bodyStyle={{ maxHeight: 260, padding: 12 }}
-  bodyOverflow="visible"
+  bodyStyle={{ maxHeight: 260 }}
   bodyProps={{ "data-panel": "settings" }}
 >
-  ...
+  <Card title="同步设置">拟态阴影由 Modal 自动保护。</Card>
+</Modal>
+```
+
+### 嵌套浮层与 Esc 顺序
+
+子 Select 即使 Portal 到对话框之外，也会保持在 Modal 上方并参与同一焦点范围；连续按 Esc 会先关 Select，再关 Modal。
+
+```tsx
+<Modal open={open} onClose={() => setOpen(false)} destroyOnClose>
+  <Select defaultOpen options={[...]} />
 </Modal>
 ```
 
@@ -111,7 +121,7 @@ bodyClassName / bodyStyle / bodyProps 可直接作用到正文容器；bodyOverf
 | Prop | 类型 | 默认 | 说明 |
 | --- | --- | --- | --- |
 | open \* | `boolean` | — | 是否可见 |
-| onClose | `() => void` | — | 关闭回调(遮罩/Esc/关闭按钮) |
+| onClose | `() => void` | — | 关闭回调(遮罩/Esc/关闭按钮)；Esc 仅由当前最上层浮层响应 |
 | onOk | `() => void` | — | 默认 OK 按钮点击 |
 | onCancel | `() => void` | — | 默认 Cancel 按钮 / Esc / 关闭 / 遮罩触发,缺省则用 onClose |
 | title / description | `ReactNode` | — | 标题/说明 |
@@ -123,16 +133,18 @@ bodyClassName / bodyStyle / bodyProps 可直接作用到正文容器；bodyOverf
 | bodyStyle | `CSSProperties` | — | 正文容器内联样式 |
 | bodyProps | `HTMLAttributes<HTMLDivElement>` | — | 透传给正文容器的 DOM props |
 | bodyOverflow | `CSSProperties['overflow']` | — | 正文容器 overflow 快捷控制 |
+| bodyInset | `"safe" | "none"` | `"safe"` | 正文边缘留白；safe 自动保护拟态阴影，none 用于贴边内容 |
 | closable | `boolean` | `true` | 显示右上角 × |
 | closeIcon | `ReactNode` | — | 自定义关闭图标 |
 | maskClosable | `boolean` | `true` | 点击遮罩关闭 |
 | maskClassName | `string` | — | 遮罩层 className |
 | maskStyle | `CSSProperties` | — | 遮罩层内联样式 |
+| className | `string` | — | 对话框面板 className；ref 同样指向面板 |
 | escClosable | `boolean` | `true` | Esc 关闭 |
 | width | `number | string` | `440` | 宽度 |
 | destroyOnClose | `boolean` | `false` | 关闭时卸载子树 |
 | afterOpenChange | `(open: boolean) => void` | — | 动画结束后回调 |
-| zIndex | `number` | — | 覆盖遮罩 z-index |
+| zIndex | `number` | — | 覆盖对话框起始层级；所属子浮层会自动排在其上 |
 
 
 **Modal 静态 API**

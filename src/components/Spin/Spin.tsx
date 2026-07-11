@@ -65,13 +65,13 @@ export const Spin = React.forwardRef<HTMLSpanElement, SpinProps>(({
 
     if (variant === "dots") {
       return (
-        <span className={finalClassName} style={finalStyle} aria-label="Loading" {...indicatorRest}>
+        <span className={finalClassName} style={finalStyle} role="status" aria-label="加载中" {...indicatorRest}>
           <i /><i /><i />
         </span>
       );
     }
     return (
-      <span className={finalClassName} style={finalStyle} aria-label="Loading" {...indicatorRest} />
+      <span className={finalClassName} style={finalStyle} role="status" aria-label="加载中" {...indicatorRest} />
     );
   };
 
@@ -85,8 +85,8 @@ export const Spin = React.forwardRef<HTMLSpanElement, SpinProps>(({
   }
 
   return (
-    <span ref={ref} className={rootClass} style={style} {...rest}>
-      {renderIndicator()}
+    <span ref={ref} className={rootClass} style={style} role="status" aria-live="polite" {...rest}>
+      {renderIndicator({ "aria-hidden": true })}
       <span className="spin-label">{text}</span>
     </span>
   );

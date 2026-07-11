@@ -13,12 +13,15 @@ import { AppShell, TitleBar, Sidebar, StatusBar } from "@fangxinyan/lumina";
 ### 完整工作台外壳
 
 ```tsx
-<AppShell
-  titleBar={<TitleBar title="Lumina Mail" platform="mac" />}
-  sidebar={<Sidebar items={items} activeKey={active} onSelect={setActive} />}
->
-  <main>...</main>
-</AppShell>
+<div style={{ height: 480 }}>
+  <AppShell
+    style={{ height: "100%" }}
+    titleBar={<TitleBar title="Lumina Mail" platform="mac" />}
+    sidebar={<Sidebar items={items} activeKey={active} onSelect={setActive} />}
+  >
+    <main>...</main>
+  </AppShell>
+</div>
 ```
 
 ## API

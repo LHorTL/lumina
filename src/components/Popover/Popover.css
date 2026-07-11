@@ -10,9 +10,8 @@
 
 /*
  * Direction-aware entrance.
- * We animate `opacity` + `translate` (the standalone property, NOT `transform`)
- * so we don't clobber the inline `transform: translateX(-50%)` that useFloating
- * applies for cross-axis centering.
+ * We animate `opacity` + `translate` so positioning stays independent from
+ * the coordinates calculated by useFloating.
  */
 .popover-bottom { animation: popoverInDown var(--dur) var(--ease); }
 .popover-top    { animation: popoverInUp   var(--dur) var(--ease); }

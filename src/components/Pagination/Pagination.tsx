@@ -4,6 +4,7 @@ import "./Pagination.css";
 import * as React from "react";
 import { Icon } from "../Icon";
 import { Select } from "../Select";
+import { Input } from "../Input";
 
 export interface PaginationProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange"> {
@@ -36,6 +37,10 @@ export interface PaginationProps
 
 const DEFAULT_SIZE_OPTIONS = [10, 20, 50, 100];
 
+/** 把页码规范到当前有效范围。 */
+const clampPage = (value: number, pages: number): number =>
+  Number.isFinite(value) ? Math.min(pages, Math.max(1, Math.trunc(value))) : 1;
+
 /** `Pagination` — page number controls. */
 export const Pagination = React.forwardRef<HTMLDivElement, PaginationProps>(({
   total,
@@ -51,11 +56,18 @@ export const Pagination = React.forwardRef<HTMLDivElement, PaginationProps>(({
   className = "",
   ...rest
 }, ref) => {
+  const normalizedTotal = Number.isFinite(total) ? Math.max(0, Math.trunc(total)) : 0;
+  const normalizedPageSize = Number.isFinite(pageSize) && pageSize > 0 ? Math.max(1, Math.trunc(pageSize)) : 10;
+  const normalizedSiblings = Number.isFinite(siblings) ? Math.max(0, Math.trunc(siblings)) : 1;
+  const pages = Math.max(1, Math.ceil(normalizedTotal / normalizedPageSize));
   const [inner, setInner] = React.useState(defaultPage);
   const isControlled = page !== undefined;
-  const cur = isControlled ? page! : inner;
-  const pages = Math.max(1, Math.ceil(total / pageSize));
+  const cur = clampPage(isControlled ? page! : inner, pages);
   const [jumpDraft, setJumpDraft] = React.useState("");
+
+  React.useEffect(() => {
+    if (!isControlled && inner !== cur) setInner(cur);
+  }, [cur, inner, isControlled]);
 
   const go = (p: number) => {
     const next = Math.min(pages, Math.max(1, p));
@@ -84,8 +96,8 @@ export const Pagination = React.forwardRef<HTMLDivElement, PaginationProps>(({
   const range = (): (number | "...")[] => {
     const out: (number | "...")[] = [];
     const add = (n: number | "...") => out.push(n);
-    const s = Math.max(2, cur - siblings);
-    const e = Math.min(pages - 1, cur + siblings);
+    const s = Math.max(2, cur - normalizedSiblings);
+    const e = Math.min(pages - 1, cur + normalizedSiblings);
     add(1);
     if (s > 2) add("...");
     for (let i = s; i <= e; i++) add(i);
@@ -95,16 +107,17 @@ export const Pagination = React.forwardRef<HTMLDivElement, PaginationProps>(({
   };
 
   return (
-    <div ref={ref} className={`pagination ${className}`} {...rest}>
+    <div ref={ref} className={`pagination ${className}`} role="navigation" aria-label="分页" {...rest}>
       <span className="pg-info">
-        共 {total} 条 · 第 {cur} / {pages} 页
+        共 {normalizedTotal} 条 · 第 {cur} / {pages} 页
       </span>
       <div className="pg-controls">
         <button
           type="button"
           className={`pg ${cur === 1 ? "disabled" : ""}`}
           onClick={() => cur > 1 && go(cur - 1)}
-          aria-label="Previous"
+          aria-label="上一页"
+          disabled={cur === 1}
         >
           <Icon name="chevLeft" size={12} />
         </button>
@@ -117,6 +130,8 @@ export const Pagination = React.forwardRef<HTMLDivElement, PaginationProps>(({
               type="button"
               className={`pg ${p === cur ? "active" : ""}`}
               onClick={() => go(p)}
+              aria-label={`第 ${p} 页`}
+              aria-current={p === cur ? "page" : undefined}
             >
               {p}
             </button>
@@ -126,14 +141,15 @@ export const Pagination = React.forwardRef<HTMLDivElement, PaginationProps>(({
           type="button"
           className={`pg ${cur === pages ? "disabled" : ""}`}
           onClick={() => cur < pages && go(cur + 1)}
-          aria-label="Next"
+          aria-label="下一页"
+          disabled={cur === pages}
         >
           <Icon name="chevRight" size={12} />
         </button>
         {showSizeChanger && (
           <div className="pg-size-changer">
             <Select<number>
-              value={pageSize}
+              value={normalizedPageSize}
               size="sm"
               options={pageSizeOptions.map((n) => ({ value: n, label: `${n} 条/页` }))}
               onChange={handleSizeChange}
@@ -143,12 +159,12 @@ export const Pagination = React.forwardRef<HTMLDivElement, PaginationProps>(({
         {showQuickJumper && (
           <label className="pg-jumper">
             <span className="pg-jumper-label">跳至</span>
-            <input
-              type="text"
+            <Input
+              size="sm"
               inputMode="numeric"
               className="pg-jumper-input"
               value={jumpDraft}
-              onChange={(e) => setJumpDraft(e.target.value.replace(/[^\d]/g, ""))}
+              onValueChange={(value) => setJumpDraft(value.replace(/[^\d]/g, ""))}
               onKeyDown={handleJump}
               aria-label="跳转到指定页"
             />

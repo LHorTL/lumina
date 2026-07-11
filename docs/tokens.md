@@ -119,6 +119,8 @@
 | `--dur` | `220ms` |
 | `--dur-slow` | `360ms` |
 
+当系统启用 `prefers-reduced-motion: reduce` 时，Lumina 会自动把三档时长缩短为 `0.01ms`；业务无需另外覆盖。
+
 ## 字体 Typography
 
 | Token | 值 |

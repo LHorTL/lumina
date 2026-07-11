@@ -88,6 +88,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className={cls}
         disabled={disabled || loading}
         title={tip}
+        aria-busy={loading || undefined}
         aria-label={ariaLabel ?? (onlyIcon ? tip ?? (typeof icon === "string" ? icon : undefined) : undefined)}
         {...rest}
       >

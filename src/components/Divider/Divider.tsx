@@ -38,7 +38,13 @@ export const Divider = React.forwardRef<HTMLDivElement, DividerProps>(({
     .filter(Boolean)
     .join(" ");
   return (
-    <div ref={ref} className={cls} role="separator" {...rest}>
+    <div
+      ref={ref}
+      className={cls}
+      role="separator"
+      aria-orientation={direction === "vertical" ? "vertical" : "horizontal"}
+      {...rest}
+    >
       {label && <span className="divider-label">{label}</span>}
     </div>
   );

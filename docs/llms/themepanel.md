@@ -31,6 +31,7 @@ const [themes, setThemes] = React.useState<ThemePresets>({});
 
 <ThemeProvider themes={themes} storageKey="app:theme">
   <ThemePanel
+    sections={["presets", "advanced"]}
     onCreateTheme={(payload) => {
       setThemes((current) => ({
         ...current,

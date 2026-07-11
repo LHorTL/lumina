@@ -4,6 +4,9 @@ import "./ColorPicker.css";
 import * as React from "react";
 import { createPortal } from "react-dom";
 import { useFloating } from "../../utils/useFloating";
+import { usePortalContainer } from "../../utils/portal";
+import { useOverlayLayer } from "../../utils/overlayStack";
+import { Input } from "../Input";
 
 /* ============================================================================
  * Color conversion helpers
@@ -109,7 +112,7 @@ export interface ColorPickerProps
   presets?: string[];
   /** Show the current hex next to the swatch. */
   showText?: boolean;
-  /** Custom trigger; defaults to a swatch chip. */
+  /** 自定义触发内容；不能接收 ref 的节点或纯文本会自动包装为可访问的触发器。 */
   children?: React.ReactNode;
   /** Controlled open state. */
   open?: boolean;
@@ -117,6 +120,33 @@ export interface ColorPickerProps
   defaultOpen?: boolean;
   /** Called when open state changes. */
   onOpenChange?: (open: boolean) => void;
+}
+
+/** ColorPicker 对外暴露的真实触发节点类型；自定义内容可能由包装节点承载。 */
+export type ColorPickerTriggerElement = HTMLElement;
+
+/** ColorPicker 自定义触发元素可接收的交互属性。 */
+interface ColorPickerCustomTriggerProps {
+  onClick?: React.MouseEventHandler<HTMLElement>;
+  onKeyDown?: React.KeyboardEventHandler<HTMLElement>;
+  disabled?: boolean;
+  href?: string;
+  role?: React.AriaRole;
+  tabIndex?: number;
+  [key: `aria-${string}`]: unknown;
+}
+
+/** 判断 React 元素类型能否把 ref 直接落到真实 DOM。 */
+function supportsDomRef(type: React.ReactElement["type"]): boolean {
+  if (typeof type === "string") return type !== "svg";
+  if (typeof type !== "object" || type == null) return false;
+  const marker = (type as { $$typeof?: symbol }).$$typeof;
+  if (marker === Symbol.for("react.memo")) {
+    return supportsDomRef((type as { type: React.ReactElement["type"] }).type);
+  }
+  const displayName = (type as { displayName?: string }).displayName;
+  return marker === Symbol.for("react.forward_ref") &&
+    (displayName === "Button" || displayName === "IconButton");
 }
 
 /* ============================================================================
@@ -179,12 +209,33 @@ const SaturationBoard: React.FC<BoardProps> = ({ hue, s, v, onChange }) => {
     el.addEventListener("pointercancel", up);
   };
 
+  /** 用方向键调整饱和度与明度。 */
+  const handleKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (event) => {
+    let nextS = s;
+    let nextV = v;
+    if (event.key === "ArrowLeft") nextS -= 1;
+    else if (event.key === "ArrowRight") nextS += 1;
+    else if (event.key === "ArrowDown") nextV -= 1;
+    else if (event.key === "ArrowUp") nextV += 1;
+    else return;
+    event.preventDefault();
+    onChange(clamp(nextS, 0, 100), clamp(nextV, 0, 100), true);
+  };
+
   return (
     <div
       ref={ref}
       className="cp-board"
       style={{ background: `hsl(${hue}, 100%, 50%)` }}
       onPointerDown={handlePointerDown}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
+      role="slider"
+      aria-label="颜色饱和度与明度"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={Math.round(s)}
+      aria-valuetext={`饱和度 ${Math.round(s)}%，明度 ${Math.round(v)}%`}
     >
       <div className="cp-board-white" />
       <div className="cp-board-black" />
@@ -229,8 +280,31 @@ const HueSlider: React.FC<HueProps> = ({ hue, onChange }) => {
     el.addEventListener("pointercancel", up);
   };
 
+  /** 用方向键调整色相。 */
+  const handleKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (event) => {
+    let next = hue;
+    if (event.key === "ArrowLeft" || event.key === "ArrowDown") next -= 1;
+    else if (event.key === "ArrowRight" || event.key === "ArrowUp") next += 1;
+    else if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = 360;
+    else return;
+    event.preventDefault();
+    onChange(clamp(next, 0, 360), true);
+  };
+
   return (
-    <div ref={ref} className="cp-hue" onPointerDown={handlePointerDown}>
+    <div
+      ref={ref}
+      className="cp-hue"
+      onPointerDown={handlePointerDown}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
+      role="slider"
+      aria-label="色相"
+      aria-valuemin={0}
+      aria-valuemax={360}
+      aria-valuenow={Math.round(hue)}
+    >
       <div
         className="cp-hue-thumb"
         style={{ left: `${(hue / 360) * 100}%` }}
@@ -250,7 +324,7 @@ const HueSlider: React.FC<HueProps> = ({ hue, onChange }) => {
  * @example
  * <ColorPicker defaultValue="#845ef7" onChange={setColor} />
  */
-export const ColorPicker = React.forwardRef<HTMLButtonElement, ColorPickerProps>(
+export const ColorPicker = React.forwardRef<ColorPickerTriggerElement, ColorPickerProps>(
   (props, ref) => {
     const {
       value,
@@ -269,6 +343,8 @@ export const ColorPicker = React.forwardRef<HTMLButtonElement, ColorPickerProps>
       className = "",
       style,
       onClick,
+      onKeyDown,
+      tabIndex,
       ...rest
     } = props;
 
@@ -280,23 +356,56 @@ export const ColorPicker = React.forwardRef<HTMLButtonElement, ColorPickerProps>
 
     const isOpenControlled = openProp != null;
     const [openState, setOpenState] = React.useState(defaultOpen);
-    const open = isOpenControlled ? !!openProp : openState;
+    const open = !disabled && (isOpenControlled ? !!openProp : openState);
     const setOpen = (next: boolean) => {
       if (!isOpenControlled) setOpenState(next);
       onOpenChange?.(next);
     };
 
+    React.useEffect(() => {
+      if (!disabled || isOpenControlled || !openState) return;
+      setOpenState(false);
+      onOpenChange?.(false);
+    }, [disabled, isOpenControlled, onOpenChange, openState]);
+
     const [inputText, setInputText] = React.useState(current);
+    const [wrappedHasInteractiveChild, setWrappedHasInteractiveChild] = React.useState(false);
     React.useEffect(() => setInputText(current), [current]);
 
-    const { triggerRef, floatingStyle } = useFloating<HTMLButtonElement>({
+    const { triggerRef, floatingRef: panelRef, floatingStyle, zIndex: panelZIndex } = useFloating<ColorPickerTriggerElement, HTMLDivElement>({
       open,
       placement,
       panelWidth: 256,
       panelHeight: 300,
     });
-    const panelRef = React.useRef<HTMLDivElement>(null);
-    React.useImperativeHandle(ref, () => triggerRef.current as HTMLButtonElement);
+    const portalContainer = usePortalContainer();
+    const panelId = React.useId();
+
+    useOverlayLayer({
+      open: open && !disabled && portalContainer != null,
+      containerRef: panelRef,
+      ownerRef: triggerRef,
+      zIndex: panelZIndex,
+      onEscape: () => setOpen(false),
+      restoreFocus: true,
+    });
+
+    /** 合并定位引用与组件公开 ref。 */
+    const setTriggerRef = React.useCallback((node: ColorPickerTriggerElement | null) => {
+      (triggerRef as React.MutableRefObject<ColorPickerTriggerElement | null>).current = node;
+      if (typeof ref === "function") ref(node);
+      else if (ref) ref.current = node;
+    }, [ref, triggerRef]);
+
+    /** 记录包装内容是否自带交互语义，避免产生嵌套按钮角色。 */
+    const setWrappedTriggerRef = React.useCallback((node: HTMLSpanElement | null) => {
+      setTriggerRef(node);
+      if (!node) return;
+      const hasInteractiveChild = !!node?.querySelector(
+        "button,input,select,textarea,a[href],[role='button'],[role='link']"
+      );
+      setWrappedHasInteractiveChild(hasInteractiveChild);
+    }, [setTriggerRef]);
 
     React.useEffect(() => {
       if (!open) return;
@@ -306,14 +415,9 @@ export const ColorPicker = React.forwardRef<HTMLButtonElement, ColorPickerProps>
         if (panelRef.current?.contains(t)) return;
         setOpen(false);
       };
-      const onKey = (e: KeyboardEvent) => {
-        if (e.key === "Escape") setOpen(false);
-      };
       document.addEventListener("mousedown", onDown);
-      document.addEventListener("keydown", onKey);
       return () => {
         document.removeEventListener("mousedown", onDown);
-        document.removeEventListener("keydown", onKey);
       };
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open]);
@@ -349,36 +453,163 @@ export const ColorPicker = React.forwardRef<HTMLButtonElement, ColorPickerProps>
       }
     };
 
+    /** 六位 hex 实时提交；三位简写保留草稿并在失焦时提交。 */
+    const handleInputChange = (next: string) => {
+      setInputText(next);
+      const digits = next.trim().replace(/^#/, "");
+      if (digits.length === 6 && normalizeHex(next)) commit(next, false);
+    };
+
+    const childElement = React.isValidElement(children)
+      ? (children as React.ReactElement<ColorPickerCustomTriggerProps>)
+      : null;
+    const childSupportsRef = childElement ? supportsDomRef(childElement.type) : false;
+    const childType = childElement && typeof childElement.type === "string"
+      ? childElement.type
+      : undefined;
+    const nativeInteractive =
+      childType === "button" ||
+      childType === "input" ||
+      childType === "select" ||
+      childType === "textarea" ||
+      (childType === "a" && childElement?.props.href != null);
+
+    /** 合并自定义触发器的点击行为，同时尊重调用方阻止默认行为的结果。 */
+    const handleCustomClick = (event: React.MouseEvent<HTMLElement>) => {
+      if (disabled) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+      childElement?.props.onClick?.(event);
+      onClick?.(event as unknown as React.MouseEvent<HTMLButtonElement>);
+      if (!event.defaultPrevented) setOpen(!open);
+    };
+
+    /** 包装触发器只处理冒泡事件，避免再次调用子组件已经执行过的处理器。 */
+    const handleWrappedClick = (event: React.MouseEvent<HTMLSpanElement>) => {
+      if (disabled) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+      onClick?.(event as unknown as React.MouseEvent<HTMLButtonElement>);
+      if (!event.defaultPrevented) setOpen(!open);
+    };
+
+    /** 为非原生交互节点补充 Enter 与空格键触发行为。 */
+    const handleCustomKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+      childElement?.props.onKeyDown?.(event);
+      onKeyDown?.(event as unknown as React.KeyboardEvent<HTMLButtonElement>);
+      if (event.defaultPrevented || disabled) return;
+      const current = event.currentTarget;
+      const handlesKeyboardNatively =
+        current.matches("button,input,select,textarea") ||
+        (current.matches("a") && current.hasAttribute("href"));
+      if (!handlesKeyboardNatively && (event.key === "Enter" || event.key === " ")) {
+        event.preventDefault();
+        setOpen(!open);
+      }
+    };
+
+    /** 为包装触发器补充键盘行为，并避免重复调用子组件处理器。 */
+    const handleWrappedKeyDown = (event: React.KeyboardEvent<HTMLSpanElement>) => {
+      onKeyDown?.(event as unknown as React.KeyboardEvent<HTMLButtonElement>);
+      if (event.defaultPrevented || disabled) return;
+      const target = event.target as HTMLElement;
+      const handlesKeyboardNatively =
+        target.matches("button,input,select,textarea") ||
+        (target.matches("a") && target.hasAttribute("href"));
+      if (!handlesKeyboardNatively && (event.key === "Enter" || event.key === " ")) {
+        event.preventDefault();
+        setOpen(!open);
+      }
+    };
+
+    const customTrigger = childElement && childSupportsRef
+      ? React.cloneElement(childElement, {
+          ...rest,
+          ref: setTriggerRef,
+          role: childElement.props.role ?? (nativeInteractive ? undefined : "button"),
+          tabIndex: disabled ? -1 : childElement.props.tabIndex ?? tabIndex ?? (nativeInteractive ? undefined : 0),
+          ...(childType === "button" || typeof childElement.type !== "string"
+            ? { disabled: childElement.props.disabled ?? disabled }
+            : {}),
+          "aria-disabled": disabled || undefined,
+          "aria-haspopup": "dialog",
+          "aria-expanded": open,
+          "aria-controls": open ? panelId : undefined,
+          onClick: handleCustomClick,
+          onKeyDown: handleCustomKeyDown,
+        } as ColorPickerCustomTriggerProps & React.RefAttributes<ColorPickerTriggerElement>)
+      : null;
+
+    /** 让纯文本或无法接收 ref 的自定义内容拥有稳定定位节点与键盘行为。 */
+    const wrappedCustomTrigger = children != null && !customTrigger ? (
+      <span
+        {...(rest as React.HTMLAttributes<HTMLSpanElement>)}
+        ref={setWrappedTriggerRef}
+        className="cp-custom-trigger"
+        role={wrappedHasInteractiveChild ? undefined : "button"}
+        tabIndex={wrappedHasInteractiveChild ? undefined : disabled ? -1 : tabIndex ?? 0}
+        aria-disabled={disabled || undefined}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-controls={open ? panelId : undefined}
+        aria-label={
+          (rest as React.AriaAttributes)["aria-label"] ??
+          (typeof children === "string" ? `选择颜色：${children}` : undefined)
+        }
+        onClickCapture={disabled
+          ? (event) => {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+          : (rest as React.HTMLAttributes<HTMLSpanElement>).onClickCapture}
+        onKeyDownCapture={disabled
+          ? (event) => {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+          : (rest as React.HTMLAttributes<HTMLSpanElement>).onKeyDownCapture}
+        onClick={handleWrappedClick}
+        onKeyDown={handleWrappedKeyDown}
+      >
+        {childElement
+          ? React.cloneElement(childElement, {
+              "aria-haspopup": "dialog",
+              "aria-expanded": open,
+              "aria-controls": open ? panelId : undefined,
+            } as ColorPickerCustomTriggerProps)
+          : children}
+      </span>
+    ) : null;
+
     return (
       <div
         className={`cp ${placement} ${open ? "open" : ""} ${className}`}
         style={style}
       >
-        {children ? (
-          <button
-            type="button"
-            ref={triggerRef}
-            className="cp-custom-trigger"
-            disabled={disabled}
-            onClick={(e) => {
-              onClick?.(e);
-              if (!disabled) setOpen(!open);
-            }}
-            {...rest}
-          >
-            {children}
-          </button>
+        {customTrigger ? (
+          customTrigger
+        ) : wrappedCustomTrigger ? (
+          wrappedCustomTrigger
         ) : (
           <button
             type="button"
-            ref={triggerRef}
+            ref={setTriggerRef}
             className={`cp-trigger ${size}`}
             disabled={disabled}
+            tabIndex={tabIndex}
             onClick={(e) => {
               onClick?.(e);
               if (!disabled) setOpen(!open);
             }}
+            onKeyDown={onKeyDown}
             aria-label={`选择颜色 (当前 ${current})`}
+            aria-haspopup="dialog"
+            aria-expanded={open}
+            aria-controls={open ? panelId : undefined}
             style={style}
             {...rest}
           >
@@ -387,25 +618,29 @@ export const ColorPicker = React.forwardRef<HTMLButtonElement, ColorPickerProps>
           </button>
         )}
 
-        {open && !disabled && typeof document !== "undefined" &&
+        {open && !disabled && portalContainer &&
           createPortal(
             <div
               ref={panelRef}
+              id={panelId}
               className="cp-panel"
               role="dialog"
+              aria-label="选择颜色"
               style={floatingStyle}
             >
               <SaturationBoard hue={h} s={s} v={v} onChange={handleBoard} />
               <HueSlider hue={h} onChange={handleHue} />
               <div className="cp-row">
                 <span className="cp-swatch sm" style={{ background: current }} />
-                <input
+                <Input
                   className="cp-input"
+                  size="sm"
                   value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
+                  onValueChange={handleInputChange}
                   onBlur={handleInputBlur}
                   onKeyDown={handleInputKey}
                   spellCheck={false}
+                  aria-label="十六进制颜色"
                 />
               </div>
               {presets.length > 0 && (
@@ -423,7 +658,7 @@ export const ColorPicker = React.forwardRef<HTMLButtonElement, ColorPickerProps>
                 </div>
               )}
             </div>,
-            document.body
+            portalContainer
           )}
       </div>
     );

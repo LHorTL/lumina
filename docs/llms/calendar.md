@@ -12,8 +12,12 @@ import { Calendar } from "@fangxinyan/lumina";
 
 ### 基础用法
 
+受控 value 可传 null 表示尚未选择，日历仍保留可操作的当前月份。
+
 ```tsx
-<Calendar value={date} onChange={setDate} />
+<Calendar value={date} viewDate={viewDate}
+  onChange={setDate} onViewChange={setViewDate} />
+<Button onClick={() => setDate(null)}>清空选择</Button>
 ```
 
 ### 禁用日期
@@ -34,8 +38,9 @@ import { Calendar } from "@fangxinyan/lumina";
 
 | Prop | 类型 | 默认 | 说明 |
 | --- | --- | --- | --- |
-| value / defaultValue | `Date` | — | 受控/初始日期 |
+| value / defaultValue | `Date | null` | — | 受控/初始日期;null 表示没有选中日期 |
 | viewDate | `Date` | — | 外部日期变化时同步可视月份 |
+| onViewChange | `(date: Date) => void` | — | 用户切换可视月份或年份时回调 |
 | onChange | `(date: Date) => void` | — | 选择回调 |
 | min / max | `Date` | — | 可选范围 |
 | disabledDate | `(date: Date) => boolean` | — | 自定义禁用判断,返回 true 的日期不可选 |

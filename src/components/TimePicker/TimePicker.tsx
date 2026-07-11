@@ -7,6 +7,8 @@ import { Button } from "../Button";
 import { Input } from "../Input";
 import { useFloating } from "../../utils/useFloating";
 import { useInputTriggerToggle } from "../../utils/useInputTriggerToggle";
+import { usePortalContainer } from "../../utils/portal";
+import { useOverlayLayer } from "../../utils/overlayStack";
 
 export type TimePickerFormat = "HH:mm" | "HH:mm:ss";
 export type TimePickerSize = "sm" | "md" | "lg";
@@ -166,6 +168,12 @@ export const TimePicker = React.forwardRef<HTMLDivElement, TimePickerProps>(
       dropdownClassName = "",
       className = "",
       onKeyDown,
+      id: fieldId,
+      "aria-invalid": ariaInvalid,
+      "aria-describedby": ariaDescribedBy,
+      "aria-labelledby": ariaLabelledBy,
+      "aria-required": ariaRequired,
+      "aria-label": ariaLabel,
       ...rest
     },
     ref
@@ -205,12 +213,22 @@ export const TimePicker = React.forwardRef<HTMLDivElement, TimePickerProps>(
     });
 
     const rootRef = React.useRef<HTMLDivElement | null>(null);
-    const panelRef = React.useRef<HTMLDivElement | null>(null);
-    const { triggerRef, floatingStyle } = useFloating<HTMLDivElement>({
+    const panelId = React.useId();
+    const portalContainer = usePortalContainer();
+    const { triggerRef, floatingRef: panelRef, floatingStyle, zIndex: panelZIndex } = useFloating<HTMLDivElement, HTMLDivElement>({
       open,
       placement,
       panelWidth: includeSecond ? 312 : 236,
       panelHeight: 330,
+    });
+
+    useOverlayLayer({
+      open: open && !disabled && !readOnly && portalContainer != null,
+      containerRef: panelRef,
+      ownerRef: triggerRef,
+      zIndex: panelZIndex,
+      onEscape: () => setOpen(false),
+      restoreFocus: true,
     });
 
     const setRootRef = React.useCallback(
@@ -263,14 +281,9 @@ export const TimePicker = React.forwardRef<HTMLDivElement, TimePickerProps>(
         if (panelRef.current?.contains(target)) return;
         setOpen(false);
       };
-      const onDocKey = (event: KeyboardEvent) => {
-        if (event.key === "Escape") setOpen(false);
-      };
       document.addEventListener("mousedown", onDown);
-      document.addEventListener("keydown", onDocKey);
       return () => {
         document.removeEventListener("mousedown", onDown);
-        document.removeEventListener("keydown", onDocKey);
       };
     }, [open, setOpen]);
 
@@ -278,6 +291,7 @@ export const TimePicker = React.forwardRef<HTMLDivElement, TimePickerProps>(
       (list: HTMLElement, top: number, animate: boolean) => {
         const frame = scrollFramesRef.current.get(list);
         if (frame != null) cancelAnimationFrame(frame);
+        scrollFramesRef.current.delete(list);
 
         if (!animate) {
           list.scrollTop = top;
@@ -314,8 +328,14 @@ export const TimePicker = React.forwardRef<HTMLDivElement, TimePickerProps>(
 
     React.useEffect(() => {
       if (!open) return;
+      const prefersReducedMotion =
+        typeof window.matchMedia === "function" &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const shouldAnimate =
-        wasOpenRef.current && scrollSignatureRef.current != null && scrollSignatureRef.current !== scrollSignature;
+        !prefersReducedMotion &&
+        wasOpenRef.current &&
+        scrollSignatureRef.current != null &&
+        scrollSignatureRef.current !== scrollSignature;
 
       requestAnimationFrame(() => {
         panelRef.current
@@ -399,11 +419,14 @@ export const TimePicker = React.forwardRef<HTMLDivElement, TimePickerProps>(
         return;
       }
       const parsed = parseTime(draft);
-      if (!parsed || isDisabledTime(parsed)) {
+      const normalized = parsed
+        ? { ...parsed, second: includeSecond ? parsed.second : 0 }
+        : null;
+      if (!normalized || isDisabledTime(normalized)) {
         setDraft(current ?? "");
         return;
       }
-      commit(parsed);
+      commit(normalized);
     };
 
     const handleRootKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (event) => {
@@ -417,6 +440,22 @@ export const TimePicker = React.forwardRef<HTMLDivElement, TimePickerProps>(
         event.preventDefault();
         setOpen(false);
       }
+    };
+
+    /** 在时分秒列表中用方向键、Home 与 End 移动焦点。 */
+    const handleOptionKeyDown: React.KeyboardEventHandler<HTMLButtonElement> = (event) => {
+      const list = event.currentTarget.parentElement;
+      if (!list) return;
+      const options = Array.from(list.querySelectorAll<HTMLButtonElement>("button:not(:disabled)"));
+      const index = options.indexOf(event.currentTarget);
+      let nextIndex = index;
+      if (event.key === "ArrowDown" || event.key === "ArrowRight") nextIndex = index + 1;
+      else if (event.key === "ArrowUp" || event.key === "ArrowLeft") nextIndex = index - 1;
+      else if (event.key === "Home") nextIndex = 0;
+      else if (event.key === "End") nextIndex = options.length - 1;
+      else return;
+      event.preventDefault();
+      options[Math.max(0, Math.min(options.length - 1, nextIndex))]?.focus();
     };
 
     const renderColumn = (
@@ -439,6 +478,7 @@ export const TimePicker = React.forwardRef<HTMLDivElement, TimePickerProps>(
                 disabled={optionDisabled}
                 className={`time-picker-option ${selected ? "selected" : ""}`}
                 onClick={() => pick(key, option)}
+                onKeyDown={handleOptionKeyDown}
               >
                 {pad(option)}
               </button>
@@ -466,6 +506,12 @@ export const TimePicker = React.forwardRef<HTMLDivElement, TimePickerProps>(
     return (
       <div ref={setRootRef} className={rootClassName} onKeyDown={handleRootKeyDown} {...rest}>
         <Input
+          id={fieldId}
+          aria-label={ariaLabel}
+          aria-labelledby={ariaLabelledBy}
+          aria-invalid={ariaInvalid}
+          aria-required={ariaRequired}
+          aria-describedby={ariaDescribedBy}
           value={draft}
           size={size}
           placeholder={placeholder}
@@ -480,16 +526,19 @@ export const TimePicker = React.forwardRef<HTMLDivElement, TimePickerProps>(
           inputMode="numeric"
           aria-expanded={open}
           aria-haspopup="dialog"
+          aria-controls={open ? panelId : undefined}
         />
         {open &&
           !disabled &&
           !readOnly &&
-          typeof document !== "undefined" &&
+          portalContainer &&
           createPortal(
             <div
               ref={panelRef}
+              id={panelId}
               className={`time-picker-panel ${includeSecond ? "with-second" : "without-second"} ${mergedPanelClassName}`}
               role="dialog"
+              aria-label="选择时间"
               style={floatingStyle}
             >
               <div className="time-picker-columns">
@@ -524,7 +573,7 @@ export const TimePicker = React.forwardRef<HTMLDivElement, TimePickerProps>(
                 </Button>
               </div>
             </div>,
-            document.body
+            portalContainer
           )}
       </div>
     );

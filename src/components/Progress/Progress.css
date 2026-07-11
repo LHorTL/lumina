@@ -78,3 +78,13 @@
   );
   pointer-events: none;
 }
+.progress.indeterminate .progress-bar {
+  animation: progress-indeterminate 1.4s var(--ease) infinite;
+}
+@keyframes progress-indeterminate {
+  from { transform: translateX(-120%); }
+  to { transform: translateX(320%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .progress.indeterminate .progress-bar { animation: none; }
+}

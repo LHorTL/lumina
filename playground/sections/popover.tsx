@@ -8,7 +8,7 @@ const popoverApi: ApiRow[] = [
   { prop: "content", description: "浮层内容", type: "ReactNode", required: true },
   { prop: "title", description: "标题", type: "ReactNode" },
   { prop: "placement", description: "弹出位置,支持 bottomLeft 等细分方向", type: `"top" | "bottom" | "left" | "right" | ...`, default: `"bottom"` },
-  { prop: "trigger", description: "触发方式", type: `"click" | "hover"`, default: `"click"` },
+  { prop: "trigger", description: "触发方式", type: `"click" | "hover" | "focus"`, default: `"click"` },
   { prop: "arrow", description: "显示箭头", type: "boolean", default: "false" },
   { prop: "closable", description: "显示关闭按钮", type: "boolean", default: "false" },
   { prop: "width", description: "面板宽度，\"auto\" 自适应", type: `number | "auto"` },
@@ -235,6 +235,19 @@ const SectionPopover: React.FC<SectionCtx> = () => (
             }
           >
             <Avatar alt="云" />
+          </Popover>
+        ),
+      },
+      {
+        id: "focus",
+        title: "Focus 触发",
+        description: "trigger=\"focus\" 适合键盘可达的补充说明。按 Esc 可关闭并回到触发器。",
+        code: `<Popover trigger="focus" content={<div>通过 Tab 聚焦时显示</div>}>
+  <Button>聚焦查看</Button>
+</Popover>`,
+        render: () => (
+          <Popover trigger="focus" content={<div>通过 Tab 聚焦时显示，按 Esc 关闭。</div>}>
+            <Button>聚焦查看</Button>
           </Popover>
         ),
       },

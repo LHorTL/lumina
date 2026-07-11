@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Button, Modal, message } from "lumina";
+import { Button, Card, Modal, Select, message } from "lumina";
 import { DocPage } from "../docs";
 import { defineSection, type SectionCtx } from "./_types";
 
@@ -8,6 +8,7 @@ const SectionModal: React.FC<SectionCtx> = () => {
   const [confirm, setConfirm] = React.useState(false);
   const [asyncOpen, setAsyncOpen] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
+  const [stackOpen, setStackOpen] = React.useState(false);
   return (
     <DocPage
       whenToUse={<p>需要用户处理事务,又不希望跳转页面以致打断工作流时,使用 Modal 在当前页面弹出。</p>}
@@ -15,12 +16,13 @@ const SectionModal: React.FC<SectionCtx> = () => {
         {
           id: "basic",
           title: "基础",
+          description: "打开后自动聚焦并限制焦点，锁定页面滚动；关闭后把焦点归还给触发控件。",
           code: `<Modal open={m} onClose={...} title="标题">...</Modal>`,
           render: () => (
             <>
               <Button onClick={() => setM(true)}>打开</Button>
               <Modal open={m} onClose={() => setM(false)} title="基础对话框" description="这是一个简单的弹窗示例">
-                Modal 会渲染到 document.body,自动处理 Esc 关闭和点击遮罩关闭。
+                Modal 会渲染到当前主题的 Portal 容器，并自动处理 Esc、遮罩关闭、焦点循环与滚动锁定。
               </Modal>
             </>
           ),
@@ -238,15 +240,13 @@ Modal.warning({ title: "容量不足", content: "请先清理缓存。" });`,
         },
         {
           id: "body-control",
-          title: "正文容器控制",
-          description: "bodyClassName / bodyStyle / bodyProps 可直接作用到正文容器；bodyOverflow 用于切换滚动或允许拟态阴影外溢。",
+          title: "拟态阴影安全区",
+          description: "正文默认根据当前阴影强度预留安全区，Card 等凸起组件贴近边缘时不会再被滚动容器裁切；全宽图片或表格可用 bodyInset=\"none\" 取消留白。",
           code: `<Modal
-  bodyClassName="settings-modal-body"
-  bodyStyle={{ maxHeight: 260, padding: 12 }}
-  bodyOverflow="visible"
+  bodyStyle={{ maxHeight: 260 }}
   bodyProps={{ "data-panel": "settings" }}
 >
-  ...
+  <Card title="同步设置">拟态阴影由 Modal 自动保护。</Card>
 </Modal>`,
           render: () => {
             const [open, setOpen] = React.useState(false);
@@ -257,29 +257,50 @@ Modal.warning({ title: "容量不足", content: "请先清理缓存。" });`,
                   open={open}
                   onClose={() => setOpen(false)}
                   title="拟态内容不被裁切"
-                  description="正文容器可按业务场景单独控制 class、style 与 overflow。"
-                  bodyStyle={{
-                    overflow: "visible",
-                    padding: "var(--gap-4)",
-                    borderRadius: "var(--r-md)",
-                    boxShadow: "var(--neu-shadow-inset)",
-                  }}
+                  description="滚动仍然可用，阴影安全间距由组件库自动计算。"
+                  bodyStyle={{ maxHeight: 260 }}
                   bodyProps={{ "data-panel": "settings" }}
                 >
-                  <div
-                    style={{
-                      padding: "var(--gap-4)",
-                      borderRadius: "var(--r-md)",
-                      boxShadow: "var(--neu-shadow-control)",
-                      background: "var(--bg)",
-                    }}
+                  <Card
+                    title="同步设置"
+                    description="Card 直接放进 Modal，无需覆盖 overflow 或手工补 padding。"
                   >
-                    内容块自身带阴影时，不必再从业务侧覆盖 .modal-body。
-                  </div>
+                    内容区保持正常滚动，卡片四周的拟态阴影也能完整显示。
+                  </Card>
                 </Modal>
               </>
             );
           },
+        },
+        {
+          id: "nested-overlay",
+          title: "嵌套浮层与 Esc 顺序",
+          description: "子 Select 即使 Portal 到对话框之外，也会保持在 Modal 上方并参与同一焦点范围；连续按 Esc 会先关 Select，再关 Modal。",
+          code: `<Modal open={open} onClose={() => setOpen(false)} destroyOnClose>
+  <Select defaultOpen options={[...]} />
+</Modal>`,
+          render: () => (
+            <>
+              <Button onClick={() => setStackOpen(true)}>打开嵌套浮层</Button>
+              <Modal
+                open={stackOpen}
+                onClose={() => setStackOpen(false)}
+                title="层级与焦点范围"
+                description="先关闭 Select，再关闭 Modal。"
+                destroyOnClose
+              >
+                <Select
+                  defaultOpen
+                  aria-label="选择工作区"
+                  options={[
+                    { value: "design", label: "设计工作区" },
+                    { value: "develop", label: "开发工作区" },
+                  ]}
+                  placeholder="请选择工作区"
+                />
+              </Modal>
+            </>
+          ),
         },
       ]}
       api={[
@@ -287,7 +308,7 @@ Modal.warning({ title: "容量不足", content: "请先清理缓存。" });`,
           title: "Modal",
           rows: [
             { prop: "open", description: "是否可见", type: "boolean", required: true },
-            { prop: "onClose", description: "关闭回调(遮罩/Esc/关闭按钮)", type: "() => void" },
+            { prop: "onClose", description: "关闭回调(遮罩/Esc/关闭按钮)；Esc 仅由当前最上层浮层响应", type: "() => void" },
             { prop: "onOk", description: "默认 OK 按钮点击", type: "() => void" },
             { prop: "onCancel", description: "默认 Cancel 按钮 / Esc / 关闭 / 遮罩触发,缺省则用 onClose", type: "() => void" },
             { prop: "title / description", description: "标题/说明", type: "ReactNode" },
@@ -299,16 +320,18 @@ Modal.warning({ title: "容量不足", content: "请先清理缓存。" });`,
             { prop: "bodyStyle", description: "正文容器内联样式", type: "CSSProperties" },
             { prop: "bodyProps", description: "透传给正文容器的 DOM props", type: "HTMLAttributes<HTMLDivElement>" },
             { prop: "bodyOverflow", description: "正文容器 overflow 快捷控制", type: "CSSProperties['overflow']" },
+            { prop: "bodyInset", description: "正文边缘留白；safe 自动保护拟态阴影，none 用于贴边内容", type: `"safe" | "none"`, default: `"safe"` },
             { prop: "closable", description: "显示右上角 ×", type: "boolean", default: "true" },
             { prop: "closeIcon", description: "自定义关闭图标", type: "ReactNode" },
             { prop: "maskClosable", description: "点击遮罩关闭", type: "boolean", default: "true" },
             { prop: "maskClassName", description: "遮罩层 className", type: "string" },
             { prop: "maskStyle", description: "遮罩层内联样式", type: "CSSProperties" },
+            { prop: "className", description: "对话框面板 className；ref 同样指向面板", type: "string" },
             { prop: "escClosable", description: "Esc 关闭", type: "boolean", default: "true" },
             { prop: "width", description: "宽度", type: "number | string", default: "440" },
             { prop: "destroyOnClose", description: "关闭时卸载子树", type: "boolean", default: "false" },
             { prop: "afterOpenChange", description: "动画结束后回调", type: "(open: boolean) => void" },
-            { prop: "zIndex", description: "覆盖遮罩 z-index", type: "number" },
+            { prop: "zIndex", description: "覆盖对话框起始层级；所属子浮层会自动排在其上", type: "number" },
           ],
         },
         {

@@ -12,6 +12,8 @@ import { ContextMenu } from "@fangxinyan/lumina";
 
 ### 基础
 
+方向键、Home / End、Enter 提供完整键盘导航；Esc 会关闭并把焦点归还给打开前的控件，Tab 会退出并关闭菜单。
+
 ```tsx
 <ContextMenu items={[
   { key: "copy", label: "复制", shortcut: "⌘C", onSelect: () => {} },
@@ -31,6 +33,16 @@ import { ContextMenu } from "@fangxinyan/lumina";
 <ContextMenu items={[...]}>...
 ```
 
+### 禁用自定义菜单
+
+disabled 会立即关闭已打开的菜单，之后不再拦截 contextmenu，浏览器原生菜单恢复可用。
+
+```tsx
+<ContextMenu disabled items={items}>
+  <div>这里使用浏览器原生右键菜单</div>
+</ContextMenu>
+```
+
 ## API
 
 **ContextMenu**
@@ -38,8 +50,8 @@ import { ContextMenu } from "@fangxinyan/lumina";
 | Prop | 类型 | 默认 | 说明 |
 | --- | --- | --- | --- |
 | items \* | `ContextMenuItem[]` | — | 菜单项 |
-| children \* | `ReactElement` | — | 触发元素(恰好一个) |
-| disabled | `boolean` | — | 禁用,恢复浏览器原生菜单 |
+| children \* | `ReactNode` | — | 任意触发内容；内部 display: contents 包装不改变布局 |
+| disabled | `boolean` | `false` | 禁用并关闭当前菜单，恢复浏览器原生菜单 |
 | minWidth | `number` | `180` | 面板最小宽度 |
 
 

@@ -15,6 +15,22 @@
   border-radius: var(--r-sm);
   transition: all var(--dur-fast) var(--ease);
 }
+.list-item-trigger {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+button.list-item-trigger {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
 .list-item.clickable { cursor: pointer; }
 .list-item.clickable:hover { background: var(--bg); box-shadow: var(--neu-shadow-subtle); }
 .list-item.selected { box-shadow: var(--neu-shadow-control); background: var(--bg); }

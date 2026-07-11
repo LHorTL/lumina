@@ -8,6 +8,8 @@ const Dropzone: React.FC<{ children?: React.ReactNode; hint?: React.ReactNode }>
   hint,
 }) => (
   <div
+    tabIndex={0}
+    aria-label="上下文菜单触发区域"
     style={{
       display: "flex",
       flexDirection: "column",
@@ -54,7 +56,7 @@ const SectionContextMenu: React.FC<SectionCtx> = () => (
   <DocPage
     whenToUse={
       <>
-        <p>在鼠标光标处弹出的菜单,屏蔽浏览器原生右键菜单,更贴近桌面应用体验。</p>
+        <p>在鼠标光标处弹出的菜单,屏蔽浏览器原生右键菜单,更贴近桌面应用体验。聚焦触发区后也可用菜单键或 Shift + F10 打开。</p>
         <ul className="doc-usecase-list">
           <li>文件 / 列表项的"复制、剪切、删除"等操作</li>
           <li>画布 / 编辑器区域的上下文操作</li>
@@ -67,6 +69,7 @@ const SectionContextMenu: React.FC<SectionCtx> = () => (
         id: "basic",
         title: "基础",
         span: 2,
+        description: "方向键、Home / End、Enter 提供完整键盘导航；Esc 会关闭并把焦点归还给打开前的控件，Tab 会退出并关闭菜单。",
         code: `<ContextMenu items={[
   { key: "copy", label: "复制", shortcut: "⌘C", onSelect: () => {} },
   { key: "cut",  label: "剪切", shortcut: "⌘X", onSelect: () => {} },
@@ -121,14 +124,28 @@ const SectionContextMenu: React.FC<SectionCtx> = () => (
           </ContextMenu>
         ),
       },
+      {
+        id: "disabled",
+        title: "禁用自定义菜单",
+        span: 2,
+        description: "disabled 会立即关闭已打开的菜单，之后不再拦截 contextmenu，浏览器原生菜单恢复可用。",
+        code: `<ContextMenu disabled items={items}>
+  <div>这里使用浏览器原生右键菜单</div>
+</ContextMenu>`,
+        render: () => (
+          <ContextMenu disabled items={[]}>
+            <Dropzone hint="自定义菜单已禁用，请使用浏览器原生右键菜单" />
+          </ContextMenu>
+        ),
+      },
     ]}
     api={[
       {
         title: "ContextMenu",
         rows: [
           { prop: "items", description: "菜单项", type: "ContextMenuItem[]", required: true },
-          { prop: "children", description: "触发元素(恰好一个)", type: "ReactElement", required: true },
-          { prop: "disabled", description: "禁用,恢复浏览器原生菜单", type: "boolean" },
+          { prop: "children", description: "任意触发内容；内部 display: contents 包装不改变布局", type: "ReactNode", required: true },
+          { prop: "disabled", description: "禁用并关闭当前菜单，恢复浏览器原生菜单", type: "boolean", default: "false" },
           { prop: "minWidth", description: "面板最小宽度", type: "number", default: "180" },
         ],
       },

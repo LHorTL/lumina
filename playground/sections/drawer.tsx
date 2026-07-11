@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Button, Drawer, Input, Switch, message } from "lumina";
+import { Button, Card, Drawer, Input, Switch, message } from "lumina";
 import { DocPage } from "../docs";
 import { Field, Row } from "./_shared";
 import { defineSection, type SectionCtx } from "./_types";
@@ -15,6 +15,7 @@ const SectionDrawer: React.FC<SectionCtx> = () => {
         {
           id: "basic",
           title: "基础",
+          description: "有遮罩时会锁定页面滚动并把焦点限制在抽屉及其子浮层；关闭后焦点回到原触发控件。",
           code: `<Drawer open={d} onClose={...} title="标题">...</Drawer>`,
           render: () => (
             <>
@@ -92,6 +93,39 @@ const SectionDrawer: React.FC<SectionCtx> = () => {
           },
         },
         {
+          id: "shadow-safe-area",
+          title: "拟态阴影安全区",
+          description: "抽屉只让正文区滚动，并自动为拟态阴影留出空间；全宽内容可通过 bodyInset=\"none\" 贴边。",
+          code: `<Drawer open={open} title="连接配置">
+  <Card title="远程节点">无需手工补 padding 或修改 overflow。</Card>
+</Drawer>`,
+          render: () => {
+            const [open, setOpen] = React.useState(false);
+            return (
+              <>
+                <Button onClick={() => setOpen(true)}>查看阴影安全区</Button>
+                <Drawer
+                  open={open}
+                  onClose={() => setOpen(false)}
+                  title="连接配置"
+                  footer={<Button variant="primary" onClick={() => setOpen(false)}>完成</Button>}
+                >
+                  <Card
+                    title="远程节点"
+                    description="Card 直接放入 Drawer，边缘阴影仍保持完整。"
+                    bodyLayout="stack"
+                  >
+                    <Field label="服务地址">
+                      <Input defaultValue="https://api.example.com" leadingIcon="link" />
+                    </Field>
+                    <Switch label="自动重连" defaultChecked />
+                  </Card>
+                </Drawer>
+              </>
+            );
+          },
+        },
+        {
           id: "placement",
           title: "四个方向",
           description: "placement 控制滑出方向;top / bottom 用 size 控高度。",
@@ -124,7 +158,7 @@ const SectionDrawer: React.FC<SectionCtx> = () => {
         {
           id: "no-mask",
           title: "无遮罩 (mask={false})",
-          description: "关闭遮罩的抽屉不阻塞页面其他交互,适合辅助面板。",
+          description: "关闭遮罩的抽屉不锁定滚动、不限制焦点，页面其他区域仍可交互；Esc 与关闭后的焦点归还仍然生效。",
           code: `<Drawer mask={false} />`,
           render: () => {
             const [open, setOpen] = React.useState(false);
@@ -176,21 +210,25 @@ const SectionDrawer: React.FC<SectionCtx> = () => {
           title: "Drawer",
           rows: [
             { prop: "open", description: "可见", type: "boolean", required: true },
-            { prop: "onClose", description: "关闭回调", type: "() => void" },
+            { prop: "onClose", description: "关闭回调；Esc 仅由当前最上层浮层响应", type: "() => void" },
             { prop: "placement", description: "出现位置", type: `"left" | "right" | "top" | "bottom"`, default: `"right"` },
             { prop: "size", description: "宽度(左右)或高度(上下)", type: "number | string", default: "380" },
             { prop: "title / footer / children", description: "头/脚/主体", type: "ReactNode" },
             { prop: "extra", description: "标题右侧的附加操作区", type: "ReactNode" },
-            { prop: "mask", description: "是否渲染遮罩", type: "boolean", default: "true" },
+            { prop: "bodyClassName / bodyStyle / bodyProps", description: "正文容器的 class、样式与 DOM 属性", type: "string / CSSProperties / HTMLAttributes<HTMLDivElement>" },
+            { prop: "bodyOverflow", description: "正文容器 overflow 快捷控制", type: "CSSProperties['overflow']" },
+            { prop: "bodyInset", description: "正文边缘留白；safe 自动保护拟态阴影，none 用于贴边内容", type: `"safe" | "none"`, default: `"safe"` },
+            { prop: "mask", description: "是否渲染遮罩；有遮罩时启用焦点限制与页面滚动锁定", type: "boolean", default: "true" },
             { prop: "maskClosable", description: "点击遮罩关闭", type: "boolean", default: "true" },
             { prop: "maskClassName", description: "遮罩层 className", type: "string" },
             { prop: "maskStyle", description: "遮罩层内联样式", type: "CSSProperties" },
+            { prop: "className", description: "抽屉面板 className；ref 同样指向面板", type: "string" },
             { prop: "keyboard", description: "Esc 关闭", type: "boolean", default: "true" },
             { prop: "closable", description: "右上角 ×", type: "boolean", default: "true" },
             { prop: "closeIcon", description: "自定义关闭图标", type: "ReactNode" },
             { prop: "destroyOnClose", description: "关闭时卸载子树", type: "boolean", default: "false" },
             { prop: "afterOpenChange", description: "动画结束回调", type: "(open: boolean) => void" },
-            { prop: "zIndex", description: "覆盖 z-index", type: "number" },
+            { prop: "zIndex", description: "覆盖抽屉起始层级；所属子浮层会自动排在其上", type: "number" },
           ],
         },
       ]}

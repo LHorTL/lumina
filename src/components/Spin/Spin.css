@@ -92,3 +92,9 @@
 }
 
 .spin-label { font-size: 12px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .spin,
+  .spin.ring::before,
+  .spin.dots i { animation: none; }
+}

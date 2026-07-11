@@ -6,7 +6,8 @@ import * as React from "react";
 export type SliderRangeValue = [number, number];
 export type SliderValue = number | SliderRangeValue;
 
-interface SliderBaseProps {
+/** Slider 单值与区间模式共享的基础属性。 */
+export interface SliderBaseProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange" | "defaultValue"> {
   min?: number;
   max?: number;
   step?: number;
@@ -18,6 +19,8 @@ interface SliderBaseProps {
   /** Tick marks with labels. Clicking a mark snaps to it. */
   marks?: Record<number, React.ReactNode>;
   className?: string;
+  /** 单滑块标签，或区间模式下起点/终点滑块标签。 */
+  ariaLabel?: string | [string, string];
 }
 
 export interface SliderSingleProps extends SliderBaseProps {
@@ -58,21 +61,29 @@ function lerpColor(colors: string[], t: number): string {
 export const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
   (props, ref) => {
     const {
-      min = 0,
-      max = 100,
-      step = 1,
+      min: minProp = 0,
+      max: maxProp = 100,
+      step: stepProp = 1,
       disabled,
       showValue,
       tone = "accent",
       colors,
       marks,
+      ariaLabel,
+      range: rangeProp,
+      value: controlled,
+      defaultValue: defaultVal,
+      onChange: onChangeProp,
       className = "",
+      ...rest
     } = props;
 
-    const range = (props as SliderRangeProps).range === true;
-    const controlled = (props as { value?: SliderValue }).value;
-    const defaultVal = (props as { defaultValue?: SliderValue }).defaultValue;
-    const onChange = (props as { onChange?: (v: any) => void }).onChange;
+    const min = Number.isFinite(minProp) ? minProp : 0;
+    const max = Number.isFinite(maxProp) && maxProp > min ? maxProp : min + 1;
+    const step = Number.isFinite(stepProp) && stepProp > 0 ? stepProp : 1;
+
+    const range = rangeProp === true;
+    const onChange = onChangeProp as ((value: SliderValue) => void) | undefined;
 
     const initRef = React.useRef<number[]>(
       defaultVal !== undefined
@@ -86,11 +97,18 @@ export const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
     const [inner, setInner] = React.useState<number[]>(initRef.current);
 
     const isControlled = controlled !== undefined;
-    const vals = isControlled
+    const rawVals = isControlled
       ? Array.isArray(controlled)
         ? controlled
         : [controlled]
       : inner;
+    const vals = rawVals
+      .map((item, index) => {
+        const fallback = range && index === 1 ? max : min;
+        const finiteItem = Number.isFinite(item) ? item : fallback;
+        return clamp(snap(finiteItem, step, min), min, max);
+      })
+      .sort((a, b) => range ? a - b : 0);
 
     const valsRef = React.useRef(vals);
     valsRef.current = vals;
@@ -119,7 +137,10 @@ export const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
         const clamped = clamp(snapped, min, max);
         const out = [...valsRef.current];
         out[index] = clamped;
-        if (range && out.length === 2 && out[0] > out[1]) out.sort((a, b) => a - b);
+        if (range && out.length === 2 && out[0] > out[1]) {
+          out.sort((a, b) => a - b);
+          if (dragging.current === index) dragging.current = index === 0 ? 1 : 0;
+        }
         commit(out);
       },
       [min, max, step, range, commit]
@@ -128,7 +149,7 @@ export const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
     const valFromX = React.useCallback(
       (clientX: number) => {
         const rect = trackRef.current?.getBoundingClientRect();
-        if (!rect) return min;
+        if (!rect || rect.width <= 0) return null;
         const ratio = clamp((clientX - rect.left) / rect.width, 0, 1);
         return min + ratio * (max - min);
       },
@@ -152,10 +173,11 @@ export const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
         if (disabled) return;
         e.preventDefault();
         const val = valFromX(e.clientX);
+        if (val == null) return;
         const idx = closerIndex(val);
         dragging.current = idx;
         setAt(idx, val);
-        trackRef.current?.setPointerCapture(e.pointerId);
+        trackRef.current?.setPointerCapture?.(e.pointerId);
         thumbEls.current[idx]?.focus();
       },
       [disabled, valFromX, closerIndex, setAt]
@@ -164,7 +186,8 @@ export const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
     const onPointerMove = React.useCallback(
       (e: React.PointerEvent<HTMLDivElement>) => {
         if (dragging.current === null) return;
-        setAt(dragging.current, valFromX(e.clientX));
+        const value = valFromX(e.clientX);
+        if (value != null) setAt(dragging.current, value);
       },
       [valFromX, setAt]
     );
@@ -179,8 +202,16 @@ export const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
         let delta = 0;
         if (e.key === "ArrowRight" || e.key === "ArrowUp") delta = step;
         else if (e.key === "ArrowLeft" || e.key === "ArrowDown") delta = -step;
-        else if (e.key === "Home") { setAt(index, min); return; }
-        else if (e.key === "End") { setAt(index, max); return; }
+        else if (e.key === "Home") {
+          e.preventDefault();
+          setAt(index, min);
+          return;
+        }
+        else if (e.key === "End") {
+          e.preventDefault();
+          setAt(index, max);
+          return;
+        }
         else return;
         e.preventDefault();
         setAt(index, valsRef.current[index] + delta);
@@ -222,6 +253,7 @@ export const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
     return (
       <div
         ref={ref}
+        {...rest}
         className={`slider ${range ? "range" : ""} ${hasGradient ? "gradient" : tone} ${disabled ? "disabled" : ""} ${marks ? "has-marks" : ""} ${className}`}
       >
         <div className="slider-rail">
@@ -231,6 +263,8 @@ export const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
+            onPointerCancel={onPointerUp}
+            onLostPointerCapture={onPointerUp}
           >
             <div className="slider-fill" style={fillStyle} />
           </div>
@@ -252,13 +286,14 @@ export const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
                 aria-valuemax={max}
                 aria-valuenow={n}
                 aria-disabled={disabled || undefined}
+                aria-label={Array.isArray(ariaLabel) ? ariaLabel[i] : ariaLabel}
                 onKeyDown={(e) => handleKey(i, e)}
                 onPointerDown={(e) => {
                   if (disabled) return;
                   e.preventDefault();
                   e.stopPropagation();
                   dragging.current = i;
-                  trackRef.current?.setPointerCapture(e.pointerId);
+                  trackRef.current?.setPointerCapture?.(e.pointerId);
                   e.currentTarget.focus();
                 }}
               />
@@ -269,19 +304,23 @@ export const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
             <div className="slider-marks">
               {Object.entries(marks).map(([k, label]) => {
                 const n = Number(k);
+                if (!Number.isFinite(n) || n < min || n > max) return null;
+                const markPosition = pct(n);
                 const active = range
                   ? n >= Math.min(vals[0], vals[1]) && n <= Math.max(vals[0], vals[1])
                   : n <= vals[0];
                 return (
-                  <span
+                  <button
+                    type="button"
                     key={k}
-                    className={`slider-mark ${active ? "active" : ""}`}
-                    style={{ left: `${pct(n)}%` }}
+                    className={`slider-mark ${markPosition === 0 ? "edge-start" : markPosition === 100 ? "edge-end" : ""} ${active ? "active" : ""}`}
+                    style={{ left: `${markPosition}%` }}
                     onClick={() => handleMarkClick(n)}
+                    disabled={disabled}
                   >
                     <span className="slider-mark-dot" />
                     <span className="slider-mark-label">{label}</span>
-                  </span>
+                  </button>
                 );
               })}
             </div>

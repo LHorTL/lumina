@@ -44,6 +44,7 @@ import { Progress } from "@fangxinyan/lumina";
 | size | `"sm" | "md" | "lg"` | `"md"` | 尺寸 |
 | label | `ReactNode` | — | 顶部文案 |
 | showValue | `boolean` | `false` | 显示百分比 |
+| indeterminate | `boolean` | `false` | 显示不确定进度动画 |
 
 
 ---

@@ -3,6 +3,34 @@ import { Avatar, Button, Card, Skeleton, Tag } from "lumina";
 import { DocPage } from "../docs";
 import { defineSection, type SectionCtx } from "./_types";
 
+/** 演示整卡交互、内部操作和禁用态之间的事件边界。 */
+function InteractiveCardDemo() {
+  const [cardClicks, setCardClicks] = React.useState(0);
+  const [actionClicks, setActionClicks] = React.useState(0);
+
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
+      <Card
+        interactive
+        hoverable
+        title="可操作卡片"
+        description={`整卡触发 ${cardClicks} 次`}
+        actions={
+          <Button size="sm" variant="ghost" onClick={() => setActionClicks((count) => count + 1)}>
+            独立操作 {actionClicks}
+          </Button>
+        }
+        onClick={() => setCardClicks((count) => count + 1)}
+      >
+        点击卡片空白区域，或聚焦整卡后按 Enter / Space。
+      </Card>
+      <Card interactive disabled title="禁用卡片" description="不会响应鼠标或键盘">
+        禁用态会同时隔离卡片内的操作控件。
+      </Card>
+    </div>
+  );
+}
+
 const SectionCard: React.FC<SectionCtx> = () => (
   <DocPage
     whenToUse={<p>用作信息分组的容器。Card 可直接承载标题、描述与操作区。</p>}
@@ -16,7 +44,7 @@ const SectionCard: React.FC<SectionCtx> = () => (
 <Card variant="flat">flat</Card>
 <Card variant="sunken">sunken</Card>`,
         render: () => (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 180px), 1fr))", gap: 16 }}>
             <Card>
               <div style={{ fontWeight: 600, marginBottom: 4 }}>Raised</div>
               <div style={{ fontSize: 12, color: "var(--fg-muted)" }}>默认凸起样式</div>
@@ -39,7 +67,7 @@ const SectionCard: React.FC<SectionCtx> = () => (
         span: 2,
         code: `<Card hoverable>可点击卡片</Card>`,
         render: () => (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 180px), 1fr))", gap: 16 }}>
             <Card hoverable>
               <div style={{ fontWeight: 600, marginBottom: 4 }}>悬浮 Raised</div>
               <div style={{ fontSize: 12, color: "var(--fg-muted)" }}>把鼠标移上来试试</div>
@@ -54,6 +82,23 @@ const SectionCard: React.FC<SectionCtx> = () => (
             </Card>
           </div>
         ),
+      },
+      {
+        id: "interactive",
+        title: "整卡交互",
+        description: "interactive 提供按钮式焦点和键盘语义；标题区 actions 仍可独立响应，disabled 会隔离整张卡片。",
+        span: 2,
+        code: `<Card
+  interactive
+  hoverable
+  title="可操作卡片"
+  actions={<Button onClick={handleAction}>独立操作</Button>}
+  onClick={handleCardClick}
+>
+  点击卡片空白区域，或聚焦整卡后按 Enter / Space。
+</Card>
+<Card interactive disabled title="禁用卡片">不会响应</Card>`,
+        render: () => <InteractiveCardDemo />,
       },
       {
         id: "background",
@@ -228,6 +273,8 @@ const SectionCard: React.FC<SectionCtx> = () => (
           { prop: "background", description: "自定义卡片根节点背景，支持主题 token / color-mix / linear-gradient / radial-gradient 等 CSS 背景值", type: `CSSProperties["background"]` },
           { prop: "padding", description: "内边距", type: `"none" | "sm" | "md" | "lg"`, default: `"md"` },
           { prop: "hoverable", description: "悬浮时抬起", type: "boolean", default: "false" },
+          { prop: "interactive", description: "启用按钮式键盘语义；提供 onClick 时自动开启，内部按钮等控件保持独立响应", type: "boolean" },
+          { prop: "disabled", description: "禁用交互式卡片并隔离内部控件", type: "boolean", default: "false" },
           { prop: "title", description: "标题", type: "ReactNode" },
           { prop: "description", description: "副标题", type: "ReactNode" },
           { prop: "actions", description: "右上操作区", type: "ReactNode" },
@@ -236,7 +283,7 @@ const SectionCard: React.FC<SectionCtx> = () => (
           { prop: "bodyClassName", description: "正文容器 className", type: "string" },
           { prop: "bodyStyle", description: "正文容器内联样式", type: "CSSProperties" },
           { prop: "bodyProps", description: "透传给正文容器的 DOM props", type: "HTMLAttributes<HTMLDivElement>" },
-          { prop: "loading", description: "显示正文加载覆盖层", type: "boolean", default: "false" },
+          { prop: "loading", description: "显示正文加载覆盖层，并暂时隔离正文与标题操作区控件", type: "boolean", default: "false" },
           { prop: "loadingOverlay", description: "自定义加载覆盖层内容", type: "ReactNode" },
         ],
       },

@@ -30,7 +30,7 @@ import { Image, ImageGrid, SpriteImage, LayeredImage } from "@fangxinyan/lumina"
 
 ### 精细预览
 
-预览层内置放大、缩小、适配窗口、1:1、滚轮缩放和拖拽平移；previewMaxWidth / previewMaxHeight 控制适配态尺寸,renderPreviewToolbar 可追加业务按钮。
+点击或按 Enter / Space 打开；预览层内置焦点限制、Esc 关闭与焦点归还，以及放大、缩小、适配窗口、1:1、滚轮缩放和拖拽平移。
 
 ```tsx
 <Image
@@ -98,11 +98,11 @@ LayeredImage 将多张图片叠在同一个盒子里,适合头像 + 头像框、
 | frame | `boolean` | `framed 时 true` | 是否保留内层凹陷 frame |
 | padding | `number | string` | — | 外层留白,raw/icon 默认 0 |
 | objectFit / objectPosition | `CSSProperties` | — | 底层 img 的 object-fit / object-position |
-| preview | `boolean` | `true` | 支持点击全屏预览 |
+| preview | `boolean` | `framed 时 true` | 启用点击或 Enter / Space 全屏预览；打开时限制焦点并锁定滚动，Esc 关闭后归还焦点 |
 | previewClassName | `string` | — | 预览蒙层 className |
 | previewStyle | `CSSProperties` | — | 预览蒙层内联样式 |
 | previewMaxWidth / previewMaxHeight | `number | string` | `"80vw" / "80vh"` | 预览适配态的最大尺寸 |
-| renderPreviewToolbar | `(controls) => ReactNode` | — | 在预览工具栏追加自定义按钮 |
+| renderPreviewToolbar | `(controls) => ReactNode` | — | 在预览工具栏追加自定义按钮；追加控件同样参与焦点循环 |
 | hover | `boolean` | `true` | 悬浮放大 |
 | placeholder | `ReactNode` | — | 占位/错误时内容 |
 | imgProps | `ImgHTMLAttributes` | — | 透传到底层 img 的属性 |

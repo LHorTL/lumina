@@ -28,6 +28,23 @@ hoverable 在鼠标悬浮时轻微上移并加强阴影,适合可点击的卡片
 <Card hoverable>可点击卡片</Card>
 ```
 
+### 整卡交互
+
+interactive 提供按钮式焦点和键盘语义；标题区 actions 仍可独立响应，disabled 会隔离整张卡片。
+
+```tsx
+<Card
+  interactive
+  hoverable
+  title="可操作卡片"
+  actions={<Button onClick={handleAction}>独立操作</Button>}
+  onClick={handleCardClick}
+>
+  点击卡片空白区域，或聚焦整卡后按 Enter / Space。
+</Card>
+<Card interactive disabled title="禁用卡片">不会响应</Card>
+```
+
 ### 自定义背景色
 
 background 可覆盖卡片根节点背景，纯色、主题 token、color-mix 与渐变都走同一个字段。
@@ -99,6 +116,8 @@ loading 会在正文区域显示中性 overlay；默认 Spin 跟随主题色，l
 | background | `CSSProperties["background"]` | — | 自定义卡片根节点背景，支持主题 token / color-mix / linear-gradient / radial-gradient 等 CSS 背景值 |
 | padding | `"none" | "sm" | "md" | "lg"` | `"md"` | 内边距 |
 | hoverable | `boolean` | `false` | 悬浮时抬起 |
+| interactive | `boolean` | — | 启用按钮式键盘语义；提供 onClick 时自动开启，内部按钮等控件保持独立响应 |
+| disabled | `boolean` | `false` | 禁用交互式卡片并隔离内部控件 |
 | title | `ReactNode` | — | 标题 |
 | description | `ReactNode` | — | 副标题 |
 | actions | `ReactNode` | — | 右上操作区 |
@@ -107,7 +126,7 @@ loading 会在正文区域显示中性 overlay；默认 Spin 跟随主题色，l
 | bodyClassName | `string` | — | 正文容器 className |
 | bodyStyle | `CSSProperties` | — | 正文容器内联样式 |
 | bodyProps | `HTMLAttributes<HTMLDivElement>` | — | 透传给正文容器的 DOM props |
-| loading | `boolean` | `false` | 显示正文加载覆盖层 |
+| loading | `boolean` | `false` | 显示正文加载覆盖层，并暂时隔离正文与标题操作区控件 |
 | loadingOverlay | `ReactNode` | — | 自定义加载覆盖层内容 |
 
 

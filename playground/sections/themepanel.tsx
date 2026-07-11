@@ -41,12 +41,27 @@ const PreviewContent: React.FC = () => (
   </Surface>
 );
 
+/** ThemePanel 长面板演示工作区的属性。 */
+interface ThemePanelWorkspaceProps {
+  panel: React.ReactNode;
+  preview: React.ReactNode;
+  height?: number;
+}
+
+/** 在受限画布内滚动面板，避免重复长案例拖垮整页阅读节奏。 */
+const ThemePanelWorkspace: React.FC<ThemePanelWorkspaceProps> = ({ panel, preview, height = 720 }) => (
+  <div
+    className="demo-theme-workspace"
+    style={{ "--demo-theme-workspace-height": `${height}px` } as React.CSSProperties}
+  >
+    <div className="demo-theme-panel-scroll">{panel}</div>
+    <div className="demo-theme-preview">{preview}</div>
+  </div>
+);
+
 const ThemePanelDemo: React.FC = () => (
   <ThemeProvider target="scope" as="div">
-    <div style={{ display: "grid", gridTemplateColumns: "minmax(280px, 340px) minmax(0, 1fr)", gap: 18, alignItems: "start" }}>
-      <ThemePanel />
-      <PreviewContent />
-    </div>
+    <ThemePanelWorkspace panel={<ThemePanel />} preview={<PreviewContent />} />
   </ThemeProvider>
 );
 
@@ -137,13 +152,15 @@ const PersistentThemePanelDemo: React.FC = () => {
 
   return (
     <ThemeProvider target="scope" as="div" themes={themes} storageKey="lumina:theme-panel-demo:active-theme">
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(280px, 340px) minmax(0, 1fr)", gap: 18, alignItems: "start" }}>
-        <ThemePanel
+      <ThemePanelWorkspace
+        height={620}
+        panel={<ThemePanel
+          sections={["presets", "advanced"]}
           onCreateTheme={handleCreateTheme}
           onDeleteTheme={handleDeleteTheme}
           onUpdateTheme={handleUpdateTheme}
-        />
-        <Surface padding="lg" radius="xl" bordered>
+        />}
+        preview={<Surface padding="lg" radius="xl" bordered>
           <Card title="外部主题库" description={`已保存 ${savedThemes.length} 个主题`}>
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <Input leadingIcon="search" placeholder="搜索任务" />
@@ -175,24 +192,25 @@ const PersistentThemePanelDemo: React.FC = () => {
               </div>
             </div>
           </Card>
-        </Surface>
-      </div>
+        </Surface>}
+      />
     </ThemeProvider>
   );
 };
 
 const CompactPanelDemo: React.FC = () => (
   <ThemeProvider target="scope" accent="violet" as="div">
-    <div style={{ display: "grid", gridTemplateColumns: "minmax(240px, 300px) minmax(0, 1fr)", gap: 18, alignItems: "start" }}>
-      <ThemePanel
+    <ThemePanelWorkspace
+      height={460}
+      panel={<ThemePanel
         compact
         title="微调"
         description={null}
         sections={["accent", "shadow", "radius"]}
         showReset={false}
-      />
-      <PreviewContent />
-    </div>
+      />}
+      preview={<PreviewContent />}
+    />
   </ThemeProvider>
 );
 
@@ -235,6 +253,7 @@ const [themes, setThemes] = React.useState<ThemePresets>({});
 
 <ThemeProvider themes={themes} storageKey="app:theme">
   <ThemePanel
+    sections={["presets", "advanced"]}
     onCreateTheme={(payload) => {
       setThemes((current) => ({
         ...current,

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Button, Divider, Empty, Icon } from "lumina";
+import { Button, Empty, Icon, Surface } from "lumina";
 import { DocPage } from "../docs";
 import { defineSection, type SectionCtx } from "./_types";
 
@@ -49,12 +49,16 @@ const SectionEmpty: React.FC<SectionCtx> = () => (
 <Empty size="md" title="暂无数据" />
 <Empty size="lg" title="暂无数据" />`,
         render: () => (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr auto 1fr", alignItems: "center" }}>
-            <Empty size="sm" icon={<Icon name="file" size={20} />} title="sm" description="列表内嵌" />
-            <Divider direction="vertical" style={{ height: "70%", alignSelf: "center" }} />
-            <Empty size="md" icon={<Icon name="file" size={28} />} title="md" description="默认尺寸" />
-            <Divider direction="vertical" style={{ height: "70%", alignSelf: "center" }} />
-            <Empty size="lg" icon={<Icon name="file" size={36} />} title="lg" description="整页占位" />
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 160px), 1fr))", gap: 12, alignItems: "stretch" }}>
+            <Surface tone="sunken" padding="sm" radius="md">
+              <Empty size="sm" icon={<Icon name="file" size={20} />} title="sm" description="列表内嵌" />
+            </Surface>
+            <Surface tone="sunken" padding="sm" radius="md">
+              <Empty size="md" icon={<Icon name="file" size={28} />} title="md" description="默认尺寸" />
+            </Surface>
+            <Surface tone="sunken" padding="sm" radius="md">
+              <Empty size="lg" icon={<Icon name="file" size={36} />} title="lg" description="整页占位" />
+            </Surface>
           </div>
         ),
       },

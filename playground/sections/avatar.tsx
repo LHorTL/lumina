@@ -61,11 +61,13 @@ const SectionAvatar: React.FC<SectionCtx> = () => (
         title: "Avatar",
         rows: [
           { prop: "src", description: "图片 URL", type: "string" },
+          { prop: "fallbackSrc", description: "主图片失败后的备用地址", type: "string" },
           { prop: "alt", description: "替代文本/首字母来源", type: "string" },
           { prop: "initials", description: "自定义首字母", type: "string" },
           { prop: "size", description: "尺寸", type: `number | "sm" | "md" | "lg" | "xl"`, default: `"md"` },
           { prop: "shape", description: "形状", type: `"circle" | "square"`, default: `"circle"` },
           { prop: "status", description: "状态点", type: `"online" | "busy" | "away" | "offline"` },
+          { prop: "onImageError", description: "主图与备用图最终均失败时触发", type: "(event) => void" },
         ],
       },
     ]}

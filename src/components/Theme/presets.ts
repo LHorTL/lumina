@@ -1,5 +1,6 @@
 import type { ThemeBaseMode, ThemePreset, ThemeTokens } from "./Theme";
 
+/** Lumina 内置主题预设名称。 */
 export type BuiltInLuminaThemePresetKey =
   | "light"
   | "dark"
@@ -9,13 +10,16 @@ export type BuiltInLuminaThemePresetKey =
   | "assistant"
   | "assistantDark";
 
+/** 单个内置主题必须包含基底与完整 token。 */
 type BuiltInLuminaThemePreset = ThemePreset & {
   base: ThemeBaseMode;
   tokens: ThemeTokens;
 };
 
+/** 内置主题名称到预设内容的映射。 */
 type BuiltInLuminaThemePresetMap = Record<BuiltInLuminaThemePresetKey, BuiltInLuminaThemePreset>;
 
+/** 可直接传给 ThemeProvider themes 的内置主题集合。 */
 export const LUMINA_THEME_PRESETS: BuiltInLuminaThemePresetMap = {
   light: {
     base: "light",
@@ -194,6 +198,13 @@ export const LUMINA_THEME_PRESETS: BuiltInLuminaThemePresetMap = {
   },
 };
 
+/**
+ * 克隆一份内置主题，避免调用方修改共享预设对象。
+ *
+ * @example
+ * const graphite = cloneLuminaThemePreset("graphite");
+ * graphite.tokens.bg = "#202028";
+ */
 export function cloneLuminaThemePreset<K extends BuiltInLuminaThemePresetKey>(
   key: K
 ): BuiltInLuminaThemePresetMap[K] {
@@ -205,6 +216,13 @@ export function cloneLuminaThemePreset<K extends BuiltInLuminaThemePresetKey>(
   };
 }
 
+/**
+ * 按名称挑选并克隆多份内置主题。
+ *
+ * @example
+ * const themes = pickLuminaThemePresets(["light", "dark"] as const);
+ * <ThemeProvider themes={themes} mode="dark">...</ThemeProvider>
+ */
 export function pickLuminaThemePresets<K extends BuiltInLuminaThemePresetKey>(
   keys: readonly K[]
 ): Pick<BuiltInLuminaThemePresetMap, K> {

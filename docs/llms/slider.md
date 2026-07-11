@@ -38,7 +38,8 @@ range 模式下 value / onChange 采用 [min, max] 元组。
 
 ```tsx
 const [v, setV] = useState<[number, number]>([20, 70]);
-<Slider range value={v} onChange={setV} showValue />
+<Slider range value={v} onChange={setV} showValue
+  ariaLabel={["最低值", "最高值"]} />
 ```
 
 ### 渐变色
@@ -70,12 +71,14 @@ marks 配合 colors 可直观表达冷暖等语义。
 | --- | --- | --- | --- |
 | value / defaultValue | `number | [number, number]` | — | 受控/初始;range 模式下为 [number, number] |
 | onChange | `(value) => void` | — | 变更回调,range 模式返回元组 |
-| min / max / step | `number` | — | 区间与步进 |
+| min / max / step | `number` | — | 区间与步进;非法边界或非正步长会安全归一化 |
 | range | `boolean` | `false` | 是否为双滑块区间模式 |
 | marks | `Record<number, ReactNode>` | — | 刻度,点击可跳到对应值 |
 | tone | `"accent" | "success" | "warning" | "danger"` | `"accent"` | 色调 |
 | colors | `string[]` | — | 渐变色数组,按位置插值;覆盖 tone |
 | showValue | `boolean` | `false` | 显示数值 |
+| ariaLabel | `string | [string, string]` | — | 单滑块标签，或区间模式的起点/终点标签;支持方向键及 Home/End |
+| 原生 div 属性 | `HTMLAttributes<HTMLDivElement>` | — | className / style / id / data-* 等会透传到根节点 |
 | disabled | `boolean` | `false` | 禁用 |
 
 

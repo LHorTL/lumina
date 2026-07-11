@@ -34,8 +34,18 @@ export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(({
   className = "",
   ...rest
 }, ref) => {
+  const [closed, setClosed] = React.useState(false);
   const iconNode: IconSlot =
     icon ?? (tone === "success" ? "check2" : tone === "warning" || tone === "danger" ? "alert" : "info");
+
+  /** 关闭提示并通知外部监听者。 */
+  const handleClose = () => {
+    setClosed(true);
+    onClose?.();
+  };
+
+  if (closed) return null;
+
   return (
     <div
       ref={ref}
@@ -54,7 +64,7 @@ export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(({
       </div>
       {action && <div className="alert-action">{action}</div>}
       {closable && (
-        <button type="button" className="alert-close" onClick={onClose} aria-label="Dismiss">
+        <button type="button" className="alert-close" onClick={handleClose} aria-label="关闭提示">
           <Icon name="x" size={12} />
         </button>
       )}

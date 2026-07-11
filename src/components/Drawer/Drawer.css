@@ -16,9 +16,10 @@
   background: var(--bg);
   padding: var(--gap-5);
   z-index: 151;
-  overflow-y: auto;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
+  --overlay-shadow-safe-area: calc(var(--shadow-offset) + var(--shadow-blur));
   --drawer-shadow-offset: calc(var(--shadow-offset) * 4 * var(--shadow-float-scale));
   --drawer-shadow-blur: calc(var(--shadow-blur) * 3.75 * var(--shadow-float-scale));
   --drawer-shadow-spread: calc(var(--shadow-offset) * -3.3 * var(--shadow-float-scale));
@@ -62,7 +63,6 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--gap-3);
-  margin-bottom: var(--gap-4);
   padding-bottom: var(--gap-4);
   border-bottom: 1px solid var(--divider);
 }
@@ -93,12 +93,25 @@
 }
 .drawer-body {
   flex: 1;
+  min-width: 0;
+  min-height: 0;
+  margin-inline: calc(var(--gap-5) * -1);
+  padding: var(--overlay-shadow-safe-area);
+  overflow: auto;
+}
+.drawer-body:first-child {
+  margin-top: calc(var(--gap-5) * -1);
+}
+.drawer-body:last-child {
+  margin-bottom: calc(var(--gap-5) * -1);
+}
+.drawer-body.inset-none {
+  padding: 0;
 }
 .drawer-foot {
   display: flex;
   gap: 10px;
   justify-content: flex-end;
-  margin-top: var(--gap-4);
   padding-top: var(--gap-4);
   border-top: 1px solid var(--divider);
 }

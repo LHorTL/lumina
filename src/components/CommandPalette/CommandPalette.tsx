@@ -4,6 +4,8 @@ import "./CommandPalette.css";
 import * as React from "react";
 import ReactDOM from "react-dom";
 import { Input } from "../Input";
+import { OverlayZIndexProvider, useOverlayLayer, useOverlayZIndex } from "../../utils/overlayStack";
+import { usePortalContainer } from "../../utils/portal";
 
 export interface CommandItem {
   key: string;
@@ -38,6 +40,9 @@ export interface CommandPaletteProps
   resetOnOpen?: boolean;
   /** Footer node. Pass `null` to hide. */
   footer?: React.ReactNode;
+  /** 遮罩层的附加类名；`className` 会落到 ref 对应的面板节点。 */
+  overlayClassName?: string;
+  /** 命令面板节点的附加类名；不会污染全屏遮罩层。 */
   className?: string;
 }
 
@@ -53,6 +58,10 @@ const DEFAULT_FILTER = (item: CommandItem, q: string) => {
   }
   return i === needle.length;
 };
+
+/** 返回首个可执行命令的索引；没有可执行项时返回 -1。 */
+const findFirstEnabledIndex = (items: CommandItem[]): number =>
+  items.findIndex((item) => !item.disabled);
 
 /**
  * `CommandPalette` — ⌘K-style action launcher. Search + grouped items +
@@ -90,47 +99,77 @@ export const CommandPalette = React.forwardRef<HTMLDivElement, CommandPalettePro
   emptyText = "暂无匹配结果",
   resetOnOpen = true,
   footer,
+  overlayClassName = "",
   className = "",
   onMouseDown,
+  onKeyDown,
   ...rest
 }, ref) => {
+  const portalContainer = usePortalContainer();
   const [query, setQuery] = React.useState("");
-  const [active, setActive] = React.useState(0);
-  const inputRef = React.useRef<HTMLInputElement>(null);
-  const listRef = React.useRef<HTMLDivElement>(null);
-  const panelRef = React.useRef<HTMLDivElement>(null);
-
-  React.useImperativeHandle(ref, () => panelRef.current as HTMLDivElement, []);
+  const [active, setActive] = React.useState(-1);
+  const inputRef = React.useRef<HTMLInputElement | null>(null);
+  const listRef = React.useRef<HTMLDivElement | null>(null);
+  const panelRef = React.useRef<HTMLDivElement | null>(null);
+  const wasOpenRef = React.useRef(false);
+  const listId = React.useId();
+  const overlayZIndex = useOverlayZIndex(open);
 
   const filtered = React.useMemo(() => items.filter((it) => filter(it, query)), [items, query, filter]);
 
-  // Group items preserving the original order of first occurrence.
+  // 分组时保留每个命令在 filtered 中的原始索引，避免视觉重排后执行错项。
   const grouped = React.useMemo(() => {
     const order: string[] = [];
-    const map = new Map<string, CommandItem[]>();
-    for (const it of filtered) {
+    const map = new Map<string, Array<{ item: CommandItem; filteredIndex: number }>>();
+    filtered.forEach((it, filteredIndex) => {
       const g = it.group ?? "";
       if (!map.has(g)) { map.set(g, []); order.push(g); }
-      map.get(g)!.push(it);
-    }
+      map.get(g)!.push({ item: it, filteredIndex });
+    });
     return order.map((g) => ({ group: g, items: map.get(g)! }));
   }, [filtered]);
 
   const close = React.useCallback(() => onOpenChange?.(false), [onOpenChange]);
 
-  // Reset & focus on open.
+  useOverlayLayer({
+    open: open && portalContainer != null,
+    containerRef: panelRef,
+    zIndex: overlayZIndex,
+    onEscape: close,
+    trapFocus: true,
+    autoFocus: true,
+    restoreFocus: true,
+    lockScroll: true,
+    initialFocusRef: inputRef,
+  });
+
+  /** 同时维护命令面板内部引用和对外 ref。 */
+  const setPanelRef = React.useCallback((node: HTMLDivElement | null) => {
+    panelRef.current = node;
+    if (typeof ref === "function") ref(node);
+    else if (ref) ref.current = node;
+  }, [ref]);
+
+  // 仅在关闭到打开的边沿重置查询与活动项，避免列表更新时覆盖用户输入。
   React.useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      wasOpenRef.current = false;
+      return;
+    }
+    if (wasOpenRef.current) return;
+    wasOpenRef.current = true;
     if (resetOnOpen) setQuery("");
-    setActive(0);
-    const id = requestAnimationFrame(() => inputRef.current?.focus());
-    return () => cancelAnimationFrame(id);
-  }, [open, resetOnOpen]);
+    setActive(findFirstEnabledIndex(resetOnOpen ? items : filtered));
+  }, [filtered, items, open, resetOnOpen]);
 
   // Clamp active when the filtered list shrinks.
   React.useEffect(() => {
-    setActive((a) => (filtered.length === 0 ? 0 : Math.min(a, filtered.length - 1)));
-  }, [filtered.length]);
+    setActive((current) => {
+      if (filtered.length === 0) return -1;
+      if (current >= 0 && current < filtered.length && !filtered[current].disabled) return current;
+      return findFirstEnabledIndex(filtered);
+    });
+  }, [filtered]);
 
   // Scroll active item into view.
   React.useEffect(() => {
@@ -144,12 +183,13 @@ export const CommandPalette = React.forwardRef<HTMLDivElement, CommandPalettePro
     close();
   };
 
-  const onKey = (e: React.KeyboardEvent) => {
-    if (e.key === "Escape") { e.preventDefault(); close(); return; }
+  const handlePanelKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    onKeyDown?.(e);
+    if (e.defaultPrevented) return;
     if (e.key === "ArrowDown") {
       e.preventDefault();
       setActive((a) => {
-        if (filtered.length === 0) return 0;
+        if (filtered.length === 0) return -1;
         for (let n = 1; n <= filtered.length; n++) {
           const i = (a + n) % filtered.length;
           if (!filtered[i].disabled) return i;
@@ -160,7 +200,7 @@ export const CommandPalette = React.forwardRef<HTMLDivElement, CommandPalettePro
     if (e.key === "ArrowUp") {
       e.preventDefault();
       setActive((a) => {
-        if (filtered.length === 0) return 0;
+        if (filtered.length === 0) return -1;
         for (let n = 1; n <= filtered.length; n++) {
           const i = (a - n + filtered.length) % filtered.length;
           if (!filtered[i].disabled) return i;
@@ -172,57 +212,80 @@ export const CommandPalette = React.forwardRef<HTMLDivElement, CommandPalettePro
       const it = filtered[active];
       if (it) { e.preventDefault(); pick(it); }
     }
+    if (e.key === "Home" || e.key === "End") {
+      e.preventDefault();
+      const candidates = filtered
+        .map((item, index) => ({ item, index }))
+        .filter(({ item }) => !item.disabled);
+      const next = e.key === "Home" ? candidates[0] : candidates[candidates.length - 1];
+      if (next) setActive(next.index);
+    }
   };
 
-  if (typeof document === "undefined" || !open) return null;
-
-  // Build a flat index map so rendered list items know their position in `filtered`.
-  let flatIdx = -1;
+  if (!portalContainer || !open) return null;
 
   return ReactDOM.createPortal(
-    <div className={`cmdp-overlay ${className}`} onMouseDown={close} role="presentation">
+    <OverlayZIndexProvider zIndex={overlayZIndex}>
       <div
-        ref={panelRef}
-        className="cmdp-panel"
-        onMouseDown={(e) => {
-          onMouseDown?.(e);
-          e.stopPropagation();
-        }}
-        role="dialog"
-        aria-modal
-        aria-label="命令面板"
-        {...rest}
+        className={["cmdp-overlay", overlayClassName].filter(Boolean).join(" ")}
+        style={{ zIndex: overlayZIndex }}
+        onMouseDown={close}
+        role="presentation"
       >
-        <div className="cmdp-search">
-          <Input
-            ref={inputRef}
-            size="lg"
-            leadingIcon="search"
-            placeholder={placeholder}
-            value={query}
-            onValueChange={(v) => setQuery(v)}
-            onKeyDown={onKey}
-            suffix={<span className="cmdp-kbd">esc</span>}
-          />
-        </div>
+        <div
+          ref={setPanelRef}
+          className={["cmdp-panel", className].filter(Boolean).join(" ")}
+          onMouseDown={(e) => {
+            onMouseDown?.(e);
+            e.stopPropagation();
+          }}
+          role="dialog"
+          aria-modal
+          aria-label="命令面板"
+          tabIndex={-1}
+          onKeyDown={handlePanelKeyDown}
+          {...rest}
+        >
+          <div className="cmdp-search">
+            <Input
+              ref={inputRef}
+              size="lg"
+              leadingIcon="search"
+              placeholder={placeholder}
+              value={query}
+              onValueChange={(v) => setQuery(v)}
+              role="combobox"
+              aria-autocomplete="list"
+              aria-haspopup="listbox"
+              aria-expanded={open}
+              aria-controls={listId}
+              aria-activedescendant={active >= 0 ? `${listId}-option-${active}` : undefined}
+              suffix={<span className="cmdp-kbd">esc</span>}
+            />
+          </div>
 
-        <div ref={listRef} className="cmdp-list" role="listbox">
+          <div ref={listRef} id={listId} className="cmdp-list" role="listbox" aria-label="命令">
           {grouped.length === 0 ? (
             <div className="cmdp-empty">{emptyText}</div>
           ) : (
-            grouped.map(({ group, items: gItems }) => (
-              <div key={group || "_"} className="cmdp-group">
-                {group && <div className="cmdp-group-head">{group}</div>}
-                {gItems.map((it) => {
-                  flatIdx += 1;
-                  const i = flatIdx;
+            grouped.map(({ group, items: gItems }, groupIndex) => (
+              <div
+                key={group || "_"}
+                className="cmdp-group"
+                role="group"
+                aria-labelledby={group ? `${listId}-group-${groupIndex}` : undefined}
+              >
+                {group && <div id={`${listId}-group-${groupIndex}`} className="cmdp-group-head">{group}</div>}
+                {gItems.map(({ item: it, filteredIndex: i }) => {
                   const isActive = i === active;
                   return (
                     <button
                       key={it.key}
-                      type="button"
-                      role="option"
-                      aria-selected={isActive}
+                       type="button"
+                       role="option"
+                       id={`${listId}-option-${i}`}
+                       aria-selected={isActive}
+                       tabIndex={-1}
                       data-cmd-idx={i}
                       disabled={it.disabled}
                       className={`cmdp-item ${isActive ? "active" : ""}`}
@@ -241,22 +304,23 @@ export const CommandPalette = React.forwardRef<HTMLDivElement, CommandPalettePro
               </div>
             ))
           )}
-        </div>
-
-        {footer === null ? null : (
-          <div className="cmdp-footer">
-            {footer ?? (
-              <>
-                <span><span className="cmdp-kbd">↑</span><span className="cmdp-kbd">↓</span> 切换</span>
-                <span><span className="cmdp-kbd">⏎</span> 执行</span>
-                <span><span className="cmdp-kbd">esc</span> 关闭</span>
-              </>
-            )}
           </div>
-        )}
+
+          {footer === null ? null : (
+            <div className="cmdp-footer">
+              {footer ?? (
+                <>
+                  <span><span className="cmdp-kbd">↑</span><span className="cmdp-kbd">↓</span> 切换</span>
+                  <span><span className="cmdp-kbd">⏎</span> 执行</span>
+                  <span><span className="cmdp-kbd">esc</span> 关闭</span>
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </div>
-    </div>,
-    document.body
+    </OverlayZIndexProvider>,
+    portalContainer
   );
 });
 CommandPalette.displayName = "CommandPalette";

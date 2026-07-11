@@ -9,9 +9,22 @@ import { Input } from "../Input";
 import type { TimePickerValue } from "../TimePicker";
 import { useFloating } from "../../utils/useFloating";
 import { useInputTriggerToggle } from "../../utils/useInputTriggerToggle";
+import { usePortalContainer } from "../../utils/portal";
+import { useOverlayLayer } from "../../utils/overlayStack";
 
 export type DateTimePickerFormat = "YYYY-MM-DD HH:mm" | "YYYY-MM-DD HH:mm:ss";
 export type DateTimePickerSize = "sm" | "md" | "lg";
+
+/** 日期时间选择器中的时间字段。 */
+type DateTimePart = "hour" | "minute" | "second";
+
+/** 单个日期的可用时间摘要，供日期与时间列共享。 */
+interface DayAvailability {
+  closestDateTime: Date | null;
+  byPart: Record<DateTimePart, Map<number, TimePickerValue>>;
+  /** 是否已经检查完当天的全部候选时间。 */
+  complete: boolean;
+}
 
 export interface DateTimePickerProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, "defaultValue" | "onChange"> {
@@ -23,6 +36,8 @@ export interface DateTimePickerProps
   onChange?: (date: Date | null, dateString: string) => void;
   /** Display and input format. */
   format?: DateTimePickerFormat | ((date: Date) => string);
+  /** 自定义格式化函数对应的输入解析器；返回 null 表示输入无效。 */
+  parse?: (input: string) => Date | null;
   /** Show the seconds column. Overrides `format` display if true. */
   showSecond?: boolean;
   placeholder?: string;
@@ -63,6 +78,12 @@ export interface DateTimePickerProps
 
 const pad = (value: number): string => String(value).padStart(2, "0");
 
+/** 单次渲染为当前日期同步探测的最大候选数，避免秒级组合阻塞主线程。 */
+const MAX_DAY_AVAILABILITY_PROBES = 4096;
+
+/** 日历网格仅在候选空间很小时才同步判断整日不可用。 */
+const MAX_EAGER_CALENDAR_CANDIDATES = 256;
+
 const clampStep = (value: number | undefined): number => {
   if (!Number.isFinite(value) || !value || value < 1) return 1;
   return Math.floor(value);
@@ -73,11 +94,6 @@ const isValidDate = (date: Date | null | undefined): date is Date =>
 
 const startOfDay = (date: Date): Date =>
   new Date(date.getFullYear(), date.getMonth(), date.getDate());
-
-const isSameDay = (a: Date, b: Date): boolean =>
-  a.getFullYear() === b.getFullYear() &&
-  a.getMonth() === b.getMonth() &&
-  a.getDate() === b.getDate();
 
 const normalizeDateTime = (date: Date, includeSecond: boolean): Date => {
   const normalized = new Date(date);
@@ -97,16 +113,6 @@ const composeDateTime = (date: Date, time: TimePickerValue, includeSecond: boole
   next.setHours(time.hour, time.minute, includeSecond ? time.second : 0, 0);
   return next;
 };
-
-const composeTime = (
-  base: TimePickerValue,
-  key: "hour" | "minute" | "second",
-  value: number
-): TimePickerValue => ({
-  hour: key === "hour" ? value : base.hour,
-  minute: key === "minute" ? value : base.minute,
-  second: key === "second" ? value : base.second,
-});
 
 const byDistanceFrom = (preferred: number) => (a: number, b: number): number =>
   Math.abs(a - preferred) - Math.abs(b - preferred) || a - b;
@@ -183,6 +189,7 @@ export const DateTimePicker = React.forwardRef<HTMLDivElement, DateTimePickerPro
       defaultValue = null,
       onChange,
       format = "YYYY-MM-DD HH:mm",
+      parse,
       showSecond,
       placeholder = "请选择日期时间",
       disabled,
@@ -205,6 +212,12 @@ export const DateTimePicker = React.forwardRef<HTMLDivElement, DateTimePickerPro
       dropdownClassName = "",
       className = "",
       onKeyDown,
+      id: fieldId,
+      "aria-invalid": ariaInvalid,
+      "aria-describedby": ariaDescribedBy,
+      "aria-labelledby": ariaLabelledBy,
+      "aria-required": ariaRequired,
+      "aria-label": ariaLabel,
       ...rest
     },
     ref
@@ -240,6 +253,7 @@ export const DateTimePicker = React.forwardRef<HTMLDivElement, DateTimePickerPro
     const open = openControlled ? !!openProp : innerOpen;
     const [compactPanel, setCompactPanel] = React.useState(false);
     const [calendarViewDate, setCalendarViewDate] = React.useState<Date | null>(null);
+    const [calendarVisibleDate, setCalendarVisibleDate] = React.useState<Date | null>(null);
     const wasOpenRef = React.useRef(false);
     const scrollSignatureRef = React.useRef<string | null>(null);
     const scrollFramesRef = React.useRef(new Map<HTMLElement, number>());
@@ -259,12 +273,22 @@ export const DateTimePicker = React.forwardRef<HTMLDivElement, DateTimePickerPro
     });
 
     const rootRef = React.useRef<HTMLDivElement | null>(null);
-    const panelRef = React.useRef<HTMLDivElement | null>(null);
-    const { triggerRef, floatingStyle } = useFloating<HTMLDivElement>({
+    const panelId = React.useId();
+    const portalContainer = usePortalContainer();
+    const { triggerRef, floatingRef: panelRef, floatingStyle, zIndex: panelZIndex } = useFloating<HTMLDivElement, HTMLDivElement>({
       open,
       placement,
       panelWidth: compactPanel ? 332 : 476,
       panelHeight: compactPanel ? (includeSecond ? 492 : 468) : 328,
+    });
+
+    useOverlayLayer({
+      open: open && !disabled && !readOnly && portalContainer != null,
+      containerRef: panelRef,
+      ownerRef: triggerRef,
+      zIndex: panelZIndex,
+      onEscape: () => setOpen(false),
+      restoreFocus: true,
     });
 
     const setRootRef = React.useCallback(
@@ -278,7 +302,7 @@ export const DateTimePicker = React.forwardRef<HTMLDivElement, DateTimePickerPro
     );
 
     React.useEffect(() => {
-      if (typeof window === "undefined") return;
+      if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
       const media = window.matchMedia("(max-width: 640px)");
       const update = () => setCompactPanel(media.matches);
       update();
@@ -305,15 +329,20 @@ export const DateTimePicker = React.forwardRef<HTMLDivElement, DateTimePickerPro
       [disabledDate, normalizedMax, normalizedMin]
     );
 
-    const isDisabledDateTime = React.useCallback(
+    /** 在日期本身可用时，判断具体时间是否越界或被业务规则禁用。 */
+    const isDisabledTimeOnEnabledDay = React.useCallback(
       (date: Date) => {
         const normalized = normalizeDateTime(date, includeSecond);
-        if (isDisabledDay(normalized)) return true;
         if (normalizedMin && normalized < normalizedMin) return true;
         if (normalizedMax && normalized > normalizedMax) return true;
         return disabledTime?.(getTimeParts(normalized), startOfDay(normalized)) ?? false;
       },
-      [disabledTime, includeSecond, isDisabledDay, normalizedMax, normalizedMin]
+      [disabledTime, includeSecond, normalizedMax, normalizedMin]
+    );
+
+    const isDisabledDateTime = React.useCallback(
+      (date: Date) => isDisabledDay(date) || isDisabledTimeOnEnabledDay(date),
+      [isDisabledDay, isDisabledTimeOnEnabledDay]
     );
 
     const commit = React.useCallback(
@@ -345,14 +374,9 @@ export const DateTimePicker = React.forwardRef<HTMLDivElement, DateTimePickerPro
         if (panelRef.current?.contains(target)) return;
         setOpen(false);
       };
-      const onDocKey = (event: KeyboardEvent) => {
-        if (event.key === "Escape") setOpen(false);
-      };
       document.addEventListener("mousedown", onDown);
-      document.addEventListener("keydown", onDocKey);
       return () => {
         document.removeEventListener("mousedown", onDown);
-        document.removeEventListener("keydown", onDocKey);
       };
     }, [open, setOpen]);
 
@@ -360,6 +384,7 @@ export const DateTimePicker = React.forwardRef<HTMLDivElement, DateTimePickerPro
       (list: HTMLElement, top: number, animate: boolean) => {
         const frame = scrollFramesRef.current.get(list);
         if (frame != null) cancelAnimationFrame(frame);
+        scrollFramesRef.current.delete(list);
 
         if (!animate) {
           list.scrollTop = top;
@@ -396,8 +421,14 @@ export const DateTimePicker = React.forwardRef<HTMLDivElement, DateTimePickerPro
 
     React.useEffect(() => {
       if (!open) return;
+      const prefersReducedMotion =
+        typeof window.matchMedia === "function" &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const shouldAnimate =
-        wasOpenRef.current && scrollSignatureRef.current != null && scrollSignatureRef.current !== scrollSignature;
+        !prefersReducedMotion &&
+        wasOpenRef.current &&
+        scrollSignatureRef.current != null &&
+        scrollSignatureRef.current !== scrollSignature;
 
       requestAnimationFrame(() => {
         panelRef.current
@@ -422,6 +453,7 @@ export const DateTimePicker = React.forwardRef<HTMLDivElement, DateTimePickerPro
       wasOpenRef.current = false;
       scrollSignatureRef.current = null;
       setCalendarViewDate(null);
+      setCalendarVisibleDate(null);
     }, [open]);
 
     React.useEffect(
@@ -438,54 +470,120 @@ export const DateTimePicker = React.forwardRef<HTMLDivElement, DateTimePickerPro
     const hourOptions = buildOptions(23, hourStep, timeParts.hour);
     const minuteOptions = buildOptions(59, minuteStep, timeParts.minute);
     const secondOptions = buildOptions(59, secondStep, timeParts.second);
+    const sortedHourOptions = [...hourOptions].sort(byDistanceFrom(timeParts.hour));
+    const sortedMinuteOptions = [...minuteOptions].sort(byDistanceFrom(timeParts.minute));
+    const sortedSecondOptions = includeSecond
+      ? [...secondOptions].sort(byDistanceFrom(timeParts.second))
+      : [0];
+    const dayCandidateCount =
+      sortedHourOptions.length * sortedMinuteOptions.length * sortedSecondOptions.length;
+    const availabilityCache = React.useMemo(
+      () => new Map<number, DayAvailability>(),
+      [
+        disabledDate,
+        disabledTime,
+        hourStep,
+        includeSecond,
+        minuteStep,
+        normalizedMax?.getTime(),
+        normalizedMin?.getTime(),
+        secondStep,
+        timeParts.hour,
+        timeParts.minute,
+        timeParts.second,
+      ]
+    );
 
-    const findAvailableTime = (
-      key: "hour" | "minute" | "second",
-      value: number
-    ): TimePickerValue | null => {
-      const preferred = composeTime(timeParts, key, value);
-      if (!isDisabledDateTime(composeDateTime(selectedDay, preferred, includeSecond))) {
-        return preferred;
+    /** 有界扫描并缓存单日可用时间，同时优先覆盖各列靠近当前值的组合。 */
+    const getDayAvailability = (date: Date): DayAvailability => {
+      const dayKey = startOfDay(date).getTime();
+      const cached = availabilityCache.get(dayKey);
+      if (cached) return cached;
+      const availability: DayAvailability = {
+        closestDateTime: null,
+        byPart: {
+          hour: new Map<number, TimePickerValue>(),
+          minute: new Map<number, TimePickerValue>(),
+          second: new Map<number, TimePickerValue>(),
+        },
+        complete: false,
+      };
+      availabilityCache.set(dayKey, availability);
+      const day = startOfDay(date);
+      if (isDisabledDay(day)) {
+        availability.complete = true;
+        return availability;
       }
 
-      const hours =
-        key === "hour" ? [value] : [...hourOptions].sort(byDistanceFrom(timeParts.hour));
-      const minutes =
-        key === "minute" ? [value] : [...minuteOptions].sort(byDistanceFrom(timeParts.minute));
-      const seconds =
-        key === "second"
-          ? [value]
-          : includeSecond
-            ? [...secondOptions].sort(byDistanceFrom(timeParts.second))
-            : [0];
+      const visited = new Set<string>();
+      /** 检查单个候选并把可用组合登记到对应的时、分、秒列。 */
+      const inspectCandidate = (time: TimePickerValue): void => {
+        const key = `${time.hour}:${time.minute}:${time.second}`;
+        if (visited.has(key) || visited.size >= MAX_DAY_AVAILABILITY_PROBES) return;
+        visited.add(key);
+        const candidate = composeDateTime(day, time, includeSecond);
+        if (isDisabledTimeOnEnabledDay(candidate)) return;
+        availability.closestDateTime ??= candidate;
+        availability.byPart.hour.set(time.hour, availability.byPart.hour.get(time.hour) ?? time);
+        availability.byPart.minute.set(time.minute, availability.byPart.minute.get(time.minute) ?? time);
+        availability.byPart.second.set(time.second, availability.byPart.second.get(time.second) ?? time);
+      };
+      /** 所有列值都已有可用组合时，无需继续扩大搜索范围。 */
+      const allPartsCovered = (): boolean =>
+        availability.byPart.hour.size === hourOptions.length &&
+        availability.byPart.minute.size === minuteOptions.length &&
+        availability.byPart.second.size === sortedSecondOptions.length;
 
-      for (const hour of hours) {
-        for (const minute of minutes) {
-          for (const second of seconds) {
-            const candidate = { hour, minute, second };
-            if (!isDisabledDateTime(composeDateTime(selectedDay, candidate, includeSecond))) {
-              return candidate;
+      // 先检查只改变一个字段的候选，常见限制可在百余次调用内完成。
+      inspectCandidate(timeParts);
+      sortedHourOptions.forEach((hour) => inspectCandidate({ ...timeParts, hour }));
+      sortedMinuteOptions.forEach((minute) => inspectCandidate({ ...timeParts, minute }));
+      sortedSecondOptions.forEach((second) => inspectCandidate({ ...timeParts, second }));
+
+      // 再按距离扩展组合；分钟和秒优先，避免先耗尽某一个小时的全部 3600 个组合。
+      scanCandidates:
+      for (const minute of sortedMinuteOptions) {
+        for (const second of sortedSecondOptions) {
+          for (const hour of sortedHourOptions) {
+            if (visited.size >= MAX_DAY_AVAILABILITY_PROBES || allPartsCovered()) {
+              break scanCandidates;
             }
+            inspectCandidate({ hour, minute, second });
           }
         }
       }
-      return null;
+      availability.complete = visited.size >= dayCandidateCount;
+      return availability;
+    };
+
+    /** 返回时间列选项对应的最近可用组合。 */
+    const findAvailableTime = (key: DateTimePart, value: number): TimePickerValue | null => {
+      return getDayAvailability(selectedDay).byPart[key].get(value) ?? null;
+    };
+
+    /** 为新选择的日期寻找最接近当前时间的可用日期时间。 */
+    const findAvailableDateTimeOnDay = (date: Date): Date | null => {
+      return getDayAvailability(date).closestDateTime;
+    };
+
+    /** 当前可视月份内，整日没有任何可选时间时禁用对应日期。 */
+    const isCalendarDayDisabled = (date: Date): boolean => {
+      if (isDisabledDay(date)) return true;
+      const visible = calendarVisibleDate ?? calendarViewDate ?? selectedDay;
+      if (date.getFullYear() !== visible.getFullYear() || date.getMonth() !== visible.getMonth()) {
+        return false;
+      }
+      if (dayCandidateCount > MAX_EAGER_CALENDAR_CANDIDATES) return false;
+      const availability = getDayAvailability(date);
+      return availability.complete && availability.closestDateTime == null;
     };
 
     const handleDatePick = (date: Date) => {
-      const next = composeDateTime(date, timeParts, includeSecond);
-      if (normalizedMin && isSameDay(next, normalizedMin) && next < normalizedMin) {
-        commit(normalizedMin);
-        return;
-      }
-      if (normalizedMax && isSameDay(next, normalizedMax) && next > normalizedMax) {
-        commit(normalizedMax);
-        return;
-      }
-      commit(next);
+      const available = findAvailableDateTimeOnDay(date);
+      if (available) commit(available);
     };
 
-    const pickTime = (key: "hour" | "minute" | "second", nextValue: number) => {
+    const pickTime = (key: DateTimePart, nextValue: number) => {
       const nextTime = findAvailableTime(key, nextValue);
       if (nextTime) commit(composeDateTime(selectedDay, nextTime, includeSecond));
     };
@@ -500,12 +598,12 @@ export const DateTimePicker = React.forwardRef<HTMLDivElement, DateTimePickerPro
         setDraft(formatDateTime(current, format, includeSecond));
         return;
       }
-      if (typeof format === "function") {
-        setDraft(formatDateTime(current, format, includeSecond));
-        return;
-      }
-      const parsed = parseDateTimeInput(draft, includeSecond);
-      if (!parsed || isDisabledDateTime(parsed)) {
+      const parsed = parse
+        ? parse(draft)
+        : typeof format === "function"
+          ? null
+          : parseDateTimeInput(draft, includeSecond);
+      if (!isValidDate(parsed) || isDisabledDateTime(parsed)) {
         setDraft(formatDateTime(current, format, includeSecond));
         return;
       }
@@ -525,9 +623,25 @@ export const DateTimePicker = React.forwardRef<HTMLDivElement, DateTimePickerPro
       }
     };
 
+    /** 在时间列中用方向键、Home 与 End 移动焦点。 */
+    const handleTimeOptionKeyDown: React.KeyboardEventHandler<HTMLButtonElement> = (event) => {
+      const list = event.currentTarget.parentElement;
+      if (!list) return;
+      const options = Array.from(list.querySelectorAll<HTMLButtonElement>("button:not(:disabled)"));
+      const index = options.indexOf(event.currentTarget);
+      let nextIndex = index;
+      if (event.key === "ArrowDown" || event.key === "ArrowRight") nextIndex = index + 1;
+      else if (event.key === "ArrowUp" || event.key === "ArrowLeft") nextIndex = index - 1;
+      else if (event.key === "Home") nextIndex = 0;
+      else if (event.key === "End") nextIndex = options.length - 1;
+      else return;
+      event.preventDefault();
+      options[Math.max(0, Math.min(options.length - 1, nextIndex))]?.focus();
+    };
+
     const renderTimeColumn = (
       label: string,
-      key: "hour" | "minute" | "second",
+      key: DateTimePart,
       options: number[]
     ) => (
       <div className="date-time-picker-time-column">
@@ -545,6 +659,7 @@ export const DateTimePicker = React.forwardRef<HTMLDivElement, DateTimePickerPro
                 disabled={optionDisabled}
                 className={`date-time-picker-time-option ${selected ? "selected" : ""}`}
                 onClick={() => pickTime(key, option)}
+                onKeyDown={handleTimeOptionKeyDown}
               >
                 {pad(option)}
               </button>
@@ -571,6 +686,12 @@ export const DateTimePicker = React.forwardRef<HTMLDivElement, DateTimePickerPro
     return (
       <div ref={setRootRef} className={rootClassName} onKeyDown={handleRootKeyDown} {...rest}>
         <Input
+          id={fieldId}
+          aria-label={ariaLabel}
+          aria-labelledby={ariaLabelledBy}
+          aria-invalid={ariaInvalid}
+          aria-required={ariaRequired}
+          aria-describedby={ariaDescribedBy}
           value={draft}
           size={size}
           placeholder={placeholder}
@@ -585,16 +706,19 @@ export const DateTimePicker = React.forwardRef<HTMLDivElement, DateTimePickerPro
           inputMode="numeric"
           aria-expanded={open}
           aria-haspopup="dialog"
+          aria-controls={open ? panelId : undefined}
         />
         {open &&
           !disabled &&
           !readOnly &&
-          typeof document !== "undefined" &&
+          portalContainer &&
           createPortal(
             <div
               ref={panelRef}
+              id={panelId}
               className={`date-time-picker-panel ${includeSecond ? "with-second" : "without-second"} ${mergedPanelClassName}`}
               role="dialog"
+              aria-label="选择日期和时间"
               style={floatingStyle}
             >
               <div className="date-time-picker-body">
@@ -603,7 +727,8 @@ export const DateTimePicker = React.forwardRef<HTMLDivElement, DateTimePickerPro
                   viewDate={calendarViewDate ?? undefined}
                   min={normalizedMin ? startOfDay(normalizedMin) : undefined}
                   max={normalizedMax ? startOfDay(normalizedMax) : undefined}
-                  disabledDate={isDisabledDay}
+                  disabledDate={isCalendarDayDisabled}
+                  onViewChange={setCalendarVisibleDate}
                   onChange={handleDatePick}
                 />
                 <div className="date-time-picker-time">
@@ -621,6 +746,7 @@ export const DateTimePicker = React.forwardRef<HTMLDivElement, DateTimePickerPro
                   disabled={isDisabledDateTime(today)}
                   onClick={() => {
                     setCalendarViewDate(today);
+                    setCalendarVisibleDate(today);
                     commit(today);
                   }}
                 >
@@ -641,7 +767,7 @@ export const DateTimePicker = React.forwardRef<HTMLDivElement, DateTimePickerPro
                 </Button>
               </div>
             </div>,
-            document.body
+            portalContainer
           )}
       </div>
     );

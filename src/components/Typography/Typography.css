@@ -96,6 +96,15 @@
 .typo-text { font-size: inherit; line-height: inherit; }
 
 /* ---- Link ---- */
+.typo-link-group {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  vertical-align: baseline;
+}
+.typo-link-group > .typo-link { min-width: 0; }
+.typo-link-group > .typo-action,
+.typo-link-group > .typo-expand { flex: 0 0 auto; }
 .typo-link {
   color: var(--accent-ink);
   text-decoration: none;
@@ -142,6 +151,10 @@
   transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
   vertical-align: -0.18em;
   user-select: none;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
 }
 .typo-action > svg {
   display: block;
@@ -157,6 +170,7 @@
   outline-offset: 1px;
 }
 .typo-copy.copied { color: var(--success); }
+.typo-copy.error { color: var(--danger); }
 
 /* Editable text trigger overlays */
 .typo-edit-text-trigger {
@@ -170,6 +184,24 @@
 
 /* ---- Editor (input / textarea) ---- */
 .typo.editing { display: block; }
+.typo-editor-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-1);
+  width: 100%;
+  max-width: 100%;
+}
+.typo-editor-wrap > .typo-editor { min-width: 0; }
+.typo-enter {
+  flex: 0 0 auto;
+  margin-left: 0;
+}
+.typo.typo-link-editor-shell {
+  display: inline-flex;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.typo.typo-link-editing-anchor { display: none; }
 .typo-editor {
   font: inherit;
   color: inherit;
@@ -224,14 +256,51 @@
   overflow: hidden;
 }
 
+/* 后缀与裁切正文分栏，确保后缀不进入 overflow / line-clamp 区域。 */
+.typo.ellipsis-with-suffix {
+  display: inline-flex;
+  align-items: flex-end;
+  max-width: 100%;
+  min-width: 0;
+  vertical-align: bottom;
+}
+.typo-paragraph.ellipsis-with-suffix,
+.typo-title.ellipsis-with-suffix {
+  display: flex;
+}
+.typo-ellipsis-content {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+}
+.typo-ellipsis-content.ellipsis {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.typo-ellipsis-content.ellipsis-multi {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .typo-expand {
   margin-left: 4px;
   color: var(--accent-ink);
   cursor: pointer;
   font-size: 0.92em;
   user-select: none;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
 }
 .typo-expand:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+.typo-suffix {
+  flex: none;
+  margin-left: 0.25em;
+}
 
 .typo-ellipsis-tooltip {
   display: block;

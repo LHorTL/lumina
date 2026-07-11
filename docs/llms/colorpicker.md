@@ -5,7 +5,7 @@
 ## 导入
 
 ```tsx
-import { ColorPicker } from "@fangxinyan/lumina";
+import { ColorPicker, type ColorPickerTriggerElement } from "@fangxinyan/lumina";
 ```
 
 ## 示例
@@ -52,7 +52,7 @@ presets 传入十六进制数组,面板底部会渲染一排色块。
 
 ### 自定义触发器
 
-将 children 作为触发器;色块容器会继承传入的交互元素。
+将 children 作为触发器;纯文本或不能接收 ref 的组件会自动获得可访问的包装节点。
 
 ```tsx
 <ColorPicker value={brand} onChange={setBrand}>
@@ -75,7 +75,8 @@ presets 传入十六进制数组,面板底部会渲染一排色块。
 | showText | `boolean` | `false` | 触发器右侧显示 hex |
 | disabled | `boolean` | `false` | 禁用 |
 | open / defaultOpen / onOpenChange | `—` | — | 受控面板显隐 |
-| children | `ReactNode` | — | 自定义触发器 |
+| children | `ReactNode` | — | 自定义触发器;不能接收 ref 的节点会自动包装 |
+| ref | `Ref<ColorPickerTriggerElement>` | — | 实际触发节点;自定义内容可能返回包装节点 |
 
 
 ---

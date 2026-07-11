@@ -25,6 +25,8 @@ jobs:
 
       - run: npm run typecheck
 
+      - run: npm run test:unit
+
       - run: npm run gen:docs
 
       - run: npm run build:lib

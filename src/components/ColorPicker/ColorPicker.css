@@ -41,6 +41,7 @@
   font: inherit;
 }
 .cp-custom-trigger:disabled { opacity: 0.5; cursor: not-allowed; }
+.cp-custom-trigger[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
 
 .cp-swatch {
   display: inline-block;

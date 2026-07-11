@@ -4,9 +4,12 @@ import "./Table.css";
 import * as React from "react";
 import { createPortal } from "react-dom";
 import { Icon } from "../Icon";
+import { Button, IconButton } from "../Button";
 import { Checkbox } from "../Checkbox";
 import { Pagination } from "../Pagination";
 import { useFloating } from "../../utils/useFloating";
+import { usePortalContainer } from "../../utils/portal";
+import { useOverlayLayer } from "../../utils/overlayStack";
 
 export type RowKey = string | number;
 
@@ -61,6 +64,33 @@ export interface PaginationConfig {
   showSizeChanger?: boolean;
   /** Selectable page sizes for the size dropdown. */
   pageSizeOptions?: number[];
+  /** 数据分页方式。`local` 由 Table 切片，`remote` 直接渲染传入数据。 */
+  mode?: "local" | "remote";
+}
+
+/** Table 统一变更事件的触发来源。 */
+export type TableChangeAction = "paginate" | "filter" | "sort";
+
+/** Table 当前分页快照。 */
+export interface TablePaginationState {
+  current: number;
+  pageSize: number;
+  total: number;
+}
+
+/** Table 当前排序快照。 */
+export interface TableSorterState {
+  key?: string;
+  direction?: "asc" | "desc";
+}
+
+/** Table 排序、筛选和分页的统一变更信息。 */
+export interface TableChangeInfo<Row = any> {
+  action: TableChangeAction;
+  pagination?: TablePaginationState;
+  filters: Record<string, (string | number)[]>;
+  sorter: TableSorterState;
+  currentData: Row[];
 }
 
 export interface RowSelectionConfig<Row = any> {
@@ -97,7 +127,7 @@ export interface TableScrollConfig {
 }
 
 export interface TableProps<Row = any>
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onSelect"> {
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onSelect" | "onChange"> {
   columns: TableColumn<Row>[];
   data: Row[];
   rowKey?: keyof Row | ((row: Row) => RowKey);
@@ -112,6 +142,8 @@ export interface TableProps<Row = any>
   sortKey?: string;
   sortDir?: "asc" | "desc";
   onSort?: (key: string) => void;
+  /** 排序、筛选或分页变化时触发，适合统一同步 URL 或远程请求参数。 */
+  onChange?: (info: TableChangeInfo<Row>) => void;
 
   /**
    * Row selection config — preferred API.
@@ -143,12 +175,47 @@ export interface TableProps<Row = any>
 
   /** Horizontal / vertical scroll config. */
   scroll?: TableScrollConfig;
+  /** 原生 table 元素属性，例如 aria-label。 */
+  tableProps?: Omit<React.TableHTMLAttributes<HTMLTableElement>, "children">;
+  /** 原生表格标题；可用 className 自行做视觉隐藏。 */
+  caption?: React.ReactNode;
 
   /** Called when user clicks a row. */
   onRowClick?: (row: Row, index: number) => void;
   /** Empty state. */
   empty?: React.ReactNode;
   className?: string;
+}
+
+/** Table 内部保留的稳定行身份与原始索引。 */
+interface TableRowEntry<Row> {
+  row: Row;
+  key: RowKey;
+  sourceIndex: number;
+}
+
+/** 按当前列筛选条件过滤行，同时保留稳定行键。 */
+function filterTableEntries<Row>(
+  entries: TableRowEntry<Row>[],
+  filters: Record<string, (string | number)[]>,
+  columnMap: Map<string, TableColumn<Row>>
+): TableRowEntry<Row>[] {
+  const activeEntries = Object.entries(filters);
+  if (activeEntries.length === 0) return entries;
+  return entries.filter(({ row }) => {
+    for (const [columnKey, values] of activeEntries) {
+      const column = columnMap.get(columnKey);
+      if (!column) continue;
+      const matches = values.some((value) => {
+        if (column.onFilter) return column.onFilter(value, row);
+        if (column.dataIndex == null) return false;
+        const cell = row[column.dataIndex];
+        return cell === value || String(cell) === String(value);
+      });
+      if (!matches) return false;
+    }
+    return true;
+  });
 }
 
 type TableComponent = <Row extends Record<string, any> = any>(
@@ -165,6 +232,7 @@ const TableInner = <Row extends Record<string, any> = any>({
   sortKey,
   sortDir = "asc",
   onSort,
+  onChange,
   rowSelection,
   selectable,
   selected = [],
@@ -172,19 +240,27 @@ const TableInner = <Row extends Record<string, any> = any>({
   expandable,
   pagination,
   scroll,
+  tableProps,
+  caption,
   onRowClick,
   empty = "暂无数据",
   className = "",
   style,
   ...rest
 }: TableProps<Row>, ref: React.ForwardedRef<HTMLDivElement>) => {
-  const keyOf = React.useCallback(
-    (row: Row, i: number): RowKey => {
-      if (typeof rowKey === "function") return rowKey(row);
-      if (rowKey) return row[rowKey] as any;
-      return i;
-    },
-    [rowKey]
+  const sourceEntries = React.useMemo<TableRowEntry<Row>[]>(
+    () => data.map((row, sourceIndex) => {
+      let key: RowKey;
+      if (typeof rowKey === "function") key = rowKey(row);
+      else if (rowKey) key = row[rowKey] as RowKey;
+      else key = sourceIndex;
+      return { row, key, sourceIndex };
+    }),
+    [data, rowKey]
+  );
+  const columnMap = React.useMemo(
+    () => new Map(columns.map((column) => [column.key, column] as const)),
+    [columns]
   );
 
   // ---------- Selection (rowSelection OR legacy selectable) ----------
@@ -239,50 +315,39 @@ const TableInner = <Row extends Record<string, any> = any>({
     return out;
   }, [columns, innerFilters]);
 
-  const setColumnFilter = (col: TableColumn<Row>, values: (string | number)[]) => {
-    if (col.filteredValue !== undefined) return; // controlled — parent must handle
-    setInnerFilters((prev) => {
-      const next = { ...prev };
-      if (values.length === 0) delete next[col.key];
-      else next[col.key] = values;
-      return next;
-    });
-  };
-
-  const filteredData = React.useMemo(() => {
-    const entries = Object.entries(activeFilters);
-    if (entries.length === 0) return data;
-    return data.filter((row) => {
-      for (const [colKey, vals] of entries) {
-        const col = columns.find((c) => c.key === colKey);
-        if (!col) continue;
-        const match = vals.some((v) => {
-          if (col.onFilter) return col.onFilter(v, row);
-          if (col.dataIndex != null) {
-            const cell = (row as any)[col.dataIndex];
-            return cell === v || String(cell) === String(v);
-          }
-          return false;
-        });
-        if (!match) return false;
-      }
-      return true;
-    });
-  }, [data, columns, activeFilters]);
+  const filteredEntries = React.useMemo(
+    () => filterTableEntries(sourceEntries, activeFilters, columnMap),
+    [activeFilters, columnMap, sourceEntries]
+  );
+  const filteredData = React.useMemo(
+    () => filteredEntries.map(({ row }) => row),
+    [filteredEntries]
+  );
 
   // ---------- Pagination ----------
   const pagEnabled = pagination !== false && pagination !== undefined;
   const pagCfg: PaginationConfig = pagEnabled ? pagination! : {};
   const [innerPage, setInnerPage] = React.useState<number>(
-    pagCfg.defaultCurrent ?? 1
+    Number.isFinite(pagCfg.defaultCurrent) ? Math.max(1, Math.trunc(pagCfg.defaultCurrent!)) : 1
   );
   const [innerPageSize, setInnerPageSize] = React.useState<number>(
-    pagCfg.defaultPageSize ?? pagCfg.pageSize ?? 10
+    (() => {
+      const initial = pagCfg.defaultPageSize ?? pagCfg.pageSize ?? 10;
+      return Number.isFinite(initial) && initial > 0 ? Math.max(1, Math.trunc(initial)) : 10;
+    })()
   );
   const pageControlled = pagCfg.current !== undefined;
-  const curPage = pageControlled ? pagCfg.current! : innerPage;
-  const curPageSize = pagCfg.pageSize ?? innerPageSize;
-  const totalCount = pagCfg.total ?? filteredData.length;
+  const requestedPage = pageControlled ? pagCfg.current! : innerPage;
+  const curPage = Number.isFinite(requestedPage) ? Math.max(1, Math.trunc(requestedPage)) : 1;
+  const requestedPageSize = pagCfg.pageSize ?? innerPageSize;
+  const curPageSize = Number.isFinite(requestedPageSize) && requestedPageSize > 0
+    ? Math.max(1, Math.trunc(requestedPageSize))
+    : 10;
+  const requestedTotal = pagCfg.total ?? filteredData.length;
+  const totalCount = Number.isFinite(requestedTotal) ? Math.max(0, Math.trunc(requestedTotal)) : filteredData.length;
+  const remotePagination =
+    pagCfg.mode === "remote" ||
+    (pagCfg.mode === undefined && pagCfg.total !== undefined && pageControlled);
   // Keep internal state in sync when caller changes pageSize uncontrolled->new.
   React.useEffect(() => {
     if (pagCfg.pageSize !== undefined && pagCfg.pageSize !== innerPageSize) {
@@ -294,21 +359,61 @@ const TableInner = <Row extends Record<string, any> = any>({
   // Reset to page 1 if filters pushed us past the last page
   React.useEffect(() => {
     if (!pagEnabled) return;
-    const pages = Math.max(1, Math.ceil(filteredData.length / curPageSize));
+    const pages = Math.max(1, Math.ceil(totalCount / curPageSize));
     if (!pageControlled && curPage > pages) setInnerPage(pages);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filteredData.length, curPageSize, pagEnabled]);
+  }, [curPage, curPageSize, pagEnabled, pageControlled, totalCount]);
 
-  const pagedData = React.useMemo(() => {
-    if (!pagEnabled) return filteredData;
-    // If caller passes a pre-sliced page (total != data length and current is
-    // controlled), trust them and don't re-slice.
-    if (pagCfg.total !== undefined && pageControlled) {
-      return filteredData;
-    }
+  const pagedEntries = React.useMemo(() => {
+    if (!pagEnabled || remotePagination) return filteredEntries;
     const start = (curPage - 1) * curPageSize;
-    return filteredData.slice(start, start + curPageSize);
-  }, [pagEnabled, filteredData, curPage, curPageSize, pagCfg.total, pageControlled]);
+    return filteredEntries.slice(start, start + curPageSize);
+  }, [curPage, curPageSize, filteredEntries, pagEnabled, remotePagination]);
+
+  /** 向消费者发送统一的表格状态快照。 */
+  const emitChange = React.useCallback((
+    action: TableChangeAction,
+    overrides: {
+      current?: number;
+      pageSize?: number;
+      filters?: Record<string, (string | number)[]>;
+      sorter?: TableSorterState;
+      currentData?: Row[];
+    } = {}
+  ) => {
+    const nextCurrent = overrides.current ?? curPage;
+    const nextPageSize = overrides.pageSize ?? curPageSize;
+    onChange?.({
+      action,
+      pagination: pagEnabled
+        ? { current: nextCurrent, pageSize: nextPageSize, total: totalCount }
+        : undefined,
+      filters: overrides.filters ?? activeFilters,
+      sorter: overrides.sorter ?? { key: sortKey, direction: sortKey ? sortDir : undefined },
+      currentData: overrides.currentData ?? filteredData,
+    });
+  }, [activeFilters, curPage, curPageSize, filteredData, onChange, pagEnabled, sortDir, sortKey, totalCount]);
+
+  /** 提交单列筛选并联动分页回到第一页。 */
+  const setColumnFilter = React.useCallback((column: TableColumn<Row>, values: (string | number)[]) => {
+    const nextFilters = { ...activeFilters };
+    if (values.length === 0) delete nextFilters[column.key];
+    else nextFilters[column.key] = values;
+    if (column.filteredValue === undefined) {
+      setInnerFilters((previous) => {
+        const next = { ...previous };
+        if (values.length === 0) delete next[column.key];
+        else next[column.key] = values;
+        return next;
+      });
+    }
+    if (pagEnabled) {
+      if (!pageControlled) setInnerPage(1);
+      pagCfg.onChange?.(1, curPageSize);
+    }
+    const nextData = filterTableEntries(sourceEntries, nextFilters, columnMap).map(({ row }) => row);
+    emitChange("filter", { current: 1, filters: nextFilters, currentData: nextData });
+  }, [activeFilters, columnMap, curPageSize, emitChange, pagCfg, pagEnabled, pageControlled, sourceEntries]);
 
   const skipNextPaginationChangeRef = React.useRef(false);
 
@@ -319,6 +424,7 @@ const TableInner = <Row extends Record<string, any> = any>({
     }
     if (!pageControlled) setInnerPage(p);
     pagCfg.onChange?.(p, curPageSize);
+    emitChange("paginate", { current: p });
   };
 
   const onPageSizeChange = (_current: number, size: number) => {
@@ -326,6 +432,7 @@ const TableInner = <Row extends Record<string, any> = any>({
     if (!pageControlled) setInnerPage(1);
     if (pagCfg.pageSize === undefined) setInnerPageSize(size);
     pagCfg.onChange?.(1, size);
+    emitChange("paginate", { current: 1, pageSize: size });
   };
 
   // ---------- Expandable ----------
@@ -336,10 +443,12 @@ const TableInner = <Row extends Record<string, any> = any>({
   const expandedKeys: RowKey[] = expandControlled
     ? expandable!.expandedRowKeys!
     : innerExpanded;
+  const expandedKeySet = React.useMemo(() => new Set(expandedKeys), [expandedKeys]);
+  const selectedKeySet = React.useMemo(() => new Set(selectedKeys), [selectedKeys]);
   const hasExpandable = !!expandable?.expandedRowRender;
 
   const toggleExpand = (row: Row, k: RowKey) => {
-    const isOpen = expandedKeys.includes(k);
+    const isOpen = expandedKeySet.has(k);
     const next = isOpen ? expandedKeys.filter((x) => x !== k) : [...expandedKeys, k];
     if (!expandControlled) setInnerExpanded(next);
     expandable?.onExpand?.(!isOpen, row);
@@ -347,10 +456,10 @@ const TableInner = <Row extends Record<string, any> = any>({
 
   // ---------- Derived bits ----------
   const v: TableVariant = variant ?? (striped ? "striped" : "default");
-  const rowsToRender = pagedData;
+  const rowsToRender = pagedEntries;
 
   const selectableKeysOnPage = rowsToRender
-    .map((r, i) => ({ row: r, k: keyOf(r, i) }))
+    .map(({ row, key }) => ({ row, k: key }))
     .filter(({ row }) => {
       if (selectionMode !== "new") return true;
       const props = rowSelection?.getCheckboxProps?.(row);
@@ -360,10 +469,10 @@ const TableInner = <Row extends Record<string, any> = any>({
   const allSelectedOnPage =
     selectionMode !== "off" &&
     selectableKeysOnPage.length > 0 &&
-    selectableKeysOnPage.every(({ k }) => selectedKeys.includes(k));
+    selectableKeysOnPage.every(({ k }) => selectedKeySet.has(k));
   const someSelectedOnPage =
     selectionMode !== "off" &&
-    selectableKeysOnPage.some(({ k }) => selectedKeys.includes(k)) &&
+    selectableKeysOnPage.some(({ k }) => selectedKeySet.has(k)) &&
     !allSelectedOnPage;
 
   const toggleRow = (row: Row, k: RowKey) => {
@@ -374,14 +483,15 @@ const TableInner = <Row extends Record<string, any> = any>({
       if (selectionType === "radio") {
         next = [k];
       } else {
-        next = selectedKeys.includes(k)
+        next = selectedKeySet.has(k)
           ? selectedKeys.filter((x) => x !== k)
           : [...selectedKeys, k];
       }
-      const nextRows = data.filter((r, i) => next.includes(keyOf(r, i)));
+      const nextSet = new Set(next);
+      const nextRows = sourceEntries.filter(({ key }) => nextSet.has(key)).map(({ row: item }) => item);
       commitSelected(next, nextRows);
     } else if (selectionMode === "legacy") {
-      const next = selectedKeys.includes(k)
+      const next = selectedKeySet.has(k)
         ? selectedKeys.filter((x) => x !== k)
         : [...selectedKeys, k];
       commitSelected(next, []);
@@ -394,14 +504,16 @@ const TableInner = <Row extends Record<string, any> = any>({
       // Deselect keys that appear on the current page
       const pageKeys = new Set(selectableKeysOnPage.map(({ k }) => k));
       const next = selectedKeys.filter((k) => !pageKeys.has(k));
-      const nextRows = data.filter((r, i) => next.includes(keyOf(r, i)));
+      const nextSet = new Set(next);
+      const nextRows = sourceEntries.filter(({ key }) => nextSet.has(key)).map(({ row }) => row);
       commitSelected(next, nextRows);
     } else {
       // Select union of existing selection + page's selectable keys
       const set = new Set(selectedKeys);
       selectableKeysOnPage.forEach(({ k }) => set.add(k));
       const next = Array.from(set);
-      const nextRows = data.filter((r, i) => next.includes(keyOf(r, i)));
+      const nextSet = new Set(next);
+      const nextRows = sourceEntries.filter(({ key }) => nextSet.has(key)).map(({ row }) => row);
       commitSelected(next, nextRows);
     }
   };
@@ -410,6 +522,20 @@ const TableInner = <Row extends Record<string, any> = any>({
   const showExpandCol = hasExpandable;
   const extraColCount = (showSelCol ? 1 : 0) + (showExpandCol ? 1 : 0);
   const totalColCount = columns.length + extraColCount;
+
+  /** 触发受控排序并把分页复位到第一页。 */
+  const handleSort = React.useCallback((columnKey: string) => {
+    const nextDirection = sortKey === columnKey && sortDir === "asc" ? "desc" : "asc";
+    onSort?.(columnKey);
+    if (pagEnabled) {
+      if (!pageControlled) setInnerPage(1);
+      pagCfg.onChange?.(1, curPageSize);
+    }
+    emitChange("sort", {
+      current: 1,
+      sorter: { key: columnKey, direction: nextDirection },
+    });
+  }, [curPageSize, emitChange, onSort, pagCfg, pagEnabled, pageControlled, sortDir, sortKey]);
 
   // ---------- Wrapper styling for scroll ----------
   const wrapStyle: React.CSSProperties = {};
@@ -425,6 +551,11 @@ const TableInner = <Row extends Record<string, any> = any>({
     innerTableStyle.minWidth = scroll.x;
     wrapClass += " scroll-x";
   }
+  const {
+    className: nativeTableClassName = "",
+    style: nativeTableStyle,
+    ...nativeTableProps
+  } = tableProps ?? {};
 
   // ---------- Render ----------
   return (
@@ -436,19 +567,22 @@ const TableInner = <Row extends Record<string, any> = any>({
         {...rest}
       >
         <table
-          className={`table ${v} ${hoverable ? "hoverable" : ""} ${scroll?.y != null ? "sticky-head" : ""}`}
-          style={innerTableStyle}
+          {...nativeTableProps}
+          className={`table ${v} ${hoverable ? "hoverable" : ""} ${scroll?.y != null ? "sticky-head" : ""} ${nativeTableClassName}`}
+          style={{ ...innerTableStyle, ...nativeTableStyle }}
         >
+          {caption != null && <caption>{caption}</caption>}
           <thead>
             <tr>
-              {showExpandCol && <th className="row-expand" style={{ width: 40 }} />}
+              {showExpandCol && <th scope="col" className="row-expand" style={{ width: 40 }} />}
               {showSelCol && (
-                <th className="row-check" style={{ width: 44 }}>
+                <th scope="col" className="row-check" style={{ width: 44 }}>
                   {selectionType === "checkbox" && (
                     <Checkbox
                       checked={allSelectedOnPage}
                       indeterminate={someSelectedOnPage}
                       onChange={toggleAll}
+                      label={<span className="table-sr-only">选择当前页</span>}
                     />
                   )}
                 </th>
@@ -462,16 +596,27 @@ const TableInner = <Row extends Record<string, any> = any>({
                     key={c.key}
                     className={`${c.sortable ? "sortable" : ""} ${sorted ? "sorted" : ""} ${hasFilters ? "filterable" : ""}`}
                     style={{ width: c.width, textAlign: c.align ?? "left" }}
-                    onClick={() => c.sortable && onSort?.(c.key)}
+                    scope="col"
+                    aria-sort={c.sortable ? (sorted ? (sortDir === "asc" ? "ascending" : "descending") : "none") : undefined}
                   >
-                    <span className="th-label">{c.title}</span>
-                    {c.sortable && (
-                      <span className="sort-ind">
-                        <Icon
-                          name={sorted ? (sortDir === "asc" ? "chevUp" : "chevDown") : "chevDown"}
-                          size={10}
-                        />
-                      </span>
+                    {c.sortable ? (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        className="table-sort-trigger"
+                        onClick={() => handleSort(c.key)}
+                      >
+                        <span className="th-label">{c.title}</span>
+                        <span className="sort-ind" aria-hidden="true">
+                          <Icon
+                            name={sorted ? (sortDir === "asc" ? "chevUp" : "chevDown") : "chevDown"}
+                            size={10}
+                          />
+                        </span>
+                      </Button>
+                    ) : (
+                      <span className="th-label">{c.title}</span>
                     )}
                     {hasFilters && (
                       <ColumnFilterButton
@@ -494,13 +639,12 @@ const TableInner = <Row extends Record<string, any> = any>({
                 </td>
               </tr>
             ) : (
-              rowsToRender.map((row, i) => {
-                const k = keyOf(row, i);
-                const isSel = selectedKeys.includes(k);
+              rowsToRender.map(({ row, key: k }, i) => {
+                const isSel = selectedKeySet.has(k);
                 const selProps = rowSelection?.getCheckboxProps?.(row);
                 const canExpand =
                   hasExpandable && (expandable?.rowExpandable?.(row) ?? true);
-                const isExpanded = canExpand && expandedKeys.includes(k);
+                const isExpanded = canExpand && expandedKeySet.has(k);
                 const cardSurfaceTarget = showExpandCol
                   ? "__expand"
                   : showSelCol
@@ -515,6 +659,15 @@ const TableInner = <Row extends Record<string, any> = any>({
                     <tr
                       className={`${onRowClick ? "clickable" : ""} ${isSel ? "selected" : ""}`}
                       onClick={onRowClick ? () => onRowClick(row, i) : undefined}
+                      tabIndex={onRowClick ? 0 : undefined}
+                      aria-selected={selectionMode !== "off" ? isSel : undefined}
+                      onKeyDown={onRowClick ? (event) => {
+                        if (event.currentTarget !== event.target) return;
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          onRowClick(row, i);
+                        }
+                      } : undefined}
                     >
                       {showExpandCol && (
                         <td
@@ -544,10 +697,7 @@ const TableInner = <Row extends Record<string, any> = any>({
                       {showSelCol && (
                         <td
                           className="row-check"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleRow(row, k);
-                          }}
+                          onClick={(event) => event.stopPropagation()}
                         >
                           {cardSurfaceTarget === "__select" && cardRowSurface}
                           {selectionType === "radio" ? (
@@ -555,6 +705,7 @@ const TableInner = <Row extends Record<string, any> = any>({
                               type="button"
                               role="radio"
                               aria-checked={isSel}
+                              aria-label={`选择第 ${i + 1} 行`}
                               disabled={selProps?.disabled}
                               className={`radio-dot ${isSel ? "checked" : ""}`}
                               onClick={(e) => {
@@ -567,6 +718,7 @@ const TableInner = <Row extends Record<string, any> = any>({
                               checked={isSel}
                               disabled={selProps?.disabled}
                               onChange={() => toggleRow(row, k)}
+                              label={<span className="table-sr-only">选择第 {i + 1} 行</span>}
                             />
                           )}
                         </td>
@@ -636,9 +788,10 @@ function ColumnFilterButton<Row>({
 }: ColumnFilterButtonProps<Row>) {
   const [open, setOpen] = React.useState(false);
   const [draft, setDraft] = React.useState<(string | number)[]>(activeValues);
-  const panelRef = React.useRef<HTMLDivElement>(null);
+  const portalContainer = usePortalContainer();
+  const panelId = React.useId();
 
-  const { triggerRef, floatingStyle } = useFloating<HTMLButtonElement>({
+  const { triggerRef, floatingRef: panelRef, floatingStyle, zIndex: panelZIndex } = useFloating<HTMLButtonElement, HTMLDivElement>({
     open,
     placement: "bottom",
     panelWidth: 200,
@@ -646,8 +799,25 @@ function ColumnFilterButton<Row>({
     alignCross: "end",
   });
 
+  /** 只关闭当前筛选浮层，并把焦点还给筛选按钮。 */
+  const closeFromEscape = React.useCallback(() => {
+    setOpen(false);
+    window.requestAnimationFrame(() => triggerRef.current?.focus());
+  }, [triggerRef]);
+
+  useOverlayLayer({
+    open: open && portalContainer != null,
+    containerRef: panelRef,
+    ownerRef: triggerRef,
+    zIndex: panelZIndex,
+    onEscape: closeFromEscape,
+  });
+
   React.useEffect(() => {
-    if (open) setDraft(activeValues);
+    if (open) {
+      setDraft(activeValues);
+      window.requestAnimationFrame(() => panelRef.current?.focus());
+    }
   }, [open, activeValues]);
 
   React.useEffect(() => {
@@ -668,42 +838,50 @@ function ColumnFilterButton<Row>({
 
   return (
     <>
-      <button
+      <IconButton
         ref={triggerRef}
-        type="button"
+        icon="filter"
+        size="sm"
+        variant="ghost"
         className={`filter-ind ${active ? "active" : ""}`}
-        aria-label="Filter column"
+        tip="筛选列"
+        aria-expanded={open}
+        aria-controls={open ? panelId : undefined}
+        aria-haspopup="dialog"
         onClick={(e) => {
           e.stopPropagation();
           setOpen((o) => !o);
         }}
-      >
-        <Icon name="filter" size={10} />
-      </button>
+      />
       {open &&
-        typeof document !== "undefined" &&
+        portalContainer &&
         createPortal(
           <div
+            id={panelId}
             ref={panelRef}
             className="table-filter-panel"
             style={floatingStyle}
+            role="dialog"
+            aria-label="列筛选"
+            tabIndex={-1}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="table-filter-options">
               {(column.filters ?? []).map((f) => (
-                <label key={String(f.value)} className="table-filter-item">
-                  <Checkbox
-                    checked={draft.includes(f.value)}
-                    onChange={() => toggle(f.value)}
-                  />
-                  <span>{f.text}</span>
-                </label>
+                <Checkbox
+                  key={String(f.value)}
+                  className="table-filter-item"
+                  label={f.text}
+                  checked={draft.includes(f.value)}
+                  onChange={() => toggle(f.value)}
+                />
               ))}
             </div>
             <div className="table-filter-actions">
-              <button
-                type="button"
-                className="tf-btn ghost"
+              <Button
+                size="sm"
+                variant="ghost"
+                className="tf-btn"
                 onClick={() => {
                   setDraft([]);
                   onApply([]);
@@ -711,20 +889,21 @@ function ColumnFilterButton<Row>({
                 }}
               >
                 重置
-              </button>
-              <button
-                type="button"
-                className="tf-btn primary"
+              </Button>
+              <Button
+                size="sm"
+                variant="primary"
+                className="tf-btn"
                 onClick={() => {
                   onApply(draft);
                   setOpen(false);
                 }}
               >
                 确定
-              </button>
+              </Button>
             </div>
           </div>,
-          document.body
+          portalContainer
         )}
     </>
   );

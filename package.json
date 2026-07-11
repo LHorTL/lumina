@@ -122,6 +122,216 @@
       "import": "./dist/Image.js",
       "require": "./dist/Image.cjs"
     },
+    "./AimOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./AppstoreOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./BarChartOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./BlockOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./BorderOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./CameraOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./CaretDownOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./CaretUpOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./CheckCircleFilled": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./CheckCircleOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./CheckOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./ClockCircleFilled": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./CloseCircleOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./CloseOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./CopyOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./DashboardOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./DeleteOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./DownOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./EnvironmentOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./ExclamationCircleOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./FolderOpenOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./LeftOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./LoadingOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./MinusCircleOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./MinusOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./PictureOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./PlusOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./QqOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./ReloadOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./RightOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./RobotOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./SearchOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./SettingOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./StarFilled": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./StarOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./SwapOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./SwapRightOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./SyncOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./ThunderboltOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./TranslationOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./UnorderedListOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
+    "./UserOutlined": {
+      "types": "./dist/Icon.d.ts",
+      "import": "./dist/Icon.js",
+      "require": "./dist/Icon.cjs"
+    },
     "./*": {
       "types": "./dist/*.d.ts",
       "import": "./dist/*.js",

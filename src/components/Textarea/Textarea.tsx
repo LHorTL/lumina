@@ -3,6 +3,7 @@ import "../../styles/shared.css";
 import "./Textarea.css";
 import * as React from "react";
 import { Icon } from "../Icon";
+import { createValueOverrideTarget } from "../../utils/inputEvents";
 
 export interface TextareaProps
   extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, "onChange" | "value" | "defaultValue"> {
@@ -42,6 +43,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     ref
   ) => {
     const [inner, setInner] = React.useState(defaultValue ?? "");
+    const textareaRef = React.useRef<HTMLTextAreaElement | null>(null);
     const isControlled = value !== undefined;
     const currentValue = isControlled ? value : inner;
     const disabled = rest.disabled;
@@ -52,14 +54,24 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       onValueChange?.(e.target.value, e);
     };
 
-    const handleClear = (e: React.MouseEvent<HTMLSpanElement>) => {
+    /** 合并内部节点引用与对外 ref。 */
+    const setTextareaRef = React.useCallback((node: HTMLTextAreaElement | null) => {
+      textareaRef.current = node;
+      if (typeof ref === "function") ref(node);
+      else if (ref) ref.current = node;
+    }, [ref]);
+
+    const handleClear = (e: React.MouseEvent<HTMLButtonElement>) => {
       e.stopPropagation();
       if (disabled) return;
       if (!isControlled) setInner("");
+      if (!isControlled && textareaRef.current) textareaRef.current.value = "";
+      const clearedTarget = createValueOverrideTarget(textareaRef.current, "");
       const synthetic = {
         ...e,
-        target: { ...(e.target as unknown as HTMLTextAreaElement), value: "" },
-        currentTarget: { ...(e.currentTarget as unknown as HTMLTextAreaElement), value: "" },
+        type: "change",
+        target: clearedTarget,
+        currentTarget: clearedTarget,
       } as unknown as React.ChangeEvent<HTMLTextAreaElement>;
       onChange?.(synthetic);
       onValueChange?.("", synthetic);
@@ -72,7 +84,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     const field = (
       <div className="textarea-wrap">
         <textarea
-          ref={ref}
+          ref={setTextareaRef}
           className={cls}
           value={isControlled ? value : undefined}
           defaultValue={isControlled ? undefined : defaultValue}
@@ -81,16 +93,16 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           {...rest}
         />
         {showClear && (
-          <span
+          <button
+            type="button"
             className="textarea-clear"
             role="button"
             aria-label="Clear"
-            tabIndex={-1}
             onMouseDown={(e) => e.preventDefault()}
             onClick={handleClear}
           >
             <Icon name="x" size={12} />
-          </span>
+          </button>
         )}
       </div>
     );

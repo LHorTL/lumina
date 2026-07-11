@@ -137,6 +137,16 @@ trigger="hover" 鼠标悬停触发
 </Popover>
 ```
 
+### Focus 触发
+
+trigger="focus" 适合键盘可达的补充说明。按 Esc 可关闭并回到触发器。
+
+```tsx
+<Popover trigger="focus" content={<div>通过 Tab 聚焦时显示</div>}>
+  <Button>聚焦查看</Button>
+</Popover>
+```
+
 ### 表单内容
 
 气泡内可放置表单等复杂交互
@@ -168,7 +178,7 @@ trigger="hover" 鼠标悬停触发
 | content \* | `ReactNode` | — | 浮层内容 |
 | title | `ReactNode` | — | 标题 |
 | placement | `"top" | "bottom" | "left" | "right" | ...` | `"bottom"` | 弹出位置,支持 bottomLeft 等细分方向 |
-| trigger | `"click" | "hover"` | `"click"` | 触发方式 |
+| trigger | `"click" | "hover" | "focus"` | `"click"` | 触发方式 |
 | arrow | `boolean` | `false` | 显示箭头 |
 | closable | `boolean` | `false` | 显示关闭按钮 |
 | width | `number | "auto"` | — | 面板宽度，"auto" 自适应 |

@@ -47,7 +47,7 @@
   font-size: 12px;
   color: var(--danger);
   padding-left: 2px;
-  animation: fadeIn 140ms var(--ease);
+  animation: fadeIn var(--dur-fast) var(--ease);
 }
 .form-item-help {
   font-size: 12px;

@@ -64,6 +64,7 @@ const SectionProgress: React.FC<SectionCtx> = () => {
             { prop: "size", description: "尺寸", type: `"sm" | "md" | "lg"`, default: `"md"` },
             { prop: "label", description: "顶部文案", type: "ReactNode" },
             { prop: "showValue", description: "显示百分比", type: "boolean", default: "false" },
+            { prop: "indeterminate", description: "显示不确定进度动画", type: "boolean", default: "false" },
           ],
         },
       ]}

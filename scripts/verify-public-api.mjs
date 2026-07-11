@@ -10,6 +10,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 const requireFromRoot = createRequire(path.join(ROOT, "package.json"));
 
+// 公共导出运行时检查只关心 JS 符号；组件入口携带的 CSS 副作用在 Node 中用空加载器跳过。
+requireFromRoot.extensions[".css"] = () => undefined;
+
 function readJson(filepath) {
   return JSON.parse(fs.readFileSync(filepath, "utf8"));
 }
@@ -35,11 +38,41 @@ function verifySubpathResolves() {
   const pkg = readJson(path.join(ROOT, "package.json"));
   const componentSpecs = readBarrelExports().map((name) => `@fangxinyan/lumina/${name}`);
   const explicitExportSpecs = Object.keys(pkg.exports)
-    .filter((key) => key.startsWith("./") && key !== "./*" && key !== "./llms/*" && key !== "." && key !== "./package.json")
+    .filter((key) => key.startsWith("./") && !key.includes("*") && key !== "." && key !== "./package.json")
     .map((key) => `@fangxinyan/lumina/${key.slice(2)}`);
 
   for (const spec of [...new Set([...componentSpecs, ...explicitExportSpecs])]) {
     requireFromRoot.resolve(spec);
+  }
+}
+
+/** 根据运行时 NAMED_ICON_MAP 校验全部命名图标与包子路径。 */
+function verifyNamedIconExports() {
+  const iconModule = requireFromRoot("@fangxinyan/lumina/Icon");
+  const namedIconMap = iconModule.NAMED_ICON_MAP;
+  const iconNames = new Set(iconModule.ICON_NAMES ?? []);
+
+  if (!namedIconMap || typeof namedIconMap !== "object") {
+    throw new Error("Icon 入口缺少 NAMED_ICON_MAP");
+  }
+
+  for (const [exportName, iconName] of Object.entries(namedIconMap)) {
+    if (!/(?:Outlined|Filled)$/.test(exportName)) {
+      throw new Error(`NAMED_ICON_MAP 包含不合法的命名导出: ${exportName}`);
+    }
+    if (!iconNames.has(iconName)) {
+      throw new Error(`NAMED_ICON_MAP.${exportName} 指向未知 IconName: ${iconName}`);
+    }
+    if (!(exportName in iconModule)) {
+      throw new Error(`Icon 入口未导出 NAMED_ICON_MAP 中的组件: ${exportName}`);
+    }
+
+    const spec = `@fangxinyan/lumina/${exportName}`;
+    requireFromRoot.resolve(spec);
+    const subpathModule = requireFromRoot(spec);
+    if (!(exportName in subpathModule)) {
+      throw new Error(`命名图标子路径未导出对应组件: ${spec}`);
+    }
   }
 }
 
@@ -49,7 +82,10 @@ function verifyTypeSmoke() {
   const smokeSource = `import * as React from "react";
 import {
   Button,
+  Calendar,
   Card,
+  Checkbox,
+  ColorPicker,
   IconButton,
   Badge,
   Collapse,
@@ -69,6 +105,8 @@ import {
   SpriteImage,
   Skeleton,
   Spin,
+  Slider,
+  Switch,
   Surface,
   Tag,
   TablePro,
@@ -78,11 +116,19 @@ import {
   TimePicker,
   THEME_PANEL_DEFAULT_PRESET_OPTIONS,
   THEME_PANEL_DEFAULT_THEME_PRESETS,
+  LUMINA_THEME_PRESETS,
+  cloneLuminaThemePreset,
+  pickLuminaThemePresets,
+  StarFilled,
   Tooltip,
   ThemeProvider,
   type BadgeProps,
   type ButtonProps,
   type CardProps,
+  type CalendarProps,
+  type CheckboxProps,
+  type ColorPickerProps,
+  type FormItemProps,
   type IconButtonProps,
   type CascaderProps,
   type DatePickerProps,
@@ -90,17 +136,21 @@ import {
   type ImageProps,
   type LayeredImageProps,
   type CollapseProps,
+  type DrawerBodyInset,
   type DrawerProps,
   type InputProps,
   type ModalProps,
+  type ModalBodyInset,
   type ModalStaticHandle,
   type PopoverProps,
   type RadioGroupProps,
   type RadioProps,
+  type SliderProps,
   type SelectProps,
   type SpriteImageProps,
   type SkeletonProps,
   type SpinProps,
+  type SwitchProps,
   type SurfaceProps,
   type TagProps,
   type TableProProps,
@@ -121,6 +171,9 @@ import { Title as SubpathTitle } from "@fangxinyan/lumina/Title";
 import { Text as SubpathText } from "@fangxinyan/lumina/Text";
 import { Paragraph as SubpathParagraph } from "@fangxinyan/lumina/Paragraph";
 import { Link as SubpathLink } from "@fangxinyan/lumina/Link";
+import { DeleteOutlined as SubpathDeleteOutlined } from "@fangxinyan/lumina/DeleteOutlined";
+import { LoadingOutlined as SubpathLoadingOutlined } from "@fangxinyan/lumina/LoadingOutlined";
+import { StarFilled as SubpathStarFilled } from "@fangxinyan/lumina/StarFilled";
 import {
   LoadingOutlined,
   RobotOutlined,
@@ -280,6 +333,8 @@ const modalProps: ModalProps = {
     background: "var(--mask-bg)",
     backdropFilter: "none",
   },
+  bodyInset: "safe" satisfies ModalBodyInset,
+  bodyProps: { "data-contract": "modal-body" },
 };
 
 const drawerProps: DrawerProps = {
@@ -290,6 +345,8 @@ const drawerProps: DrawerProps = {
     background: "var(--mask-bg)",
     backdropFilter: "none",
   },
+  bodyInset: "safe" satisfies DrawerBodyInset,
+  bodyProps: { "data-contract": "drawer-body" },
 };
 
 const collapseProps: CollapseProps = {
@@ -329,11 +386,60 @@ const badgeProps: BadgeProps = {
 const radioProps: RadioProps = {
   label: "Daily",
   defaultChecked: true,
+  name: "schedule",
+  value: "daily",
+  required: true,
+  form: "settings-form",
 };
 
 const radioGroupProps: RadioGroupProps = {
   options: [{ value: "a", label: "A" }],
   defaultValue: "a",
+  required: true,
+  form: "settings-form",
+};
+
+const checkboxProps: CheckboxProps = {
+  label: "Accept",
+  name: "agreement",
+  value: "accepted",
+  required: true,
+  form: "settings-form",
+};
+
+const switchProps: SwitchProps = {
+  label: "Notifications",
+  name: "notifications",
+  value: "enabled",
+  required: true,
+  form: "settings-form",
+};
+
+const sliderProps: SliderProps = {
+  range: true,
+  defaultValue: [20, 80],
+  ariaLabel: ["minimum", "maximum"],
+  className: "slider-smoke",
+  style: { width: 240 },
+};
+
+const colorPickerProps: ColorPickerProps = {
+  defaultValue: "#845ef7",
+  className: "color-picker-smoke",
+  "aria-label": "color picker",
+};
+
+const calendarProps: CalendarProps = {
+  value: null,
+  onViewChange: () => {},
+  className: "calendar-smoke",
+  style: { width: 280 },
+};
+
+const formItemProps: FormItemProps = {
+  className: "form-item-smoke",
+  style: { padding: 4 },
+  "aria-label": "form item",
 };
 
 const segmentedRadioGroupProps: RadioGroupProps = {
@@ -409,10 +515,16 @@ const themePanelProps: ThemePanelProps = {
 const Example = () => {
   const buttonRef = React.useRef<HTMLButtonElement>(null);
   const cardRef = React.useRef<HTMLDivElement>(null);
+  const drawerRef = React.useRef<HTMLDivElement>(null);
+  const calendarRef = React.useRef<HTMLDivElement>(null);
+  const colorPickerRef = React.useRef<HTMLElement>(null);
+  const formItemRef = React.useRef<HTMLDivElement>(null);
+  const modalRef = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const datePickerRef = React.useRef<HTMLDivElement>(null);
   const dateTimePickerRef = React.useRef<HTMLDivElement>(null);
   const surfaceRef = React.useRef<HTMLDivElement>(null);
+  const sliderRef = React.useRef<HTMLDivElement>(null);
   const themePanelRef = React.useRef<HTMLDivElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
   const tableProRef = React.useRef<HTMLDivElement>(null);
@@ -523,13 +635,32 @@ const Example = () => {
       <Popover {...popoverProps}>
         <Button>pop</Button>
       </Popover>
-      <Modal {...modalProps} onClose={() => {}}>
+      <Modal
+        ref={modalRef}
+        {...modalProps}
+        className="modal-contract"
+        style={{ maxWidth: 480 }}
+        data-contract="modal"
+        onClose={() => {}}
+      >
         body
       </Modal>
-      <Drawer {...drawerProps} onClose={() => {}}>
+      <Drawer
+        ref={drawerRef}
+        {...drawerProps}
+        className="drawer-contract"
+        style={{ maxWidth: 420 }}
+        data-contract="drawer"
+        onClose={() => {}}
+      >
         drawer body
       </Drawer>
       <Spin {...spinProps} data-testid="spin" />
+      <Calendar ref={calendarRef} {...calendarProps} data-contract="calendar" />
+      <Checkbox {...checkboxProps} />
+      <Switch {...switchProps} />
+      <Slider ref={sliderRef} {...sliderProps} data-contract="slider" />
+      <ColorPicker ref={colorPickerRef} {...colorPickerProps} />
       <Radio {...radioProps} data-testid="radio" />
       <RadioGroup {...radioGroupProps} data-testid="radio-group" />
       <SubpathRadioGroup {...radioGroupProps} data-testid="radio-group-subpath" />
@@ -560,7 +691,7 @@ const Example = () => {
         aria-label="table pro"
       />
       <SubpathThemeProvider>
-        <FormItem>
+        <FormItem ref={formItemRef} {...formItemProps} data-contract="form-item">
           <SubpathTitle level={5}>Title</SubpathTitle>
           <SubpathText>Text</SubpathText>
           <SubpathParagraph>Paragraph</SubpathParagraph>
@@ -570,6 +701,10 @@ const Example = () => {
       <SettingOutlined />
       <RobotOutlined />
       <LoadingOutlined spin />
+      <SubpathDeleteOutlined aria-label="delete" />
+      <SubpathLoadingOutlined spin aria-label="loading" />
+      <StarFilled aria-label="favorite" />
+      <SubpathStarFilled aria-label="subpath favorite" />
     </ThemeProvider>
   );
 };
@@ -582,6 +717,10 @@ modalHandle.update({ content: "Updated" });
 modalHandle.destroy();
 void resolveIconName("RobotOutlined");
 void THEME_PANEL_DEFAULT_THEME_PRESETS.assistant;
+void LUMINA_THEME_PRESETS.graphite;
+void cloneLuminaThemePreset("ember");
+const pickedLuminaThemes = pickLuminaThemePresets(["light", "dark"] as const);
+void pickedLuminaThemes.dark.tokens;
 `;
 
   fs.writeFileSync(smokeFile, smokeSource, "utf8");
@@ -622,6 +761,7 @@ void THEME_PANEL_DEFAULT_THEME_PRESETS.assistant;
 function main() {
   verifyVersionSync();
   verifySubpathResolves();
+  verifyNamedIconExports();
   verifyTypeSmoke();
   console.log("[verify-public-api] version/export/type smoke checks passed");
 }

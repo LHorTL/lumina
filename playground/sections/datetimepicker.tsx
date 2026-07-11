@@ -17,6 +17,18 @@ const formatLocalDateTime = (date: Date | null, includeSecond = false) => {
     : `${year}-${month}-${day} ${hour}:${minute}`;
 };
 
+/** 将日期时间格式化为斜杠日期文本。 */
+const formatSlashDateTime = (date: Date) =>
+  `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, "0")}/${String(date.getDate()).padStart(2, "0")} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+
+/** 解析斜杠日期时间文本。 */
+const parseSlashDateTime = (input: string): Date | null => {
+  const match = input.trim().match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})\s+(\d{1,2}):(\d{1,2})$/);
+  if (!match) return null;
+  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), Number(match[4]), Number(match[5]));
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
 const SectionDateTimePicker: React.FC<SectionCtx> = () => {
   const [startAt, setStartAt] = React.useState<Date | null>(new Date(2026, 4, 25, 9, 30));
   const [deployAt, setDeployAt] = React.useState<Date | null>(new Date(2026, 4, 25, 14, 45, 30));
@@ -148,6 +160,12 @@ const SectionDateTimePicker: React.FC<SectionCtx> = () => {
             </Row>
           ),
         },
+        {
+          id: "custom-parser",
+          title: "自定义格式与解析",
+          code: `<DateTimePicker format={formatSlashDateTime} parse={parseSlashDateTime} />`,
+          render: () => <DateTimePicker defaultValue={new Date(2026, 4, 25, 9, 30)} format={formatSlashDateTime} parse={parseSlashDateTime} />,
+        },
       ]}
       api={[
         {
@@ -156,6 +174,7 @@ const SectionDateTimePicker: React.FC<SectionCtx> = () => {
             { prop: "value / defaultValue", description: "受控/初始日期时间", type: "Date | null" },
             { prop: "onChange", description: "选择或清空时触发", type: "(date: Date | null, dateString: string) => void" },
             { prop: "format", description: "显示格式或自定义格式化函数", type: `"YYYY-MM-DD HH:mm" | "YYYY-MM-DD HH:mm:ss" | ((date) => string)`, default: `"YYYY-MM-DD HH:mm"` },
+            { prop: "parse", description: "自定义 format 函数对应的输入解析器", type: "(input: string) => Date | null" },
             { prop: "showSecond", description: "显示秒列", type: "boolean" },
             { prop: "hourStep / minuteStep / secondStep", description: "列选项步进", type: "number", default: "1" },
             { prop: "min / max", description: "可选日期时间范围", type: "Date" },

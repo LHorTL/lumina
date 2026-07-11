@@ -2,7 +2,8 @@ import * as React from "react";
 import {
   TitleBar,
   MessageContainer,
-  Icon,
+  Button,
+  IconButton,
   Input,
   Tooltip,
   ThemePanel,
@@ -263,11 +264,22 @@ const AppInner: React.FC = () => {
   const [active, go] = useHashRoute(DEFAULT_SECTION_ID, (id) => id in SECTIONS);
   const [search, setSearch] = React.useState("");
   const [tweaksOpen, setTweaksOpen] = React.useState(false);
+  const [navOpen, setNavOpen] = React.useState(false);
   const previewRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     if (previewRef.current) previewRef.current.scrollTop = 0;
+    setNavOpen(false);
   }, [active]);
+
+  /** 跳转到指定组件文档，并在窄屏下自动收起导航。 */
+  const navigateTo = React.useCallback(
+    (id: string): void => {
+      go(id);
+      setNavOpen(false);
+    },
+    [go]
+  );
 
   // Section-level tweak bridge — sections still call `setTweak(key, value)`
   // (legacy API) but the actual state now lives in ThemeProvider.
@@ -363,9 +375,21 @@ const AppInner: React.FC = () => {
         }
         actions={
           <div className="pg-title-actions">
+            <IconButton
+              className="pg-chip pg-nav-toggle"
+              icon="menu"
+              size="sm"
+              tip="组件导航"
+              aria-expanded={navOpen}
+              aria-controls="playground-navigation"
+              onClick={() => setNavOpen((open) => !open)}
+            />
             <Tooltip content={`切换 ${theme.colorScheme === "light" ? "深色" : "浅色"} 模式`}>
-              <button
+              <IconButton
                 className="pg-chip"
+                icon={theme.colorScheme === "light" ? "moon" : "sun"}
+                size="sm"
+                tip={`切换 ${theme.colorScheme === "light" ? "深色" : "浅色"} 模式`}
                 onClick={() =>
                   theme.update({
                     mode: theme.colorScheme === "light" ? "dark" : "light",
@@ -373,24 +397,31 @@ const AppInner: React.FC = () => {
                     tokens: {},
                   })
                 }
-              >
-                <Icon name={theme.colorScheme === "light" ? "moon" : "sun"} size={14} />
-              </button>
+              />
             </Tooltip>
             <Tooltip content="Tweaks 面板">
-              <button
+              <IconButton
                 className={`pg-chip ${tweaksOpen ? "on" : ""}`}
+                icon="sliders"
+                size="sm"
+                tip="Tweaks 面板"
                 onClick={() => setTweaksOpen((o) => !o)}
-              >
-                <Icon name="sliders" size={14} />
-              </button>
+              />
             </Tooltip>
           </div>
         }
       />
 
       <div className="main">
-        <aside className="sidebar">
+        {navOpen && (
+          <button
+            type="button"
+            className="pg-nav-mask"
+            aria-label="关闭组件导航"
+            onClick={() => setNavOpen(false)}
+          />
+        )}
+        <aside id="playground-navigation" className={`pg-sidebar ${navOpen ? "open" : ""}`}>
           <div className="search">
             <Input
               size="sm"
@@ -405,14 +436,16 @@ const AppInner: React.FC = () => {
             <React.Fragment key={g.group}>
               <div className="group-label">{g.group}</div>
               {g.items.map((it) => (
-                <button
+                <Button
                   key={it.id}
+                  variant="ghost"
+                  size="sm"
                   className={`nav-item ${active === it.id ? "active" : ""}`}
-                  onClick={() => go(it.id)}
+                  onClick={() => navigateTo(it.id)}
                 >
                   <span className="dot" />
                   <span>{it.label}</span>
-                </button>
+                </Button>
               ))}
             </React.Fragment>
           ))}
@@ -448,13 +481,14 @@ const AppInner: React.FC = () => {
         </main>
       </div>
 
-      <button
+      <IconButton
         className={`tweaks-fab ${tweaksOpen ? "active" : ""}`}
+        icon="sliders"
+        size="sm"
+        tip="Tweaks"
         onClick={() => setTweaksOpen((o) => !o)}
         aria-label="Tweaks"
-      >
-        <Icon name="sliders" size={20} />
-      </button>
+      />
       {tweaksOpen && <TweaksPanel />}
 
       <MessageContainer />

@@ -5,6 +5,8 @@ import * as React from "react";
 import ReactDOM from "react-dom";
 import { Button, IconButton } from "../Button";
 import { Icon } from "../Icon";
+import { usePortalContainer } from "../../utils/portal";
+import { OverlayZIndexProvider, useOverlayLayer, useOverlayZIndex } from "../../utils/overlayStack";
 
 export type ImageVariant = "framed" | "raw" | "icon";
 export type ImagePreviewMode = "fit" | "actual";
@@ -366,6 +368,8 @@ export const Image = React.forwardRef<HTMLDivElement, ImageProps>(({
   imgProps,
   className = "",
   style,
+  onClick,
+  onKeyDown,
   ...rest
 }, ref) => {
   const [loaded, setLoaded] = React.useState(false);
@@ -379,6 +383,11 @@ export const Image = React.forwardRef<HTMLDivElement, ImageProps>(({
   const rootRef = React.useRef<HTMLDivElement | null>(null);
   const imageRef = React.useRef<HTMLImageElement>(null);
   const overlayRef = React.useRef<HTMLDivElement>(null);
+  const portalContainer = usePortalContainer();
+  const explicitPreviewZIndex = typeof previewStyle?.zIndex === "number"
+    ? previewStyle.zIndex
+    : undefined;
+  const previewZIndex = useOverlayZIndex(open, explicitPreviewZIndex);
   const dragRef = React.useRef<{
     startX: number;
     startY: number;
@@ -456,7 +465,23 @@ export const Image = React.forwardRef<HTMLDivElement, ImageProps>(({
     dragRef.current = null;
     setPreviewDragging(false);
     setOpen(false);
+    window.requestAnimationFrame(() => rootRef.current?.focus());
   }, []);
+
+  React.useEffect(() => {
+    if (open && !canPreview) closePreview();
+  }, [canPreview, closePreview, open]);
+
+  useOverlayLayer({
+    open: open && portalContainer != null,
+    containerRef: overlayRef,
+    ownerRef: rootRef,
+    zIndex: previewZIndex,
+    onEscape: closePreview,
+    trapFocus: true,
+    autoFocus: true,
+    lockScroll: true,
+  });
 
   const openPreview = React.useCallback(() => {
     setPreviewMode("fit");
@@ -542,7 +567,25 @@ export const Image = React.forwardRef<HTMLDivElement, ImageProps>(({
         ref={setRootRef}
         className={`n-image ${variant} ${visualFrame ? "framed" : "unframed"} ${hover ? "hover" : ""} ${canPreview ? "clickable" : ""} ${className}`}
         style={{ width, ...(resolvedPadding !== undefined ? { padding: resolvedPadding } : {}), ...style }}
-        onClick={() => canPreview && openPreview()}
+        role={canPreview ? "button" : undefined}
+        tabIndex={canPreview ? 0 : undefined}
+        aria-label={canPreview ? `预览${alt ? `：${alt}` : "图片"}` : undefined}
+        onClick={(event) => {
+          onClick?.(event);
+          if (!event.defaultPrevented && canPreview) openPreview();
+        }}
+        onKeyDown={(event) => {
+          onKeyDown?.(event);
+          if (
+            !event.defaultPrevented &&
+            event.target === event.currentTarget &&
+            canPreview &&
+            (event.key === "Enter" || event.key === " ")
+          ) {
+            event.preventDefault();
+            openPreview();
+          }
+        }}
         {...rest}
       >
         <div className="n-image-frame" style={{ width: "100%", height: resolvedHeight }}>
@@ -600,9 +643,10 @@ export const Image = React.forwardRef<HTMLDivElement, ImageProps>(({
         </div>
       </div>
       {open &&
-        typeof document !== "undefined" &&
+        portalContainer &&
         ReactDOM.createPortal(
-          <div
+          <OverlayZIndexProvider zIndex={previewZIndex}>
+            <div
             {...previewTheme.attrs}
             ref={overlayRef}
             role="dialog"
@@ -610,7 +654,11 @@ export const Image = React.forwardRef<HTMLDivElement, ImageProps>(({
             aria-label="图片预览"
             tabIndex={-1}
             className={["image-preview-overlay", previewClassName].filter(Boolean).join(" ")}
-            style={{ ...previewTheme.style, ...previewStyle }}
+            style={{
+              ...previewTheme.style,
+              ...previewStyle,
+              zIndex: previewStyle?.zIndex ?? previewZIndex,
+            }}
             onClick={closePreview}
             onWheel={handlePreviewWheel}
             onMouseMove={movePreviewDrag}
@@ -695,8 +743,9 @@ export const Image = React.forwardRef<HTMLDivElement, ImageProps>(({
               onClick={(e) => e.stopPropagation()}
               onMouseDown={startPreviewDrag}
             />
-          </div>,
-          document.body
+            </div>
+          </OverlayZIndexProvider>,
+          portalContainer
         )}
     </>
   );

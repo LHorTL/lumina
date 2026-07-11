@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Button, Alert, Icon, Tooltip, message } from "lumina";
+import { Button, Alert, Collapse, Icon, Tooltip, message } from "lumina";
 import { CodeEditor } from "./CodeEditor";
 import { compileLiveDemo, getCurrentSectionId, getLiveDemoSource } from "./live-demo";
 
@@ -365,6 +365,8 @@ export interface DocDemoSpec {
   description?: React.ReactNode;
   code?: string;
   span?: 1 | 2;
+  /** 可选的示例分类；同页存在多个分类时会生成折叠分组。 */
+  category?: string;
   /** If omitted, the demo renders as a code-only card (no live preview). */
   render?: () => React.ReactNode;
 }
@@ -375,41 +377,77 @@ export interface DocPageProps {
   api?: { title?: string; rows: ApiRow[] }[];
 }
 
-export const DocPage: React.FC<DocPageProps> = ({ whenToUse, demos, api }) => (
-  <>
-    {whenToUse && (
-      <DocBlock id="when-to-use" title="何时使用">
-        {whenToUse}
-      </DocBlock>
-    )}
-    <DocBlock id="demos" title="代码演示">
-      <DemoGrid>
-        {demos.map((d) => (
-          <Demo
-            key={d.id}
-            id={d.id}
-            title={d.title}
-            description={d.description}
-            code={d.code}
-            span={d.span}
-          >
-            {d.render?.()}
-          </Demo>
-        ))}
-      </DemoGrid>
-    </DocBlock>
-    {api && api.length > 0 && (
-      <DocBlock id="api" title="API">
-        {api.map((a, i) => (
-          <React.Fragment key={i}>
-            {i > 0 && <div style={{ height: 16 }} />}
-            <ApiTable title={a.title} rows={a.rows} />
-          </React.Fragment>
-        ))}
-      </DocBlock>
-    )}
-  </>
+/** 渲染单个文档示例规格。 */
+const DocDemoCard: React.FC<{ demo: DocDemoSpec }> = ({ demo }) => (
+  <Demo
+    id={demo.id}
+    title={demo.title}
+    description={demo.description}
+    code={demo.code}
+    span={demo.span}
+  >
+    {demo.render?.()}
+  </Demo>
 );
+
+/** 把带 category 的示例按首次出现顺序分组。 */
+const groupDocDemos = (demos: DocDemoSpec[]): Array<{ category: string; demos: DocDemoSpec[] }> => {
+  const groups = new Map<string, DocDemoSpec[]>();
+  demos.forEach((demo) => {
+    const category = demo.category ?? "其他";
+    const entries = groups.get(category) ?? [];
+    entries.push(demo);
+    groups.set(category, entries);
+  });
+  return Array.from(groups, ([category, entries]) => ({ category, demos: entries }));
+};
+
+/** 组件文档页；示例分类超过一组时自动使用可折叠分组。 */
+export const DocPage: React.FC<DocPageProps> = ({ whenToUse, demos, api }) => {
+  const demoGroups = groupDocDemos(demos);
+  const grouped = demos.some((demo) => demo.category) && demoGroups.length > 1;
+
+  return (
+    <>
+      {whenToUse && (
+        <DocBlock id="when-to-use" title="何时使用">
+          {whenToUse}
+        </DocBlock>
+      )}
+      <DocBlock id="demos" title="代码演示">
+        {grouped ? (
+          <Collapse
+            className="doc-demo-groups"
+            defaultActiveKey={demoGroups[0]?.category}
+            items={demoGroups.map((group) => ({
+              key: group.category,
+              label: `${group.category} · ${group.demos.length} 个示例`,
+              children: (
+                <DemoGrid>
+                  {group.demos.map((demo) => <DocDemoCard key={demo.id} demo={demo} />)}
+                </DemoGrid>
+              ),
+            }))}
+          />
+        ) : (
+          <DemoGrid>
+            {demos.map((demo) => <DocDemoCard key={demo.id} demo={demo} />)}
+          </DemoGrid>
+        )}
+      </DocBlock>
+      {api && api.length > 0 && (
+        <DocBlock id="api" title="API">
+          {api.map((a, i) => (
+            <React.Fragment key={i}>
+              {i > 0 && <div style={{ height: 16 }} />}
+              <ApiTable title={a.title} rows={a.rows} />
+            </React.Fragment>
+          ))}
+        </DocBlock>
+      )}
+    </>
+  );
+};
 
 /* ============ Right anchor nav ============ */
 
@@ -455,7 +493,11 @@ export const AnchorNav: React.FC<{ items: AnchorItem[]; rootRef: React.RefObject
     const el = root?.querySelector(href) as HTMLElement | null;
     if (!root || !el) return;
     setActive(href);
-    root.scrollTo({ top: el.offsetTop - 16, behavior: "smooth" });
+    const collapsedGroup = el.closest<HTMLElement>(".collapse-item:not(.open)");
+    collapsedGroup?.querySelector<HTMLButtonElement>(".collapse-head")?.click();
+    requestAnimationFrame(() => {
+      root.scrollTo({ top: el.offsetTop - 16, behavior: "smooth" });
+    });
   };
 
   return (

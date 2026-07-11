@@ -33,6 +33,7 @@ import { TitleBar } from "@fangxinyan/lumina";
 | actions | `ReactNode` | — | 右侧操作区 |
 | center | `ReactNode` | — | 中部内容 |
 | draggable | `boolean` | `true` | 整条作为拖拽区 |
+| maximized | `boolean` | `false` | 切换最大化/还原图标与可访问名称 |
 | onMinimize / onMaximize / onClose | `() => void` | — | 窗口控件回调 |
 
 

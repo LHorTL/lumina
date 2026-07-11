@@ -121,6 +121,9 @@
   height: 20px;
   border-radius: 999px;
   background: var(--bg);
+  border: none;
+  padding: 0;
+  font: inherit;
   box-shadow: var(--neu-shadow-control);
   display: inline-grid;
   place-items: center;
@@ -191,6 +194,17 @@
   border-right-color: transparent;
   animation: spin 0.8s linear infinite;
 }
+.select-value-custom {
+  overflow: hidden;
+}
+.select-value-custom > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-state .menu-state-ico .spinner { animation: none; }
+}
 
 /* Option body — supports description line under label */
 .menu-item-body {
@@ -198,6 +212,11 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
+  text-align: left;
+}
+.menu-item-custom {
+  flex: 1;
   min-width: 0;
   text-align: left;
 }
@@ -232,9 +251,14 @@
   box-shadow: var(--neu-shadow-float);
   padding: 6px;
   min-width: 180px;
+  max-width: calc(100vw - 16px);
   z-index: 1000;
   animation: menuIn var(--dur) var(--ease);
-  max-height: 260px;
+  overflow: hidden;
+}
+.menu-options {
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
 }
 .menu-item {

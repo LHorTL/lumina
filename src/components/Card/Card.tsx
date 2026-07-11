@@ -2,16 +2,81 @@ import "../../styles/tokens.css";
 import "../../styles/shared.css";
 import "./Card.css";
 import * as React from "react";
+import { Button } from "../Button";
 import { Spin } from "../Spin";
 
+/** 卡片正文允许透传的 data-* 属性。 */
 type DataAttributes = {
   [K in `data-${string}`]?: string | number | boolean | undefined;
 };
+/** 卡片正文包装节点可接收的原生属性。 */
 type CardBodyProps = Omit<
   React.HTMLAttributes<HTMLDivElement>,
   "children" | "className" | "style"
 > &
   DataAttributes;
+
+const CARD_INTERACTIVE_SELECTOR = [
+  "a[href]",
+  "button",
+  "input",
+  "select",
+  "textarea",
+  "[role='button']",
+  "[role='link']",
+  "[contenteditable='true']",
+].join(",");
+
+/** 判断事件是否来自卡片内部应独立响应的交互控件。 */
+function isNestedCardControl(
+  target: EventTarget | null,
+  currentTarget: HTMLElement
+): boolean {
+  if (!(target instanceof Element)) return false;
+  const control = target.closest(CARD_INTERACTIVE_SELECTOR);
+  return !!control &&
+    !control.classList.contains("card-interactive-control") &&
+    control !== currentTarget &&
+    currentTarget.contains(control);
+}
+
+/** 从常见 React 文本节点中提取可操作卡片的可访问名称。 */
+function getCardText(node: React.ReactNode): string {
+  return React.Children.toArray(node)
+    .map((child) => {
+      if (typeof child === "string" || typeof child === "number") return String(child);
+      if (React.isValidElement<{ children?: React.ReactNode }>(child)) {
+        return getCardText(child.props.children);
+      }
+      return "";
+    })
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+}
+
+/** 判断 React 节点树中是否显式包含需要独立操作的控件。 */
+function hasCardControlNode(node: React.ReactNode): boolean {
+  return React.Children.toArray(node).some((child) => {
+    if (!React.isValidElement<{ children?: React.ReactNode; role?: string }>(child)) return false;
+    const type = child.type;
+    const displayName = typeof type !== "string" && type != null
+      ? (type as { displayName?: string }).displayName
+      : undefined;
+    const interactiveType =
+      typeof type === "string" && ["a", "button", "input", "select", "textarea"].includes(type);
+    if (interactiveType || displayName === "Button" || displayName === "IconButton") return true;
+    if (child.props.role === "button" || child.props.role === "link") return true;
+    return hasCardControlNode(child.props.children);
+  });
+}
+
+/** 让视觉隐藏的整卡焦点按钮稳定响应 Enter 与 Space。 */
+function handleCardControlKeyDown(event: React.KeyboardEvent<HTMLButtonElement>): void {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  event.preventDefault();
+  event.currentTarget.click();
+}
 
 export interface CardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
   /** Visual variant. `raised` protrudes; `sunken` recesses; `flat` is subtle. */
@@ -22,6 +87,10 @@ export interface CardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "t
   padding?: "none" | "sm" | "md" | "lg";
   /** When true, the card raises and lifts on hover. */
   hoverable?: boolean;
+  /** 赋予卡片按钮式键盘语义；默认在提供 onClick 时自动开启。 */
+  interactive?: boolean;
+  /** 禁用交互式卡片。 */
+  disabled?: boolean;
   /** Optional card heading. */
   title?: React.ReactNode;
   /** Secondary text shown under `title`. */
@@ -53,6 +122,8 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
     variant = "raised",
     padding = "md",
     hoverable,
+    interactive,
+    disabled = false,
     title,
     description,
     actions,
@@ -67,15 +138,35 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
     className = "",
     style,
     children,
+    onClick,
+    onKeyDown,
+    onClickCapture,
+    onKeyDownCapture,
+    role,
+    tabIndex,
+    "aria-label": ariaLabel,
+    "aria-labelledby": ariaLabelledBy,
     ...rest
   }, ref) => {
+    const contentRef = React.useRef<HTMLDivElement>(null);
+    const headRef = React.useRef<HTMLDivElement>(null);
+    const actionsRef = React.useRef<HTMLDivElement>(null);
+    const isInteractive = interactive ?? !!onClick;
+    React.useEffect(() => {
+      const isolated = disabled || loading;
+      if (contentRef.current) contentRef.current.inert = isolated;
+      if (headRef.current) headRef.current.inert = isolated;
+      if (actionsRef.current) actionsRef.current.inert = isolated;
+    }, [disabled, loading]);
     const resolvedBodyLayout = bodyLayout ?? (fill ? "fill" : "block");
     const cls = [
       "card",
       variant,
       padding !== "md" && `pad-${padding}`,
       fill && "fill",
-      hoverable && "hoverable",
+      hoverable && !disabled && !loading && "hoverable",
+      isInteractive && "interactive",
+      disabled && "disabled",
       loading && "loading",
       className,
     ]
@@ -95,19 +186,91 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
           ...style,
         } as React.CSSProperties)
       : style;
+    const bodyLabel = hasCardControlNode(children) ? "" : getCardText(children);
+    const interactiveLabel = ariaLabel ?? (getCardText(title ?? description) || bodyLabel || "可操作卡片");
     return (
-      <div ref={ref} className={cls} style={cardStyle} aria-busy={loading || undefined} {...rest}>
+      <div
+        ref={(node) => {
+          if (typeof ref === "function") ref(node);
+          else if (ref) ref.current = node;
+        }}
+        className={cls}
+        style={cardStyle}
+        role={role}
+        tabIndex={isInteractive ? undefined : tabIndex}
+        aria-label={role ? ariaLabel : undefined}
+        aria-labelledby={role ? ariaLabelledBy : undefined}
+        aria-disabled={isInteractive && (disabled || loading) ? true : undefined}
+        aria-busy={loading || undefined}
+        onClickCapture={(event) => {
+          if (disabled || loading) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+          }
+          onClickCapture?.(event);
+        }}
+        onKeyDownCapture={(event) => {
+          if (disabled || loading) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+          }
+          onKeyDownCapture?.(event);
+        }}
+        onClick={(event) => {
+          if (disabled || loading) {
+            event.preventDefault();
+            return;
+          }
+          if (isNestedCardControl(event.target, event.currentTarget)) return;
+          onClick?.(event);
+        }}
+        onKeyDown={(event) => {
+          onKeyDown?.(event);
+          if (
+            isInteractive &&
+            !disabled &&
+            !loading &&
+            !event.defaultPrevented &&
+            event.target === event.currentTarget &&
+            (event.key === "Enter" || event.key === " ")
+          ) {
+            event.preventDefault();
+            event.currentTarget.click();
+          }
+        }}
+        {...rest}
+      >
+        {isInteractive && (
+          <Button
+            type="button"
+            variant="ghost"
+            className="card-interactive-control"
+            aria-label={interactiveLabel}
+            aria-labelledby={ariaLabelledBy}
+            tabIndex={disabled || loading ? -1 : tabIndex ?? 0}
+            disabled={disabled || loading}
+            onKeyDown={handleCardControlKeyDown}
+          />
+        )}
         {(title || description || actions) && (
-          <div className="card-head">
+          <div ref={headRef} className="card-head">
             <div className="card-titles">
               {title && <div className="card-title">{title}</div>}
               {description && <div className="card-desc">{description}</div>}
             </div>
-            {actions && <div className="card-actions">{actions}</div>}
+            {actions && <div ref={actionsRef} className="card-actions">{actions}</div>}
           </div>
         )}
         <div {...bodyProps} className={bodyCls} style={bodyStyle}>
-          {children}
+          <div
+            ref={contentRef}
+            className="card-body-content"
+            aria-hidden={loading || undefined}
+          >
+            {children}
+          </div>
           {loading && (
             <div className="card-loading-overlay" aria-live="polite">
               {loadingOverlay ?? <Spin tip="加载中..." />}

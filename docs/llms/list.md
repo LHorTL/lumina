@@ -16,6 +16,17 @@ import { List } from "@fangxinyan/lumina";
 <List items={[{ key, title, description, avatar, actions }]} />
 ```
 
+### 可点击与无分隔线
+
+提供 onClick 时整行获得按钮语义；dividers={false} 适合更轻量的操作列表。
+
+```tsx
+<List
+  dividers={false}
+  items={[{ title: "下载构建产物", onClick: handleClick }]}
+/>
+```
+
 ## API
 
 **List**

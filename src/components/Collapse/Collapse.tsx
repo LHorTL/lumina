@@ -33,7 +33,16 @@ export interface CollapseProps
   className?: string;
 }
 
-const CollapsePanel: React.FC<{ open: boolean; children: React.ReactNode }> = ({ open, children }) => {
+/** 折叠内容区域的内部属性。 */
+interface CollapsePanelProps {
+  open: boolean;
+  id: string;
+  labelledBy: string;
+  children: React.ReactNode;
+}
+
+/** 负责高度动画并在关闭时阻止内部控件获得焦点。 */
+const CollapsePanel: React.FC<CollapsePanelProps> = ({ open, id, labelledBy, children }) => {
   const innerRef = React.useRef<HTMLDivElement>(null);
   const [h, setH] = React.useState(0);
   const [animated, setAnimated] = React.useState(false);
@@ -54,17 +63,26 @@ const CollapsePanel: React.FC<{ open: boolean; children: React.ReactNode }> = ({
 
   return (
     <div
+      id={id}
       className="collapse-body"
       style={{ maxHeight: open ? h : 0, transition: animated ? undefined : "none" }}
       aria-hidden={!open}
+      aria-labelledby={labelledBy}
+      role="region"
+      {...(!open
+        ? ({ inert: "" } as unknown as React.HTMLAttributes<HTMLDivElement>)
+        : {})}
     >
       <div ref={innerRef} className="collapse-body-inner">{children}</div>
     </div>
   );
 };
 
-const normalizeKeys = (value: string | string[] | undefined): string[] =>
-  value == null ? [] : Array.isArray(value) ? value : [value];
+/** 把外部键值归一为数组，并在单开模式中只保留首项。 */
+const normalizeKeys = (value: string | string[] | undefined, singleOpen = false): string[] => {
+  const keys = value == null ? [] : Array.isArray(value) ? value : [value];
+  return singleOpen ? keys.slice(0, 1) : keys;
+};
 
 /** `Collapse` — collapsible sections. */
 export const Collapse = React.forwardRef<HTMLDivElement, CollapseProps>(({
@@ -80,11 +98,15 @@ export const Collapse = React.forwardRef<HTMLDivElement, CollapseProps>(({
   className = "",
   ...rest
 }, ref) => {
-  const [inner, setInner] = React.useState<string[]>(() => normalizeKeys(defaultActiveKey));
-  const isControlled = activeKey !== undefined;
-  const keys = isControlled ? normalizeKeys(activeKey) : inner;
-
+  const baseId = React.useId();
   const singleOpen = accordion || !multiple;
+  const [inner, setInner] = React.useState<string[]>(() => normalizeKeys(defaultActiveKey, singleOpen));
+  const isControlled = activeKey !== undefined;
+  const keys = normalizeKeys(isControlled ? activeKey : inner, singleOpen);
+
+  React.useEffect(() => {
+    if (!isControlled && singleOpen && inner.length > 1) setInner(inner.slice(0, 1));
+  }, [inner, isControlled, singleOpen]);
 
   const toggle = (k: string, itemDisabled?: boolean) => {
     if (collapsible === "disabled" || itemDisabled) return;
@@ -103,36 +125,51 @@ export const Collapse = React.forwardRef<HTMLDivElement, CollapseProps>(({
       className={`collapse ${ghost ? "ghost" : ""} ${size} ${className}`}
       {...rest}
     >
-      {items.map((it) => {
+      {items.map((it, index) => {
         const open = keys.includes(it.key);
         const isDisabled = it.disabled || collapsible === "disabled";
         const headerClickable = collapsible === "header" && !isDisabled;
+        const headerId = `${baseId}-header-${index}`;
+        const panelId = `${baseId}-panel-${index}`;
         return (
           <div
             key={it.key}
             className={`collapse-item ${open ? "open" : ""} ${isDisabled ? "disabled" : ""} ${collapsible === "icon" ? "icon-only" : ""}`}
           >
-            <button
-              type="button"
-              className="collapse-head"
-              disabled={isDisabled}
-              onClick={() => headerClickable && toggle(it.key, it.disabled)}
-              aria-expanded={open}
-            >
-              <span>{it.label}</span>
-              <span
-                className={`collapse-chev${collapsible === "icon" ? " clickable" : ""}`}
-                onClick={(e) => {
-                  if (collapsible === "icon" && !isDisabled) {
-                    e.stopPropagation();
-                    toggle(it.key, it.disabled);
-                  }
-                }}
+            {collapsible === "icon" ? (
+              <div id={headerId} className="collapse-head">
+                <span>{it.label}</span>
+                <button
+                  type="button"
+                  className="collapse-chev clickable"
+                  disabled={isDisabled}
+                  onClick={() => toggle(it.key, it.disabled)}
+                  aria-expanded={open}
+                  aria-controls={panelId}
+                  aria-label={open ? "收起面板" : "展开面板"}
+                >
+                  <Icon name="chevDown" size={16} aria-hidden />
+                </button>
+              </div>
+            ) : (
+              <button
+                id={headerId}
+                type="button"
+                className="collapse-head"
+                disabled={isDisabled}
+                onClick={() => headerClickable && toggle(it.key, it.disabled)}
+                aria-expanded={open}
+                aria-controls={panelId}
               >
-                <Icon name="chevDown" size={16} />
-              </span>
-            </button>
-            <CollapsePanel open={open}>{it.children}</CollapsePanel>
+                <span>{it.label}</span>
+                <span className="collapse-chev" aria-hidden>
+                  <Icon name="chevDown" size={16} />
+                </span>
+              </button>
+            )}
+            <CollapsePanel open={open} id={panelId} labelledBy={headerId}>
+              {it.children}
+            </CollapsePanel>
           </div>
         );
       })}

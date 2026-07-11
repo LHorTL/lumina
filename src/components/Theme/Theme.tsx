@@ -1,5 +1,6 @@
 import "../../styles/tokens.css";
 import * as React from "react";
+import { PortalScopeProvider } from "../../utils/portal";
 
 /* ============================================================================
  * Theme — full custom theming system for lumina
@@ -165,6 +166,8 @@ const DEFAULT_CONFIG: Required<ThemeConfig> = {
 /* ------------------------------ Helpers --------------------------------- */
 
 const isBrowser = typeof window !== "undefined" && typeof document !== "undefined";
+/** 浏览器使用布局副作用，服务端回退为普通副作用以避免 SSR 警告。 */
+const useIsomorphicLayoutEffect = isBrowser ? React.useLayoutEffect : React.useEffect;
 
 function isThemeBaseMode(mode: ThemeMode | undefined): mode is ThemeBaseMode {
   return mode === "light" || mode === "dark";
@@ -396,6 +399,9 @@ export function applyTheme(target: HTMLElement, config: ThemeConfig): void {
 
   // Fonts
   const font = cfg.font ?? DEFAULT_CONFIG.font;
+  target.style.removeProperty("--font-sans");
+  target.style.removeProperty("--font-display");
+  target.style.removeProperty("--font-mono");
   if (typeof font === "string") {
     const stack = (FONT_STACKS as Record<string, string>)[font] ?? font;
     target.style.setProperty("--font-sans", stack);
@@ -442,12 +448,30 @@ export function useThemeOptional(): ThemeValue | null {
 
 /* ---------------------------- Persistence ------------------------------- */
 
+const THEME_STORAGE_VERSION = 1;
+
+/** localStorage 中带版本号的主题配置封装。 */
+interface PersistedThemeEnvelope {
+  version: number;
+  config: Partial<ThemeConfig>;
+}
+
+/** 判断持久化数据是否采用当前的版本化封装。 */
+function isPersistedThemeEnvelope(value: unknown): value is PersistedThemeEnvelope {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as Partial<PersistedThemeEnvelope>;
+  return typeof candidate.version === "number" && !!candidate.config && typeof candidate.config === "object";
+}
+
 function loadPersisted(key: string | undefined): Partial<ThemeConfig> | null {
   if (!key || !isBrowser) return null;
   try {
     const raw = localStorage.getItem(key);
     if (!raw) return null;
-    const persisted = JSON.parse(raw) as Partial<ThemeConfig>;
+    const parsed = JSON.parse(raw) as unknown;
+    const persisted = isPersistedThemeEnvelope(parsed)
+      ? parsed.config
+      : (parsed as Partial<ThemeConfig>);
     if (isTransientThemeMode(persisted.mode)) {
       localStorage.removeItem(key);
       return null;
@@ -462,10 +486,47 @@ function persist(key: string | undefined, cfg: ThemeConfig): void {
   if (!key || !isBrowser) return;
   if (isTransientThemeMode(cfg.mode)) return;
   try {
-    localStorage.setItem(key, JSON.stringify(cfg));
+    const payload: PersistedThemeEnvelope = {
+      version: THEME_STORAGE_VERSION,
+      config: cfg,
+    };
+    localStorage.setItem(key, JSON.stringify(payload));
   } catch {
     /* quota exceeded / disabled storage — ignore */
   }
+}
+
+/** 把调用方显式传入的受控主题字段覆盖到基础配置上。 */
+function applyExplicitThemeProps(base: ThemeConfig, props: ThemeConfig): ThemeConfig {
+  return {
+    ...base,
+    ...(props.mode !== undefined ? { mode: props.mode } : null),
+    ...(props.colorScheme !== undefined ? { colorScheme: props.colorScheme } : null),
+    ...(props.accent !== undefined ? { accent: props.accent } : null),
+    ...(props.density !== undefined ? { density: props.density } : null),
+    ...(props.intensity !== undefined ? { intensity: props.intensity } : null),
+    ...(props.radius !== undefined ? { radius: props.radius } : null),
+    ...(props.font !== undefined ? { font: props.font } : null),
+    ...(props.tokens !== undefined ? { tokens: props.tokens } : null),
+    ...(props.themes !== undefined ? { themes: props.themes } : null),
+  };
+}
+
+/** 只根据默认值和当前属性创建主题配置，不读取持久化状态。 */
+function createThemeConfigFromProps(props: ThemeConfig): ThemeConfig {
+  const mode = props.mode ?? DEFAULT_CONFIG.mode;
+  const fromProps: ThemeConfig = {
+    mode,
+    colorScheme: props.colorScheme,
+    accent: props.accent ?? DEFAULT_CONFIG.accent,
+    density: props.density ?? DEFAULT_CONFIG.density,
+    intensity: props.intensity ?? DEFAULT_CONFIG.intensity,
+    radius: props.radius ?? DEFAULT_CONFIG.radius,
+    font: props.font ?? DEFAULT_CONFIG.font,
+    tokens: props.tokens ?? {},
+    themes: props.themes ?? DEFAULT_CONFIG.themes,
+  };
+  return applyExplicitThemeProps(applyThemePreset(fromProps, mode), props);
 }
 
 /* --------------------------- ThemeProvider ------------------------------ */
@@ -482,7 +543,7 @@ export interface ThemeProviderProps extends ThemeConfig {
   as?: keyof JSX.IntrinsicElements;
   className?: string;
   style?: React.CSSProperties;
-  /** If set, theme state and custom named themes are persisted to localStorage under this key. */
+  /** 使用带版本号的结构持久化主题，并同步同源窗口。 */
   storageKey?: string;
   /** Called whenever the resolved theme value changes. */
   onChange?: (value: ThemeValue) => void;
@@ -519,31 +580,9 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = (props) => {
 
   // Build the initial config: defaults ← props ← custom preset ← persisted (if any)
   const initialConfig = React.useMemo<ThemeConfig>(() => {
-    const applyExplicitProps = (base: ThemeConfig): ThemeConfig => ({
-      ...base,
-      ...(configProps.colorScheme !== undefined ? { colorScheme: configProps.colorScheme } : null),
-      ...(configProps.accent !== undefined ? { accent: configProps.accent } : null),
-      ...(configProps.density !== undefined ? { density: configProps.density } : null),
-      ...(configProps.intensity != null ? { intensity: configProps.intensity } : null),
-      ...(configProps.radius != null ? { radius: configProps.radius } : null),
-      ...(configProps.font !== undefined ? { font: configProps.font } : null),
-      ...(configProps.tokens !== undefined ? { tokens: configProps.tokens } : null),
-      ...(configProps.themes !== undefined ? { themes: configProps.themes } : null),
-    });
-    const fromProps: ThemeConfig = {
-      mode: configProps.mode ?? DEFAULT_CONFIG.mode,
-      colorScheme: configProps.colorScheme,
-      accent: configProps.accent ?? DEFAULT_CONFIG.accent,
-      density: configProps.density ?? DEFAULT_CONFIG.density,
-      intensity: configProps.intensity ?? DEFAULT_CONFIG.intensity,
-      radius: configProps.radius ?? DEFAULT_CONFIG.radius,
-      font: configProps.font ?? DEFAULT_CONFIG.font,
-      tokens: configProps.tokens ?? {},
-      themes: configProps.themes ?? DEFAULT_CONFIG.themes,
-    };
+    const fromProps = createThemeConfigFromProps(configProps);
     const persisted = loadPersisted(storageKey);
-    const seeded = applyThemePreset(fromProps, fromProps.mode ?? DEFAULT_CONFIG.mode);
-    const withExplicitProps = applyExplicitProps(seeded);
+    const withExplicitProps = fromProps;
     if (!persisted) return withExplicitProps;
 
     let persistedForMerge = persisted;
@@ -562,7 +601,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = (props) => {
       configProps.themes !== undefined && !isBuiltInThemeMode(persistedMode)
         ? applyThemePreset(withPersisted, persistedMode)
         : withPersisted;
-    return applyExplicitProps(withControlledThemePreset);
+    return applyExplicitThemeProps(withControlledThemePreset, configProps);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -675,6 +714,53 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = (props) => {
     configProps.themes,
   ]);
 
+  // 同源的其他窗口更新主题时，同步当前非受控状态。
+  React.useEffect(() => {
+    if (!storageKey || !isBrowser) return;
+
+    /** 合并跨窗口主题数据，并保留调用方显式控制的字段。 */
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key !== storageKey && event.key !== null) return;
+      if (event.newValue === null) {
+        setConfig(createThemeConfigFromProps(configProps));
+        return;
+      }
+
+      const persisted = loadPersisted(storageKey);
+      if (!persisted) return;
+      setConfig((current) => {
+        const mode = configProps.mode ?? persisted.mode ?? current.mode ?? DEFAULT_CONFIG.mode;
+        const merged = applyThemePreset({ ...current, ...persisted }, mode);
+        return {
+          ...merged,
+          mode,
+          ...(configProps.colorScheme !== undefined ? { colorScheme: configProps.colorScheme } : null),
+          ...(configProps.accent !== undefined ? { accent: configProps.accent } : null),
+          ...(configProps.density !== undefined ? { density: configProps.density } : null),
+          ...(configProps.intensity !== undefined ? { intensity: configProps.intensity } : null),
+          ...(configProps.radius !== undefined ? { radius: configProps.radius } : null),
+          ...(configProps.font !== undefined ? { font: configProps.font } : null),
+          ...(configProps.tokens !== undefined ? { tokens: configProps.tokens } : null),
+          ...(configProps.themes !== undefined ? { themes: configProps.themes } : null),
+        };
+      });
+    };
+
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, [
+    configProps.mode,
+    configProps.colorScheme,
+    configProps.accent,
+    configProps.density,
+    configProps.intensity,
+    configProps.radius,
+    configProps.font,
+    configProps.tokens,
+    configProps.themes,
+    storageKey,
+  ]);
+
   // Listen for system preference changes when mode === "system".
   const [systemDark, setSystemDark] = React.useState<boolean>(() =>
     isBrowser && window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -707,21 +793,46 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = (props) => {
   );
 
   const scopeRef = React.useRef<HTMLElement | null>(null);
+  const [portalContainer, setPortalContainer] = React.useState<HTMLElement | null>(null);
   const appliedTokenKeysRef = React.useRef<Set<string>>(new Set());
 
-  // Apply theme whenever config/resolvedMode changes.
-  React.useEffect(() => {
-    if (!isBrowser) return;
-    const el = target === "root" ? document.documentElement : scopeRef.current;
-    if (!el) return;
-    const nextTokenKeys = new Set(Object.keys(effectiveConfig.tokens));
-    for (const key of appliedTokenKeysRef.current) {
-      if (!nextTokenKeys.has(key)) el.style.removeProperty(toVar(key));
+  // scope 模式的浮层仍挂到 body，但通过独立容器继承同一套主题变量。
+  useIsomorphicLayoutEffect(() => {
+    if (!isBrowser || target !== "scope") {
+      setPortalContainer(null);
+      return;
     }
-    applyTheme(el as HTMLElement, { ...effectiveConfig, colorScheme });
+
+    const container = document.createElement("div");
+    container.dataset.luminaPortalScope = "";
+    container.style.display = "contents";
+    document.body.appendChild(container);
+    setPortalContainer(container);
+
+    return () => {
+      container.remove();
+    };
+  }, [target]);
+
+  // Apply theme whenever config/resolvedMode changes.
+  useIsomorphicLayoutEffect(() => {
+    if (!isBrowser) return;
+    const targets = (
+      target === "root"
+        ? [document.documentElement]
+        : [scopeRef.current, portalContainer]
+    ).filter((element): element is HTMLElement => element != null);
+    if (targets.length === 0) return;
+    const nextTokenKeys = new Set(Object.keys(effectiveConfig.tokens));
+    for (const el of targets) {
+      for (const key of appliedTokenKeysRef.current) {
+        if (!nextTokenKeys.has(key)) el.style.removeProperty(toVar(key));
+      }
+      applyTheme(el, { ...effectiveConfig, colorScheme });
+    }
     appliedTokenKeysRef.current = nextTokenKeys;
     persist(storageKey, config);
-  }, [config, effectiveConfig, colorScheme, target, storageKey]);
+  }, [config, effectiveConfig, colorScheme, portalContainer, target, storageKey]);
 
   const value: ThemeValue = React.useMemo(() => {
     const patch = (p: Partial<ThemeConfig>) => setConfig((c) => ({ ...c, ...p }));
@@ -766,21 +877,27 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = (props) => {
   if (target === "scope") {
     const Component = Tag as React.ElementType;
     return (
-      <ThemeCtx.Provider value={value}>
-        <Component
-          ref={scopeRef as React.Ref<never>}
-          className={className}
-          style={{
-            color: "var(--fg)",
-            fontFamily: "var(--font-sans)",
-            ...style,
-          }}
-        >
-          {children}
-        </Component>
-      </ThemeCtx.Provider>
+      <PortalScopeProvider container={portalContainer}>
+        <ThemeCtx.Provider value={value}>
+          <Component
+            ref={scopeRef as React.Ref<never>}
+            className={className}
+            style={{
+              color: "var(--fg)",
+              fontFamily: "var(--font-sans)",
+              ...style,
+            }}
+          >
+            {children}
+          </Component>
+        </ThemeCtx.Provider>
+      </PortalScopeProvider>
     );
   }
 
-  return <ThemeCtx.Provider value={value}>{children}</ThemeCtx.Provider>;
+  return (
+    <PortalScopeProvider container={null}>
+      <ThemeCtx.Provider value={value}>{children}</ThemeCtx.Provider>
+    </PortalScopeProvider>
+  );
 };

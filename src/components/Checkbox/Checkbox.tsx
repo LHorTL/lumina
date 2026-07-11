@@ -14,6 +14,14 @@ export interface CheckboxProps
   label?: React.ReactNode;
   className?: string;
   id?: string;
+  /** 提交原生表单时使用的字段名。 */
+  name?: string;
+  /** 选中时提交给原生表单的字段值，默认为 `"on"`。 */
+  value?: string;
+  /** 是否要求该复选框必须选中。 */
+  required?: boolean;
+  /** 关联的原生 form 元素 id。 */
+  form?: string;
 }
 
 /** `Checkbox` — binary choice, supports indeterminate state. */
@@ -26,15 +34,28 @@ export const Checkbox = React.forwardRef<HTMLLabelElement, CheckboxProps>(({
   label,
   className = "",
   id,
+  name,
+  value: formValue,
+  required,
+  form,
+  "aria-label": ariaLabel,
+  "aria-labelledby": ariaLabelledBy,
+  "aria-describedby": ariaDescribedBy,
+  "aria-invalid": ariaInvalid,
+  "aria-required": ariaRequired,
   ...rest
 }, ref) => {
   const [inner, setInner] = React.useState(defaultChecked ?? false);
   const isControlled = checked !== undefined;
   const value = isControlled ? checked : inner;
 
-  const toggle = () => {
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  React.useEffect(() => {
+    if (inputRef.current) inputRef.current.indeterminate = !!indeterminate;
+  }, [indeterminate]);
+
+  const toggle = (next: boolean) => {
     if (disabled) return;
-    const next = !value;
     if (!isControlled) setInner(next);
     onChange?.(next);
   };
@@ -51,17 +72,28 @@ export const Checkbox = React.forwardRef<HTMLLabelElement, CheckboxProps>(({
 
   return (
     <label ref={ref} className={cls} {...rest}>
-      <button
-        type="button"
-        role="checkbox"
-        aria-checked={indeterminate ? "mixed" : value}
+      <input
+        ref={inputRef}
+        type="checkbox"
+        className="checkbox-native"
+        checked={value}
         disabled={disabled}
-        onClick={toggle}
+        onChange={(event) => toggle(event.target.checked)}
         id={id}
-        className="checkbox-box"
-      >
+        name={name}
+        value={formValue ?? "on"}
+        required={required}
+        form={form}
+        aria-label={ariaLabel}
+        aria-labelledby={ariaLabelledBy}
+        aria-describedby={ariaDescribedBy}
+        aria-invalid={ariaInvalid}
+        aria-required={ariaRequired}
+        aria-checked={indeterminate ? "mixed" : value}
+      />
+      <span aria-hidden="true" className="checkbox-box">
         {indeterminate ? <Icon name="minus" size={11} /> : value ? <Icon name="check" size={11} /> : null}
-      </button>
+      </span>
       {label && <span className="checkbox-label">{label}</span>}
     </label>
   );

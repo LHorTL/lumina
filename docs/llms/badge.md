@@ -33,6 +33,8 @@ dot 模式不显示数字,只是状态指示。
 | --- | --- | --- | --- |
 | count | `number` | — | 显示数字 |
 | dot | `boolean` | `false` | 圆点模式 |
+| showZero | `boolean` | `false` | count 为 0 时仍显示 |
+| statusLabel | `string` | — | 徽标可访问文本 |
 | max | `number` | `99` | 超过显示 max+ |
 | tone | `"neutral" | "accent" | ...` | `"danger"` | 色调 |
 

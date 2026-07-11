@@ -126,7 +126,7 @@ const SectionImage: React.FC<SectionCtx> = () => {
     );
   return (
     <DocPage
-      whenToUse={<p>承载图片、游戏图标、sprite 裁剪和多层头像等媒体资源。</p>}
+      whenToUse={<p>承载图片、游戏图标、sprite 裁剪和多层头像等媒体资源。可预览图片会自动成为键盘可聚焦控件。</p>}
       demos={[
         {
           id: "basic",
@@ -163,7 +163,7 @@ const SectionImage: React.FC<SectionCtx> = () => {
         {
           id: "detail-preview",
           title: "精细预览",
-          description: "预览层内置放大、缩小、适配窗口、1:1、滚轮缩放和拖拽平移；previewMaxWidth / previewMaxHeight 控制适配态尺寸,renderPreviewToolbar 可追加业务按钮。",
+          description: "点击或按 Enter / Space 打开；预览层内置焦点限制、Esc 关闭与焦点归还，以及放大、缩小、适配窗口、1:1、滚轮缩放和拖拽平移。",
           code: `<Image
   src={url}
   width={260}
@@ -300,11 +300,11 @@ const SectionImage: React.FC<SectionCtx> = () => {
             { prop: "frame", description: "是否保留内层凹陷 frame", type: "boolean", default: "framed 时 true" },
             { prop: "padding", description: "外层留白,raw/icon 默认 0", type: "number | string" },
             { prop: "objectFit / objectPosition", description: "底层 img 的 object-fit / object-position", type: "CSSProperties" },
-            { prop: "preview", description: "支持点击全屏预览", type: "boolean", default: "true" },
+            { prop: "preview", description: "启用点击或 Enter / Space 全屏预览；打开时限制焦点并锁定滚动，Esc 关闭后归还焦点", type: "boolean", default: "framed 时 true" },
             { prop: "previewClassName", description: "预览蒙层 className", type: "string" },
             { prop: "previewStyle", description: "预览蒙层内联样式", type: "CSSProperties" },
             { prop: "previewMaxWidth / previewMaxHeight", description: "预览适配态的最大尺寸", type: "number | string", default: `"80vw" / "80vh"` },
-            { prop: "renderPreviewToolbar", description: "在预览工具栏追加自定义按钮", type: "(controls) => ReactNode" },
+            { prop: "renderPreviewToolbar", description: "在预览工具栏追加自定义按钮；追加控件同样参与焦点循环", type: "(controls) => ReactNode" },
             { prop: "hover", description: "悬浮放大", type: "boolean", default: "true" },
             { prop: "placeholder", description: "占位/错误时内容", type: "ReactNode" },
             { prop: "imgProps", description: "透传到底层 img 的属性", type: "ImgHTMLAttributes" },

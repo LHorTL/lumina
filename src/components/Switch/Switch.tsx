@@ -17,6 +17,14 @@ export interface SwitchProps
   unCheckedChildren?: React.ReactNode;
   className?: string;
   id?: string;
+  /** 提交原生表单时使用的字段名。 */
+  name?: string;
+  /** 开启时提交给原生表单的字段值，默认为 `"on"`。 */
+  value?: string;
+  /** 是否要求开关必须开启。 */
+  required?: boolean;
+  /** 关联的原生 form 元素 id。 */
+  form?: string;
 }
 
 /**
@@ -33,15 +41,23 @@ export const Switch = React.forwardRef<HTMLLabelElement, SwitchProps>(({
   unCheckedChildren,
   className = "",
   id,
+  name,
+  value: formValue,
+  required,
+  form,
+  "aria-label": ariaLabel,
+  "aria-labelledby": ariaLabelledBy,
+  "aria-describedby": ariaDescribedBy,
+  "aria-invalid": ariaInvalid,
+  "aria-required": ariaRequired,
   ...rest
 }, ref) => {
   const [inner, setInner] = React.useState(defaultChecked ?? false);
   const isControlled = checked !== undefined;
   const value = isControlled ? checked : inner;
 
-  const toggle = () => {
+  const toggle = (next: boolean) => {
     if (disabled) return;
-    const next = !value;
     if (!isControlled) setInner(next);
     onChange?.(next);
   };
@@ -60,15 +76,26 @@ export const Switch = React.forwardRef<HTMLLabelElement, SwitchProps>(({
 
   return (
     <label ref={ref} className={cls} {...rest}>
-      <button
-        type="button"
+      <input
+        type="checkbox"
+        className="switch-native"
+        checked={value}
+        disabled={disabled}
+        onChange={(event) => toggle(event.target.checked)}
+        id={id}
+        name={name}
+        value={formValue ?? "on"}
+        required={required}
+        form={form}
         role="switch"
         aria-checked={value}
-        disabled={disabled}
-        onClick={toggle}
-        id={id}
-        className="switch-track"
-      >
+        aria-label={ariaLabel}
+        aria-labelledby={ariaLabelledBy}
+        aria-describedby={ariaDescribedBy}
+        aria-invalid={ariaInvalid}
+        aria-required={ariaRequired}
+      />
+      <span aria-hidden="true" className="switch-track">
         {hasChildren && (
           <span className="switch-inner">
             <span className="switch-inner-on">{checkedChildren}</span>
@@ -76,7 +103,7 @@ export const Switch = React.forwardRef<HTMLLabelElement, SwitchProps>(({
           </span>
         )}
         <span className="switch-thumb" />
-      </button>
+      </span>
       {label && <span className="switch-label">{label}</span>}
     </label>
   );

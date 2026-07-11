@@ -77,6 +77,7 @@ const SectionTitleBar: React.FC<SectionCtx> = () => (
           { prop: "actions", description: "右侧操作区", type: "ReactNode" },
           { prop: "center", description: "中部内容", type: "ReactNode" },
           { prop: "draggable", description: "整条作为拖拽区", type: "boolean", default: "true" },
+          { prop: "maximized", description: "切换最大化/还原图标与可访问名称", type: "boolean", default: "false" },
           { prop: "onMinimize / onMaximize / onClose", description: "窗口控件回调", type: "() => void" },
         ],
       },

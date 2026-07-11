@@ -55,6 +55,7 @@ export const Skeleton = React.forwardRef<HTMLElement, SkeletonProps>(({
         ref={ref as React.ForwardedRef<HTMLSpanElement>}
         className={`skeleton ${animation} ${circle ? "circle" : ""} ${className}`.trim()}
         style={{ width, height, borderRadius: circle ? "50%" : undefined, ...style }}
+        aria-hidden="true"
         {...rest}
       />
     );
@@ -83,6 +84,7 @@ export const Skeleton = React.forwardRef<HTMLElement, SkeletonProps>(({
       ref={ref as React.ForwardedRef<HTMLDivElement>}
       className={`skeleton-box ${className}`.trim()}
       style={style as React.CSSProperties | undefined}
+      aria-hidden="true"
       {...rest}
     >
       {avatarCfg && (

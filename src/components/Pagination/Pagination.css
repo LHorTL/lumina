@@ -48,21 +48,23 @@
 }
 .pagination .pg-jumper-label { color: var(--fg-muted); }
 .pagination .pg-jumper-input {
-  width: 44px;
-  height: 28px;
-  padding: 0 8px;
-  border: none;
-  border-radius: var(--r-sm);
-  background: var(--bg);
-  box-shadow: var(--neu-shadow-inset);
-  color: var(--fg);
-  font-family: inherit;
-  font-size: 12px;
+  width: 52px;
+}
+.pagination .pg-jumper-input .input {
   font-variant-numeric: tabular-nums;
   text-align: center;
-  outline: none;
-  transition: box-shadow var(--dur-fast) var(--ease);
 }
-.pagination .pg-jumper-input:focus-visible {
-  box-shadow: var(--neu-shadow-inset), 0 0 0 2px var(--accent-glow);
+
+@media (max-width: 480px) {
+  .pagination {
+    align-items: flex-start;
+    padding-inline: 8px;
+  }
+  .pagination .pg-controls {
+    flex-wrap: wrap;
+  }
+  .pagination .pg-size-changer,
+  .pagination .pg-jumper {
+    margin-left: 0;
+  }
 }

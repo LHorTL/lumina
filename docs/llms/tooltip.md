@@ -12,6 +12,8 @@ import { Tooltip } from "@fangxinyan/lumina";
 
 ### 基础
 
+聚焦触发器同样会显示提示；Esc 只关闭当前最上层提示，不影响下面的 Modal / Drawer。
+
 ```tsx
 <Tooltip content="新建文档"><Button icon="plus" /></Tooltip>
 ```
@@ -43,9 +45,12 @@ title 与 content 等价,也支持 bottomLeft 等细分位置。
 | placement | `"top" | "bottom" | "left" | "right" | ...` | `"top"` | 位置,支持 bottomLeft 等细分方向 |
 | delay | `number` | `250` | 悬浮延时 (ms) |
 | closeDelay | `number` | `300` | 离开触发器或提示浮层后的关闭延时 (ms) |
-| disabled | `boolean` | `false` | 禁用提示 |
-| open / visible | `boolean` | — | 受控显示状态 |
+| disabled | `boolean` | `false` | 禁用提示；即使受控状态为 true 也不渲染浮层 |
+| open / visible | `boolean` | — | 受控显示状态(open 优先) |
+| defaultOpen | `boolean` | `false` | 非受控初始显示状态 |
+| onOpenChange / onVisibleChange | `(open: boolean) => void` | — | 显示状态变化回调；重复状态不会重复触发 |
 | overlayClassName / popupClassName | `string` | — | 浮层 className |
+| className | `string` | — | 触发器包装节点 className |
 
 
 ---

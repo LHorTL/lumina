@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Switch } from "lumina";
+import { Button, Switch } from "lumina";
 import { DocPage } from "../docs";
 import { Row } from "./_shared";
 import { defineSection, type SectionCtx } from "./_types";
@@ -18,6 +18,21 @@ const SectionSwitch: React.FC<SectionCtx> = () => {
             <Row>
               <Switch checked={v} onChange={setV} label="开启通知" />
             </Row>
+          ),
+        },
+        {
+          id: "native-form",
+          title: "原生表单",
+          description: "开启后按 name / value 参与原生表单提交，required 可交给浏览器校验。",
+          code: `<form onSubmit={(event) => event.preventDefault()}>
+  <Switch name="notifications" value="enabled" required label="开启通知" />
+  <Button type="submit">验证提交</Button>
+</form>`,
+          render: () => (
+            <form onSubmit={(event) => event.preventDefault()} style={{ display: "flex", gap: 12, alignItems: "center" }}>
+              <Switch name="notifications" value="enabled" required label="开启通知" />
+              <Button type="submit" size="sm">验证提交</Button>
+            </form>
           ),
         },
         {
@@ -70,6 +85,8 @@ const SectionSwitch: React.FC<SectionCtx> = () => {
             { prop: "checkedChildren", description: "轨道内选中状态文本/图标", type: "ReactNode" },
             { prop: "unCheckedChildren", description: "轨道内未选中状态文本/图标", type: "ReactNode" },
             { prop: "size", description: "尺寸", type: `"sm" | "md"`, default: `"md"` },
+            { prop: "name / value", description: "原生表单字段名与开启时提交的值", type: "string" },
+            { prop: "required / form", description: "原生必填约束与关联 form id", type: "boolean / string" },
             { prop: "disabled", description: "禁用", type: "boolean", default: "false" },
           ],
         },

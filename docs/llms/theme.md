@@ -5,7 +5,7 @@
 ## 导入
 
 ```tsx
-import { ThemeProvider, useTheme, applyTheme } from "@fangxinyan/lumina";
+import { ThemeProvider, useTheme, applyTheme, LUMINA_THEME_PRESETS, cloneLuminaThemePreset, pickLuminaThemePresets, Select } from "@fangxinyan/lumina";
 ```
 
 ## 示例
@@ -96,33 +96,13 @@ t.setTokens({
 
 ### 自定义主题模式
 
-mode 可以指向 themes 中的命名 preset。base 决定 light/dark 基底,tokens 决定完整视觉。
+mode 可以指向 themes 中的命名 preset；可直接复用公开的 Lumina 内置预设。
 
 ```tsx
+import { LUMINA_THEME_PRESETS, ThemeProvider } from "lumina";
+
 const themes = {
-  graphite: {
-    label: "Graphite",
-    description: "深色",
-    base: "dark",
-    accent: {
-      accent: "oklch(72% 0.13 190)",
-      ink: "oklch(85% 0.1 190)",
-      soft: "oklch(31% 0.05 190)",
-      glow: "oklch(72% 0.13 190 / 0.18)",
-    },
-    intensity: 4,
-    radius: 18,
-    tokens: {
-      bg: "#181b22",
-      "bg-raised": "#20242d",
-      "bg-sunken": "#11141a",
-      fg: "#edf1f7",
-      "shadow-dark": "rgba(0,0,0,.58)",
-      "shadow-light": "rgba(128,146,166,.07)",
-      "shadow-scale": "1",
-      "shadow-float-scale": "1",
-    },
-  },
+  graphite: LUMINA_THEME_PRESETS.graphite,
 };
 
 <ThemeProvider mode="graphite" themes={themes}>
@@ -132,7 +112,7 @@ const themes = {
 
 ### 作用域嵌套
 
-target="scope" 只作用于子树,可以层层嵌套。
+target="scope" 只作用于子树,可以层层嵌套；Select 等 Portal 浮层也会继承所属作用域主题。
 
 ```tsx
 <ThemeProvider accent="sky">
@@ -143,6 +123,7 @@ target="scope" 只作用于子树,可以层层嵌套。
 
     <ThemeProvider target="scope" accent="mint" as="div">
       <InnerCallout />
+      <Select options={[{ label: "Mint 浮层", value: "mint" }]} />
     </ThemeProvider>
   </ThemeProvider>
 </ThemeProvider>
@@ -194,10 +175,12 @@ applyTheme(document.documentElement, {
 | font | `FontConfig` | `"sf"` | 字体预设或 CSS 栈 |
 | tokens | `Record<string, string>` | — | 任意 CSS 变量覆写;推荐用语义阴影 token 和 shadow-scale(0.2-3) / shadow-float-scale(0.2-4) 控制阴影系统 |
 | themes | `Record<string, ThemePreset>` | — | 命名自定义模式 preset |
+| LUMINA_THEME_PRESETS | `Record<BuiltInLuminaThemePresetKey, ThemePreset>` | — | 可复用的 light/dark/porcelain/graphite/ember/assistant 内置预设 |
+| cloneLuminaThemePreset / pickLuminaThemePresets | `function` | — | 克隆单个或挑选多个内置主题，避免修改共享预设 |
 | ThemePreset.label / description | `string` | — | 可选展示元信息;ThemePanel 会读取它作为卡片标题和说明 |
 | target | `"root" | "scope"` | `"root"` | 应用到根还是局部 |
 | as | `keyof JSX.IntrinsicElements` | `"div"` | scope 模式的元素标签 |
-| storageKey | `string` | — | localStorage 持久化 key,包含当前主题状态与自定义 themes |
+| storageKey | `string` | — | 带版本号的 localStorage 持久化 key；同源多窗口会自动同步当前主题与自定义 themes |
 | onChange | `(value: ThemeValue) => void` | — | 主题值变更回调 |
 
 

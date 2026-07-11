@@ -22,6 +22,7 @@ const SectionForm: React.FC<SectionCtx> = () => (
           <li>用 <code>Form.useForm()</code> 拿到实例,通过 <code>validateFields</code> / <code>setFieldsValue</code> / <code>resetFields</code> 操作表单</li>
           <li><code>Form.Item</code> 包裹输入控件,自动注入 value / onChange</li>
           <li>Checkbox 等用 <code>valuePropName=&quot;checked&quot;</code> 指定绑定到哪个 prop</li>
+          <li>未设置的字段会按控件类型注入安全空值:多选为 <code>[]</code>,数值/日期/单选为 <code>null</code></li>
         </ul>
       </>
     }
@@ -204,7 +205,7 @@ const SectionForm: React.FC<SectionCtx> = () => (
               active: true,
             });
             return (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, alignItems: "start" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))", gap: 20, alignItems: "start" }}>
                 <Form
                   form={form}
                   layout="vertical"
@@ -349,7 +350,7 @@ form.resetFields()`,
           { prop: "onFinish / onFinishFailed", description: "提交成功/失败", type: "(values | {values, errorFields}) => void" },
           { prop: "onValuesChange", description: "任一字段变化", type: "(changed, all) => void" },
           { prop: "requiredMark", description: "是否在必填 label 前显示 *", type: "boolean", default: "true" },
-          { prop: "disabled", description: "整体禁用", type: "boolean" },
+          { prop: "disabled", description: "强制整体禁用;子控件 disabled={false} 不会覆盖", type: "boolean" },
         ],
       },
       {
@@ -361,9 +362,12 @@ form.resetFields()`,
           { prop: "noStyle", description: "不渲染外层 item 包装", type: "boolean" },
           { prop: "valuePropName", description: "注入值的 prop 名", type: "string", default: `"value"` },
           { prop: "trigger", description: "监听的事件名", type: "string", default: `"onChange"` },
+          { prop: "validateTrigger", description: "触发校验的事件名，可配置多个", type: "string | string[]", default: `"onChange"` },
           { prop: "initialValue", description: "此字段初始值;优先级低于 Form initialValues", type: "any" },
+          { prop: "required", description: "显示必填标记并向真实控件注入 aria-required", type: "boolean" },
           { prop: "help / extra", description: "辅助/补充说明", type: "ReactNode" },
           { prop: "hidden", description: "隐藏(字段仍保留)", type: "boolean" },
+          { prop: "ref / 原生 div 属性", description: "ref 落到外层节点;支持 className / style / id / data-* / aria-*", type: "Ref<HTMLDivElement> / HTMLAttributes" },
         ],
       },
       {
@@ -373,7 +377,7 @@ form.resetFields()`,
           { prop: "message", description: "错误提示文案", type: "string" },
           { prop: "pattern", description: "正则校验", type: "RegExp" },
           { prop: "min / max / len", description: "字符串/数组长度或数字范围", type: "number" },
-          { prop: "type", description: '"string" | "number" | "email" | "url" | "array"', type: "string" },
+          { prop: "type", description: "字符串、数字、数组及严格 email / url 格式校验", type: '"string" | "number" | "email" | "url" | "array"' },
           { prop: "validator", description: "自定义,抛出错误或 reject 视为失败", type: "(rule, value) => Promise<void>" },
         ],
       },

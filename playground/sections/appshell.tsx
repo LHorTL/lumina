@@ -23,15 +23,19 @@ const SectionAppShell: React.FC<SectionCtx> = () => {
           id: "workspace-shell",
           title: "完整工作台外壳",
           span: 2,
-          code: `<AppShell
-  titleBar={<TitleBar title="Lumina Mail" platform="mac" />}
-  sidebar={<Sidebar items={items} activeKey={active} onSelect={setActive} />}
->
-  <main>...</main>
-</AppShell>`,
+          code: `<div style={{ height: 480 }}>
+  <AppShell
+    style={{ height: "100%" }}
+    titleBar={<TitleBar title="Lumina Mail" platform="mac" />}
+    sidebar={<Sidebar items={items} activeKey={active} onSelect={setActive} />}
+  >
+    <main>...</main>
+  </AppShell>
+</div>`,
           render: () => (
-            <div style={{ borderRadius: "var(--r-xl)", overflow: "hidden", boxShadow: "var(--neu-shadow-lift)" }}>
+            <div style={{ height: 480, borderRadius: "var(--r-xl)", overflow: "hidden", boxShadow: "var(--neu-shadow-lift)" }}>
               <AppShell
+                style={{ height: "100%" }}
                 titleBar={
                   <TitleBar
                     platform="mac"

@@ -103,7 +103,10 @@ export const Timeline = React.forwardRef<HTMLDivElement, TimelineProps>(
     },
     ref
   ) => {
-    const displayItems = [...items];
+    const displayItems = items.map((item, sourceIndex) => ({
+      item,
+      key: item.key ?? `timeline-item-${sourceIndex}`,
+    }));
     if (reverse) displayItems.reverse();
 
     const hasPending = pending !== false;
@@ -131,11 +134,13 @@ export const Timeline = React.forwardRef<HTMLDivElement, TimelineProps>(
         ref={ref}
         className={`timeline timeline-${mode} timeline-dot-${dotAlign} ${className}`}
         style={timelineStyle}
+        role="list"
+        aria-busy={hasPending || undefined}
         {...rest}
       >
-        {displayItems.map((item, i) => (
+        {displayItems.map(({ item, key }, i) => (
           <TimelineItem
-            key={item.key ?? i}
+            key={key}
             item={item}
             isLast={!hasPending && i === displayItems.length - 1}
             position={getPosition(mode, i)}
@@ -229,7 +234,12 @@ const TimelineItem: React.FC<TimelineItemInternalProps> = ({
         : {};
 
   return (
-    <div className={cls} style={{ ...itemStyle, ...item.style }}>
+    <div
+      className={cls}
+      style={{ ...itemStyle, ...item.style }}
+      role="listitem"
+      aria-live={isPending ? "polite" : undefined}
+    >
       <div
         className={`timeline-item-label ${labelClassName ?? ""} ${item.labelClassName ?? ""}`}
         style={{ ...labelStyle, ...item.labelStyle }}

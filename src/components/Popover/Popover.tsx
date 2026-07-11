@@ -4,6 +4,8 @@ import "./Popover.css";
 import * as React from "react";
 import { createPortal } from "react-dom";
 import { useFloating, type Placement } from "../../utils/useFloating";
+import { useOverlayLayer } from "../../utils/overlayStack";
+import { usePortalContainer } from "../../utils/portal";
 
 export type PopoverPlacement =
   | "top"
@@ -28,7 +30,7 @@ export interface PopoverProps
   /** Preferred placement relative to the trigger. */
   placement?: PopoverPlacement;
   /** How the popover is triggered. */
-  trigger?: "click" | "hover";
+  trigger?: "click" | "hover" | "focus";
   /** Show a small arrow pointing at the trigger. */
   arrow?: boolean;
   /** Show a close button in the header (click trigger only). */
@@ -102,9 +104,17 @@ export const Popover = React.forwardRef<HTMLSpanElement, PopoverProps>(({
   onClick,
   onMouseEnter,
   onMouseLeave,
+  onFocus,
+  onBlur,
+  "aria-label": ariaLabel,
   ...rest
 }, ref) => {
+  const portalContainer = usePortalContainer();
   const [inner, setInner] = React.useState(defaultOpen);
+  const hoverTimeout = React.useRef<number | undefined>();
+  const nestedPointerEvents = React.useRef(new WeakSet<Event>());
+  const popoverId = React.useId();
+  const titleId = React.useId();
   const controlledOpen = open ?? visible;
   const isControlled = controlledOpen !== undefined;
   const show = isControlled ? controlledOpen! : inner;
@@ -117,6 +127,7 @@ export const Popover = React.forwardRef<HTMLSpanElement, PopoverProps>(({
     floatingRef,
     floatingStyle,
     placement: resolved,
+    zIndex: panelZIndex,
   } = useFloating<HTMLSpanElement, HTMLDivElement>({
     open: show,
     placement: normalized.placement,
@@ -131,6 +142,25 @@ export const Popover = React.forwardRef<HTMLSpanElement, PopoverProps>(({
     onVisibleChange?.(v);
   }, [isControlled, onOpenChange, onVisibleChange]);
 
+  /** 关闭浮层并把键盘焦点送回实际触发控件。 */
+  const closeFromEscape = React.useCallback(() => {
+    set(false);
+    window.requestAnimationFrame(() => {
+      const focusTarget = triggerRef.current?.querySelector<HTMLElement>(
+        "button, a[href], input, select, textarea, [tabindex]:not([tabindex='-1'])"
+      );
+      (focusTarget ?? triggerRef.current)?.focus();
+    });
+  }, [set, triggerRef]);
+
+  useOverlayLayer({
+    open: show && portalContainer != null,
+    containerRef: floatingRef,
+    ownerRef: triggerRef,
+    zIndex: panelZIndex,
+    onEscape: closeFromEscape,
+  });
+
   const setTriggerRef = React.useCallback(
     (node: HTMLSpanElement | null) => {
       (triggerRef as React.MutableRefObject<HTMLSpanElement | null>).current = node;
@@ -141,18 +171,20 @@ export const Popover = React.forwardRef<HTMLSpanElement, PopoverProps>(({
   );
 
   React.useEffect(() => {
-    if (trigger !== "click" || !show) return;
+    if (trigger !== "click" || !show || !portalContainer) return;
     const h = (e: MouseEvent) => {
+      if (nestedPointerEvents.current.has(e)) return;
       const t = e.target as Node;
       if (triggerRef.current?.contains(t)) return;
       if (floatingRef.current?.contains(t)) return;
       set(false);
     };
-    document.addEventListener("mousedown", h);
-    return () => document.removeEventListener("mousedown", h);
-  }, [show, trigger, set, triggerRef, floatingRef]);
+    const doc = portalContainer.ownerDocument;
+    doc.addEventListener("mousedown", h);
+    return () => doc.removeEventListener("mousedown", h);
+  }, [show, trigger, set, triggerRef, floatingRef, portalContainer]);
 
-  const hoverTimeout = React.useRef<number | undefined>();
+  React.useEffect(() => () => window.clearTimeout(hoverTimeout.current), []);
 
   const interact =
     trigger === "hover"
@@ -165,7 +197,9 @@ export const Popover = React.forwardRef<HTMLSpanElement, PopoverProps>(({
             hoverTimeout.current = window.setTimeout(() => set(false), 100);
           },
         }
-      : { onClick: () => set(!show) };
+      : trigger === "click"
+        ? { onClick: () => set(!show) }
+        : {};
 
   const panelHover =
     trigger === "hover"
@@ -176,6 +210,18 @@ export const Popover = React.forwardRef<HTMLSpanElement, PopoverProps>(({
           },
         }
       : {};
+
+  /** 判断焦点是否仍位于触发器或浮层内部。 */
+  const focusRemainsInside = (next: EventTarget | null): boolean => {
+    const node = next as Node | null;
+    return !!node && (!!triggerRef.current?.contains(node) || !!floatingRef.current?.contains(node));
+  };
+
+  const triggerChild = React.cloneElement(children, {
+    "aria-haspopup": children.props["aria-haspopup"] ?? "dialog",
+    "aria-expanded": show,
+    "aria-controls": show ? popoverId : undefined,
+  } as React.HTMLAttributes<HTMLElement>);
 
   const widthStyle = width === "auto" ? {} : { width: width ?? undefined, minWidth: width ? undefined : 220 };
 
@@ -197,23 +243,50 @@ export const Popover = React.forwardRef<HTMLSpanElement, PopoverProps>(({
           onMouseLeave?.(e);
           if ("onMouseLeave" in interact) interact.onMouseLeave?.();
         }}
+        onFocus={(e) => {
+          onFocus?.(e);
+          if (trigger === "hover" || trigger === "focus") {
+            window.clearTimeout(hoverTimeout.current);
+            set(true);
+          }
+        }}
+        onBlur={(e) => {
+          onBlur?.(e);
+          if ((trigger === "hover" || trigger === "focus") && !focusRemainsInside(e.relatedTarget)) {
+            hoverTimeout.current = window.setTimeout(() => set(false), 100);
+          }
+        }}
+        aria-label={ariaLabel}
         {...rest}
       >
-        {children}
+        {triggerChild}
       </span>
-      {show && typeof document !== "undefined" &&
+      {show && portalContainer &&
         createPortal(
           <div
             ref={floatingRef}
+            id={popoverId}
             className={`popover popover-${resolved} ${overlayClassName} ${popupClassName}`}
             style={{ ...floatingStyle, ...widthStyle }}
+            role="dialog"
+            aria-labelledby={title ? titleId : undefined}
+            aria-label={!title ? ariaLabel : undefined}
+            tabIndex={-1}
+            onMouseDownCapture={(e) => nestedPointerEvents.current.add(e.nativeEvent)}
+            onFocusCapture={() => window.clearTimeout(hoverTimeout.current)}
+            onBlurCapture={(e) => {
+              if ((trigger === "hover" || trigger === "focus") && !focusRemainsInside(e.relatedTarget)) {
+                hoverTimeout.current = window.setTimeout(() => set(false), 100);
+              }
+            }}
             {...panelHover}
           >
             {(title || closable) && (
               <div className="popover-header">
-                {title && <div className="popover-title">{title}</div>}
+                {title && <div id={titleId} className="popover-title">{title}</div>}
                 {closable && (
                   <button
+                    type="button"
                     className="popover-close"
                     onClick={() => set(false)}
                     aria-label="Close"
@@ -226,7 +299,7 @@ export const Popover = React.forwardRef<HTMLSpanElement, PopoverProps>(({
             <div className="popover-body">{content}</div>
             {arrow && <span className={`popover-arrow popover-arrow-${resolved}`} />}
           </div>,
-          document.body
+          portalContainer
         )}
     </>
   );

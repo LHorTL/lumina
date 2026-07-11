@@ -1,5 +1,6 @@
 import "../../styles/tokens.css";
 import "../../styles/shared.css";
+import "./Icon.css";
 import * as React from "react";
 
 /**
@@ -89,6 +90,8 @@ export interface IconProps extends Omit<React.SVGAttributes<SVGSVGElement>, "str
   name: IconName;
   size?: number | string;
   stroke?: number;
+  /** 为语义图标提供可访问标题；未提供任何名称时图标默认视为装饰。 */
+  title?: string;
 }
 
 export type IconSlot = IconName | React.ReactNode;
@@ -181,24 +184,44 @@ search:    <><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></>,
  * <Icon name="plus" size={18} />
  */
 export const Icon = React.forwardRef<SVGSVGElement, IconProps>(
-  ({ name, size = 16, stroke = 2, style, ...rest }, ref) => (
-    <svg
-      ref={ref}
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={stroke}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      overflow="visible"
-      style={style}
-      {...rest}
-    >
-      {paths[name]}
-    </svg>
-  )
+  ({
+    name,
+    size = 16,
+    stroke = 2,
+    title,
+    style,
+    role,
+    "aria-label": ariaLabel,
+    "aria-labelledby": ariaLabelledBy,
+    focusable,
+    ...rest
+  }, ref) => {
+    const semantic = !!(title || ariaLabel || ariaLabelledBy || role);
+    return (
+      <svg
+        ref={ref}
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={stroke}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        overflow="visible"
+        style={style}
+        role={semantic ? role ?? "img" : undefined}
+        aria-label={ariaLabel}
+        aria-labelledby={ariaLabelledBy}
+        aria-hidden={semantic ? undefined : true}
+        focusable={focusable ?? "false"}
+        {...rest}
+      >
+        {title && <title>{title}</title>}
+        {paths[name]}
+      </svg>
+    );
+  }
 );
 Icon.displayName = "Icon";
 
@@ -279,8 +302,11 @@ export const resolveIconName = (
 
 export interface NamedIconProps
   extends Omit<React.HTMLAttributes<HTMLSpanElement>, "children"> {
+  /** 是否播放旋转动画。LoadingOutlined 默认启用。 */
   spin?: boolean;
+  /** 静态顺时针旋转角度，单位为度。 */
   rotate?: number;
+  /** 图标尺寸，支持数字像素值或 CSS 长度。 */
   size?: number | string;
 }
 
@@ -300,7 +326,7 @@ const createNamedIcon = (
           ref={ref}
           role="img"
           aria-label={displayName}
-          className={className}
+          className={`named-icon ${shouldSpin ? "spinning" : ""} ${className}`.trim()}
           style={{
             display: "inline-flex",
             alignItems: "center",
@@ -315,7 +341,6 @@ const createNamedIcon = (
           <Icon
             name={iconName}
             size={size}
-            style={shouldSpin ? { animation: "spin 0.9s linear infinite" } : undefined}
           />
         </span>
       );

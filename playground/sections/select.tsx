@@ -1,8 +1,63 @@
 import * as React from "react";
-import { Button, Select } from "lumina";
+import {
+  Avatar,
+  Button,
+  Icon,
+  Select,
+  Tag,
+  type SelectOption,
+  type SelectOptionRenderInfo,
+} from "lumina";
 import { DocPage } from "../docs";
 import { Field, Row } from "./_shared";
 import { defineSection, type SectionCtx } from "./_types";
+
+/** 套餐复杂选项所需的附加展示信息。 */
+interface PlanMeta {
+  description: string;
+  price: string;
+  tone: "accent" | "info" | "success";
+  icon: "sparkle" | "user" | "layers";
+}
+
+const PLAN_META: Record<string, PlanMeta> = {
+  personal: { description: "个人项目与轻量原型", price: "免费", tone: "info", icon: "user" },
+  pro: { description: "完整组件库与高级主题能力", price: "¥99/月", tone: "accent", icon: "sparkle" },
+  team: { description: "团队权限、审计与共享资产", price: "¥299/月", tone: "success", icon: "layers" },
+};
+
+/** 渲染包含图标、说明和价格的复杂 Select 菜单项。 */
+const renderPlanOption = (
+  option: SelectOption<string>,
+  info: SelectOptionRenderInfo
+): React.ReactNode => {
+  const meta = PLAN_META[String(option.value)];
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 12, paddingBlock: 6 }}>
+      <Avatar size="sm" shape="square" alt={String(option.label).slice(0, 1)} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 650 }}>
+          <span>{option.label}</span>
+          {info.selected && <Tag tone="accent">当前</Tag>}
+        </div>
+        <div style={{ marginTop: 4, color: "var(--fg-muted)", fontSize: 12 }}>{meta.description}</div>
+      </div>
+      <Tag tone={meta.tone}>{meta.price}</Tag>
+    </div>
+  );
+};
+
+/** 把复杂套餐压缩为适合固定高度触发器的已选内容。 */
+const renderPlanSelected = (option: SelectOption<string>): React.ReactNode => {
+  const meta = PLAN_META[String(option.value)];
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+      <Icon name={meta.icon} size={14} />
+      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{option.label}</span>
+      <Tag tone={meta.tone}>{meta.price}</Tag>
+    </span>
+  );
+};
 
 const SectionSelect: React.FC<SectionCtx> = () => {
   const [lang, setLang] = React.useState("zh");
@@ -10,6 +65,7 @@ const SectionSelect: React.FC<SectionCtx> = () => {
   const [city, setCity] = React.useState<string | undefined>("sh");
   const [aliasValue, setAliasValue] = React.useState<string | undefined>();
   const [framework, setFramework] = React.useState("");
+  const [plan, setPlan] = React.useState("pro");
   const [loading, setLoading] = React.useState(false);
   const [asyncOpts, setAsyncOpts] = React.useState<{ value: string; label: string }[]>([]);
   const itemIcon = (tone: string) => (
@@ -44,6 +100,7 @@ const SectionSelect: React.FC<SectionCtx> = () => {
             <li>选项数量 ≥ 4 时优先使用 Select 而非 Radio / Checkbox</li>
             <li>需要搜索过滤时启用 <code>searchable</code></li>
             <li>多选场景使用 <code>multiple</code>,可配合 <code>maxTagCount</code> 折叠</li>
+            <li>菜单内容复杂时分别使用 <code>optionRender</code> 与 <code>selectedRender</code></li>
           </ul>
         </>
       }
@@ -154,6 +211,38 @@ const SectionSelect: React.FC<SectionCtx> = () => {
           ),
         },
         {
+          id: "custom-content",
+          title: "复杂选项与独立选中渲染",
+          span: 2,
+          description: "optionRender 承载多行菜单内容；selectedRender 提供适合固定高度触发器的紧凑版本。listHeight 和 popupStyle 可调整浮层尺寸。",
+          code: `<Select
+  value={plan}
+  onChange={setPlan}
+  options={plans}
+  optionRender={(option, info) => <PlanCard option={option} selected={info.selected} />}
+  selectedRender={(option) => <CompactPlan option={option} />}
+  listHeight={420}
+  popupStyle={{ minWidth: "min(460px, calc(100vw - 16px))" }}
+/>`,
+          render: () => (
+            <Field label="订阅套餐" hint="菜单使用完整信息，选中后只保留名称与价格。">
+              <Select
+                value={plan}
+                onChange={setPlan}
+                options={[
+                  { value: "personal", label: "个人版", text: "个人版 免费 个人项目" },
+                  { value: "pro", label: "专业版", text: "专业版 高级主题" },
+                  { value: "team", label: "团队版", text: "团队版 权限 审计" },
+                ]}
+                optionRender={renderPlanOption}
+                selectedRender={renderPlanSelected}
+                listHeight={420}
+                popupStyle={{ minWidth: "min(460px, calc(100vw - 16px))" }}
+              />
+            </Field>
+          ),
+        },
+        {
           id: "group",
           title: "分组",
           description: "options 接受 { label, options } 表示分组。",
@@ -243,17 +332,25 @@ const SectionSelect: React.FC<SectionCtx> = () => {
             { prop: "options", description: "选项,可含 { label, options } 分组", type: "SelectItem<T>[]", required: true },
             { prop: "value / defaultValue", description: "受控/初始", type: "T | T[]" },
             { prop: "onChange", description: "变更", type: "(value) => void" },
+            { prop: "placeholder", description: "空选择时的提示文本", type: "string", default: `"请选择…"` },
             { prop: "multiple", description: "多选", type: "boolean", default: "false" },
             { prop: "maxTagCount", description: "多选时显示的标签数(超出折叠 +N)", type: "number" },
             { prop: "searchable", description: "可搜索", type: "boolean", default: "false" },
             { prop: "showSearch", description: "searchable 的等价别名", type: "boolean", default: "false" },
             { prop: "filterOption", description: "自定义过滤", type: "(input, option) => boolean" },
             { prop: "optionFilterProp", description: "默认过滤使用的 option 字段", type: `"label" | "value" | "text" | string` },
-            { prop: "clearable", description: "可清除", type: "boolean", default: "false" },
+            { prop: "clearable", description: "显示独立且可访问的清除按钮", type: "boolean", default: "false" },
             { prop: "allowClear", description: "clearable 的等价别名", type: "boolean | { clearIcon? }", default: "false" },
-            { prop: "menuClassName / popupClassName", description: "浮层菜单 className", type: "string" },
+            { prop: "onClear", description: "用户点击清除按钮后触发", type: "() => void" },
+            { prop: "open / defaultOpen / onOpenChange", description: "受控或非受控菜单显隐；非受控组件禁用时会关闭", type: "boolean / (open: boolean) => void" },
+            { prop: "id / aria-*", description: "转发到实际 combobox 触发节点，便于 Form.Item 关联标签和错误说明", type: "原生属性" },
+            { prop: "menuClassName / popupClassName / dropdownClassName", description: "浮层菜单 className 别名", type: "string" },
             { prop: "loading", description: "加载态", type: "boolean", default: "false" },
             { prop: "emptyContent", description: "空态文案", type: "ReactNode" },
+            { prop: "optionRender", description: "自定义菜单内完整选项内容，并获得 selected / active / index 状态", type: "(option, info) => ReactNode" },
+            { prop: "selectedRender", description: "自定义触发器中的紧凑已选内容；单选和多选标签均支持", type: "(option, info) => ReactNode" },
+            { prop: "listHeight", description: "菜单选项滚动区域最大高度", type: "number", default: "260" },
+            { prop: "popupStyle", description: "Portal 菜单内联样式，可覆盖宽度或高度", type: "CSSProperties" },
             { prop: "size", description: "尺寸", type: `"sm" | "md" | "lg"`, default: `"md"` },
             { prop: "invalid", description: "错误态", type: "boolean", default: "false" },
             { prop: "disabled", description: "禁用", type: "boolean", default: "false" },

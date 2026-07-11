@@ -49,18 +49,19 @@ import { Typography, Title, Text, Paragraph, Link } from "@fangxinyan/lumina";
 
 ### 可编辑
 
-点击图标或文本进入编辑状态，Enter 保存、Esc 取消。
+点击图标或文本进入编辑状态，Enter 或确认按钮保存，Esc 或失焦取消。
 
 ```tsx
-<Typography.Text editable={{ onChange, triggerType: ["icon", "text"] }}>{value}</Typography.Text>
+<Typography.Text editable={{ onChange, triggerType: ["icon", "text"], enterIcon: <Icon name="check" /> }}>{value}</Typography.Text>
 ```
 
 ### 省略截断
 
-多行截断支持「展开」，悬停时可查看完整内容。
+多行截断支持「展开」，悬停时可查看完整内容；suffix 会始终保留在裁切区域外。
 
 ```tsx
 <Typography.Paragraph ellipsis={{ rows: 2, expandable: true, tooltip: true }}>{long}</Typography.Paragraph>
+<Typography.Text ellipsis={{ suffix: "— Lumina" }}>{long}</Typography.Text>
 ```
 
 ### 链接
@@ -88,6 +89,18 @@ import { Typography, Title, Text, Paragraph, Link } from "@fangxinyan/lumina";
 | copyable | `boolean | CopyableConfig` | — | 显示复制按钮 |
 | editable | `boolean | EditableConfig` | — | 显示编辑按钮 |
 | ellipsis | `boolean | EllipsisConfig` | — | 截断省略 |
+| id / data-* / aria-* / 原生事件 | `native attrs` | — | 透传到实际标题、文本、段落或链接根节点 |
+
+
+**EditableConfig**
+
+| Prop | 类型 | 默认 | 说明 |
+| --- | --- | --- | --- |
+| editing | `boolean` | — | 受控编辑状态 |
+| text | `string` | — | 编辑器受控文本来源 |
+| triggerType | `Array<"icon" | "text">` | `["icon"]` | 进入编辑态的触发方式 |
+| enterIcon | `ReactNode` | `check icon` | 单行编辑器的确认按钮内容；传 null 隐藏 |
+| onChange / onCancel / onStart / onEnd | `function` | — | 编辑生命周期回调 |
 
 
 **EllipsisConfig**
@@ -98,6 +111,17 @@ import { Typography, Title, Text, Paragraph, Link } from "@fangxinyan/lumina";
 | expandable | `boolean` | `false` | 显示展开入口 |
 | tooltip | `boolean | ReactNode` | `false` | 悬停显示完整内容 |
 | symbol | `ReactNode` | `"展开"` | 自定义展开文案 |
+| suffix | `string` | — | 追加到截断文本末尾的后缀 |
+
+
+**CopyableConfig**
+
+| Prop | 类型 | 默认 | 说明 |
+| --- | --- | --- | --- |
+| text | `string` | — | 覆盖复制文本 |
+| format | `"text/plain" | "text/html"` | `"text/plain"` | 剪贴板文本格式 |
+| onCopy | `(event) => void` | — | 浏览器确认复制成功后触发 |
+| onCopyError | `(error) => void` | — | 复制失败时触发 |
 
 
 **Typography.Link**

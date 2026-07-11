@@ -1,7 +1,37 @@
 import * as React from "react";
-import { Button, Icon, List } from "lumina";
+import { Button, Icon, List, Tag } from "lumina";
 import { DocPage } from "../docs";
 import { defineSection, type SectionCtx } from "./_types";
+
+/** 演示列表项点击语义和无分隔线样式。 */
+const InteractiveListDemo: React.FC = () => {
+  const [selected, setSelected] = React.useState("尚未选择");
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <Tag tone="info">当前：{selected}</Tag>
+      <List
+        dividers={false}
+        items={[
+          {
+            key: "download",
+            avatar: <Icon name="download" size={18} />,
+            title: "下载构建产物",
+            description: "点击整行触发操作",
+            onClick: () => setSelected("下载构建产物"),
+          },
+          {
+            key: "share",
+            avatar: <Icon name="upload" size={18} />,
+            title: "分享预览链接",
+            description: "键盘聚焦后也可激活",
+            onClick: () => setSelected("分享预览链接"),
+          },
+        ]}
+      />
+    </div>
+  );
+};
 
 const SectionList: React.FC<SectionCtx> = () => (
   <DocPage
@@ -41,6 +71,16 @@ const SectionList: React.FC<SectionCtx> = () => (
             ]}
           />
         ),
+      },
+      {
+        id: "interactive",
+        title: "可点击与无分隔线",
+        description: "提供 onClick 时整行获得按钮语义；dividers={false} 适合更轻量的操作列表。",
+        code: `<List
+  dividers={false}
+  items={[{ title: "下载构建产物", onClick: handleClick }]}
+/>`,
+        render: () => <InteractiveListDemo />,
       },
     ]}
     api={[

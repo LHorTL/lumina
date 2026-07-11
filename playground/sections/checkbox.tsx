@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Checkbox, Divider } from "lumina";
+import { Button, Checkbox, Divider } from "lumina";
 import { DocPage } from "../docs";
 import { Row } from "./_shared";
 import { defineSection, type SectionCtx } from "./_types";
@@ -22,6 +22,21 @@ const SectionCheckbox: React.FC<SectionCtx> = () => {
               <Checkbox label="启用实验功能" />
               <Checkbox disabled label="已锁定" />
             </Row>
+          ),
+        },
+        {
+          id: "native-form",
+          title: "原生表单",
+          description: "name / value / required 会落到真实 checkbox，可直接参与浏览器表单提交与约束校验。",
+          code: `<form onSubmit={(event) => event.preventDefault()}>
+  <Checkbox name="agreement" value="accepted" required label="同意条款" />
+  <Button type="submit">验证提交</Button>
+</form>`,
+          render: () => (
+            <form onSubmit={(event) => event.preventDefault()} style={{ display: "flex", gap: 12, alignItems: "center" }}>
+              <Checkbox name="agreement" value="accepted" required label="同意条款" />
+              <Button type="submit" size="sm">验证提交</Button>
+            </form>
           ),
         },
         {
@@ -55,6 +70,8 @@ const SectionCheckbox: React.FC<SectionCtx> = () => {
             { prop: "indeterminate", description: "半选态", type: "boolean", default: "false" },
             { prop: "onChange", description: "变更", type: "(checked: boolean) => void" },
             { prop: "label", description: "右侧文案", type: "ReactNode" },
+            { prop: "name / value", description: "原生表单字段名与选中时提交的值", type: "string" },
+            { prop: "required / form", description: "原生必填约束与关联 form id", type: "boolean / string" },
             { prop: "disabled", description: "禁用", type: "boolean", default: "false" },
           ],
         },

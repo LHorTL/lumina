@@ -12,6 +12,7 @@ const SectionCommandPalette: React.FC<SectionCtx> = () => (
           <li>应用动作快速检索与执行</li>
           <li>页面跳转、主题切换、设置项入口</li>
           <li>配合 Cmd/Ctrl + K 快捷键打开</li>
+          <li>打开后自动聚焦搜索框并限制焦点；关闭后把焦点归还给原触发控件</li>
         </ul>
       </>
     }
@@ -20,7 +21,7 @@ const SectionCommandPalette: React.FC<SectionCtx> = () => (
         id: "basic",
         title: "基础 + 快捷键",
         span: 2,
-        description: "在当前页面按 ⌘K / Ctrl+K 打开。分组、快捷键提示、键盘导航都已内置。",
+        description: "在当前页面按 ⌘K / Ctrl+K 打开。方向键、Home / End 会跳过禁用项；Esc 只关闭当前最上层浮层。",
         code: `const [open, setOpen] = useState(false);
 useEffect(() => {
   const h = (e: KeyboardEvent) => {
@@ -33,7 +34,13 @@ useEffect(() => {
   return () => window.removeEventListener("keydown", h);
 }, []);
 
-<CommandPalette open={open} onOpenChange={setOpen} items={[...]} />`,
+<CommandPalette
+  open={open}
+  onOpenChange={setOpen}
+  items={[...]}
+  className="app-command-panel"
+  overlayClassName="app-command-mask"
+/>`,
         render: () => {
           const Live = () => {
             const [open, setOpen] = React.useState(false);
@@ -74,6 +81,8 @@ useEffect(() => {
                 <CommandPalette
                   open={open}
                   onOpenChange={setOpen}
+                  className="demo-command-panel"
+                  overlayClassName="demo-command-mask"
                   items={[
                     { key: "nav-home",    group: "导航", label: "回到首页",       icon: <Icon name="home" size={14} />,     shortcut: "⌘H", onSelect: () => message.info("回到首页") },
                     { key: "nav-inbox",   group: "导航", label: "收件箱",         icon: <Icon name="mail" size={14} />,     shortcut: "⌘1", keywords: ["inbox", "邮件"], onSelect: () => message.info("收件箱") },
@@ -108,6 +117,8 @@ useEffect(() => {
           { prop: "emptyText", description: "无结果占位", type: "ReactNode" },
           { prop: "resetOnOpen", description: "打开时清空输入", type: "boolean", default: "true" },
           { prop: "footer", description: "底部区;null 隐藏", type: "ReactNode" },
+          { prop: "className", description: "命令面板节点 className(ref 同样指向该节点)", type: "string" },
+          { prop: "overlayClassName", description: "全屏遮罩层 className", type: "string" },
         ],
       },
       {

@@ -5,6 +5,8 @@ import * as React from "react";
 import { createPortal } from "react-dom";
 import { Input } from "../Input";
 import { useFloating } from "../../utils/useFloating";
+import { usePortalContainer } from "../../utils/portal";
+import { useOverlayLayer } from "../../utils/overlayStack";
 
 export interface AutoCompleteOption {
   value: string;
@@ -83,34 +85,51 @@ export const AutoComplete = React.forwardRef<HTMLInputElement, AutoCompleteProps
       id,
       name,
       onFocus,
+      onBlur,
       onKeyDown,
       ...rest
     },
     ref
   ) => {
-    const [inner, setInner] = React.useState(defaultValue ?? "");
+    const [inner, setInner] = React.useState(typeof defaultValue === "string" ? defaultValue : "");
     const isControlled = value !== undefined;
-    const text = isControlled ? (value as string) : inner;
+    const text = isControlled ? (typeof value === "string" ? value : "") : inner;
 
-    const [open, setOpen] = React.useState(false);
+    const [innerOpen, setInnerOpen] = React.useState(false);
+    const open = innerOpen && !disabled;
     const [active, setActive] = React.useState(0);
-    const panelRef = React.useRef<HTMLDivElement>(null);
+    const portalContainer = usePortalContainer();
+    const listboxId = React.useId();
 
     const filtered = React.useMemo(() => {
-      if (filterOption === false) return options;
+      const nonEmptyOptions = options.filter((option) => option.value !== "");
+      if (filterOption === false) return nonEmptyOptions;
       const fn = typeof filterOption === "function" ? filterOption : DEFAULT_FILTER;
-      return options.filter((o) => fn(text, o));
+      return nonEmptyOptions.filter((o) => fn(text, o));
     }, [options, text, filterOption]);
 
-    const { triggerRef, floatingStyle } = useFloating<HTMLDivElement>({
+    const { triggerRef, floatingRef: panelRef, floatingStyle, zIndex: panelZIndex } = useFloating<HTMLDivElement, HTMLDivElement>({
       open,
       placement: "bottom",
       matchTriggerWidth,
       panelHeight: Math.min(filtered.length * 36 + 12, 280),
     });
 
+    useOverlayLayer({
+      open: open && portalContainer != null,
+      containerRef: panelRef,
+      ownerRef: triggerRef,
+      zIndex: panelZIndex,
+      onEscape: () => setInnerOpen(false),
+    });
+
     React.useEffect(() => {
-      setActive(0);
+      if (disabled) setInnerOpen(false);
+    }, [disabled]);
+
+    React.useEffect(() => {
+      const firstEnabled = filtered.findIndex((option) => !option.disabled);
+      setActive(firstEnabled >= 0 ? firstEnabled : 0);
     }, [filtered.length, open]);
 
     // Close on outside click.
@@ -121,7 +140,7 @@ export const AutoComplete = React.forwardRef<HTMLInputElement, AutoCompleteProps
           !triggerRef.current?.contains(e.target as Node) &&
           !panelRef.current?.contains(e.target as Node)
         ) {
-          setOpen(false);
+          setInnerOpen(false);
         }
       };
       window.addEventListener("mousedown", onDown);
@@ -129,27 +148,29 @@ export const AutoComplete = React.forwardRef<HTMLInputElement, AutoCompleteProps
     }, [open, triggerRef]);
 
     const commit = (next: string, option?: AutoCompleteOption) => {
+      if (disabled) return;
       if (!isControlled) setInner(next);
       onChange?.(next, option);
     };
 
     const handleInput = (v: string) => {
+      if (disabled) return;
       commit(v);
       onSearch?.(v);
-      setOpen(true);
+      setInnerOpen(true);
     };
 
     const pick = (o: AutoCompleteOption) => {
-      if (o.disabled) return;
+      if (disabled || o.disabled) return;
       commit(o.value, o);
       onSelect?.(o.value, o);
-      setOpen(false);
+      setInnerOpen(false);
     };
 
     const onKey: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
       if (e.key === "ArrowDown") {
         e.preventDefault();
-        if (!open) { setOpen(true); return; }
+        if (!open) { setInnerOpen(true); return; }
         setActive((a) => {
           if (filtered.length === 0) return 0;
           for (let n = 1; n <= filtered.length; n++) {
@@ -174,14 +195,18 @@ export const AutoComplete = React.forwardRef<HTMLInputElement, AutoCompleteProps
           pick(filtered[active]);
         }
       } else if (e.key === "Escape") {
-        if (open) { e.preventDefault(); setOpen(false); }
+        if (open) { e.preventDefault(); setInnerOpen(false); }
+      } else if (e.key === "Tab") {
+        setInnerOpen(false);
       }
     };
 
-    const panel = open && typeof document !== "undefined"
+    const panel = open && portalContainer
       ? createPortal(
           <div
             ref={panelRef}
+            id={listboxId}
+            role="listbox"
             className={`autocomplete-panel ${dropdownClassName}`}
             style={floatingStyle}
             onMouseDown={(e) => e.preventDefault()}
@@ -192,6 +217,7 @@ export const AutoComplete = React.forwardRef<HTMLInputElement, AutoCompleteProps
               filtered.map((o, i) => (
                 <button
                   key={o.value}
+                  id={`${listboxId}-option-${i}`}
                   type="button"
                   role="option"
                   aria-selected={i === active}
@@ -205,7 +231,7 @@ export const AutoComplete = React.forwardRef<HTMLInputElement, AutoCompleteProps
               ))
             )}
           </div>,
-          document.body
+          portalContainer
         )
       : null;
 
@@ -225,12 +251,27 @@ export const AutoComplete = React.forwardRef<HTMLInputElement, AutoCompleteProps
           onValueChange={handleInput}
           onFocus={(event) => {
             onFocus?.(event);
-            if (!disabled) setOpen(true);
+            if (!disabled) setInnerOpen(true);
+          }}
+          onBlur={(event) => {
+            onBlur?.(event);
+            const ownerDocument = event.currentTarget.ownerDocument;
+            requestAnimationFrame(() => {
+              const activeElement = ownerDocument.activeElement;
+              if (!triggerRef.current?.contains(activeElement) && !panelRef.current?.contains(activeElement)) {
+                setInnerOpen(false);
+              }
+            });
           }}
           onKeyDown={(event) => {
             onKeyDown?.(event);
-            onKey(event);
+            if (!event.defaultPrevented) onKey(event);
           }}
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded={open}
+          aria-controls={open ? listboxId : undefined}
+          aria-activedescendant={open && filtered[active] ? `${listboxId}-option-${active}` : undefined}
         />
         {panel}
       </div>

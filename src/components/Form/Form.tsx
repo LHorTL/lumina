@@ -2,6 +2,7 @@ import "../../styles/tokens.css";
 import "../../styles/shared.css";
 import "./Form.css";
 import * as React from "react";
+import { isTargetWithinOverlayScope } from "../../utils/overlayStack";
 
 /* ============================================================================
  * Form — compact form with validation + field binding.
@@ -64,6 +65,8 @@ interface InternalStore {
   fields: Map<string, FieldEntry>;
   fieldSubs: Map<string, Set<() => void>>;
   formSubs: Set<() => void>;
+  /** 每个字段最近一次校验的版本号，用于丢弃过期异步结果。 */
+  validationVersions: Map<string, number>;
   onSubmit?: () => void;
   onValuesChange?: (changed: Record<string, unknown>, all: Record<string, unknown>) => void;
 }
@@ -77,6 +80,7 @@ function makeStore(): InternalStore {
     fields: new Map(),
     fieldSubs: new Map(),
     formSubs: new Set(),
+    validationVersions: new Map(),
   };
 }
 
@@ -93,9 +97,10 @@ async function validateSingle(rule: Rule, value: unknown): Promise<string | null
   // Only run remaining checks when value is present.
   if (isEmpty) return null;
 
-  if (rule.type === "email" && typeof value === "string" && !EMAIL_RE.test(value)) return msg ?? "邮箱格式不正确";
-  if (rule.type === "url" && typeof value === "string" && !URL_RE.test(value)) return msg ?? "链接格式不正确";
-  if (rule.type === "number" && typeof value !== "number" && isNaN(Number(value))) return msg ?? "必须是数字";
+  if (rule.type === "email" && (typeof value !== "string" || !EMAIL_RE.test(value))) return msg ?? "邮箱格式不正确";
+  if (rule.type === "url" && (typeof value !== "string" || !URL_RE.test(value))) return msg ?? "链接格式不正确";
+  if (rule.type === "string" && typeof value !== "string") return msg ?? "必须是字符串";
+  if (rule.type === "number" && (typeof value !== "number" || Number.isNaN(value))) return msg ?? "必须是数字";
   if (rule.type === "array" && !Array.isArray(value)) return msg ?? "必须是数组";
 
   if (rule.pattern && typeof value === "string" && !rule.pattern.test(value)) return msg ?? "格式不正确";
@@ -123,11 +128,16 @@ async function validateSingle(rule: Rule, value: unknown): Promise<string | null
 async function validateField(store: InternalStore, name: string): Promise<string[]> {
   const entry = store.fields.get(name);
   if (!entry) return [];
+  const version = (store.validationVersions.get(name) ?? 0) + 1;
+  store.validationVersions.set(name, version);
   const value = store.values[name];
   const errs: string[] = [];
   for (const rule of entry.rules) {
     const err = await validateSingle(rule, value);
     if (err) errs.push(err);
+  }
+  if (store.validationVersions.get(name) !== version) {
+    return store.errors[name] ?? [];
   }
   store.errors[name] = errs;
   return errs;
@@ -174,6 +184,7 @@ function buildInstance<V extends Record<string, unknown>>(store: InternalStore):
     resetFields: (names) => {
       const keys = names ?? Array.from(store.fields.keys());
       for (const k of keys) {
+        store.validationVersions.set(k, (store.validationVersions.get(k) ?? 0) + 1);
         store.values[k] = store.initial[k];
         store.errors[k] = [];
         store.touched.delete(k);
@@ -345,7 +356,7 @@ const FormRoot = React.forwardRef(FormRootInner) as FormRootComponent;
 
 /* ---------------------------- Form.Item ---------------------------- */
 
-export interface FormItemProps {
+export interface FormItemProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "children"> {
   /** Field key. Omit for layout-only wrappers (no value binding). */
   name?: string;
   label?: React.ReactNode;
@@ -384,13 +395,33 @@ const extractValue = (valuePropName: string, args: unknown[]) => {
   return first;
 };
 
-export const FormItem: React.FC<FormItemProps> = ({
+/** 读取 React 组件公开的 displayName，用于选择稳定的空值语义。 */
+function getFormControlName(element: React.ReactElement): string | undefined {
+  const type = element.type as { displayName?: string; name?: string } | string;
+  if (typeof type === "string") return type;
+  return type.displayName ?? type.name;
+}
+
+/** 为内置控件提供受控空值，避免把空字符串错误传给日期、数值或数组控件。 */
+function getEmptyFormControlValue(element: React.ReactElement, valuePropName: string): unknown {
+  if (valuePropName === "checked") return false;
+  const controlName = getFormControlName(element);
+  if (controlName === "Cascader") return [];
+  if (controlName === "Select" && element.props?.multiple) return [];
+  if (["InputNumber", "DatePicker", "DateTimePicker", "TimePicker", "Calendar", "Select", "RadioGroup"].includes(controlName ?? "")) {
+    return null;
+  }
+  return "";
+}
+
+export const FormItem = React.forwardRef<HTMLDivElement, FormItemProps>(({
   name,
   label,
   rules,
   noStyle,
   valuePropName = "value",
   trigger = "onChange",
+  validateTrigger = "onChange",
   initialValue,
   help,
   extra,
@@ -399,18 +430,25 @@ export const FormItem: React.FC<FormItemProps> = ({
   children,
   className = "",
   style,
-}) => {
+  ...rest
+}, ref) => {
   const ctx = React.useContext(FormCtx);
   const [, tick] = React.useReducer((n: number) => n + 1, 0);
+  const generatedId = React.useId();
+
+  // initialValue 必须在首次渲染绑定值之前写入，否则子控件首屏会收到空值。
+  if (ctx && name && initialValue !== undefined) {
+    const hasFormInitial = Object.prototype.hasOwnProperty.call(ctx.store.initial, name);
+    if (!hasFormInitial) ctx.store.initial[name] = initialValue;
+    if (!Object.prototype.hasOwnProperty.call(ctx.store.values, name)) {
+      ctx.store.values[name] = ctx.store.initial[name];
+    }
+  }
 
   // Register field + subscribe to its changes.
   React.useEffect(() => {
     if (!ctx || !name) return;
     const store = ctx.store;
-    if (initialValue !== undefined) {
-      if (store.initial[name] === undefined) store.initial[name] = initialValue;
-      if (store.values[name] === undefined) store.values[name] = initialValue;
-    }
     store.fields.set(name, { rules: rules ?? [], initial: initialValue });
     let subs = store.fieldSubs.get(name);
     if (!subs) {
@@ -443,7 +481,7 @@ export const FormItem: React.FC<FormItemProps> = ({
     const content = children as React.ReactNode;
     if (noStyle) return <>{content}</>;
     return (
-      <div className={`form-item ${className}`} style={style}>
+      <div ref={ref} className={`form-item ${className}`} style={style} {...rest}>
         {label && <div className="form-item-label">{label}</div>}
         <div className="form-item-control">{content}</div>
         {help && <div className="form-item-help">{help}</div>}
@@ -456,51 +494,121 @@ export const FormItem: React.FC<FormItemProps> = ({
   const value = store?.values[name!];
   const errors = store?.errors[name!] ?? [];
   const hasError = errors.length > 0;
+  const childElement = React.isValidElement(children) ? (children as React.ReactElement) : null;
+  const controlId = childElement?.props?.id ?? `lumina-field-${generatedId.replace(/:/g, "")}`;
+  const labelId = `${controlId}-label`;
+  const messageId = `${controlId}-${hasError ? "error" : "help"}`;
+  const validationEvents = Array.isArray(validateTrigger) ? validateTrigger : [validateTrigger];
+  const childDescribedBy = childElement?.props?.["aria-describedby"] as string | undefined;
+  const childLabelledBy = childElement?.props?.["aria-labelledby"] as string | undefined;
+  const childAriaLabel = childElement?.props?.["aria-label"] as string | undefined;
+  const describedBy = [childDescribedBy, hasError || help ? messageId : undefined]
+    .filter(Boolean)
+    .join(" ") || undefined;
 
-  const bound = React.isValidElement(children)
-    ? React.cloneElement(children as React.ReactElement, {
-        [valuePropName]: value ?? (valuePropName === "checked" ? false : ""),
+  /** 执行字段校验并在最新结果落地后刷新错误信息。 */
+  const runValidation = () => {
+    if (!store) return;
+    void validateField(store, name!).then(() => notifyField(store, name!));
+  };
+
+  /** 调用子组件原有的事件处理函数。 */
+  const callChildHandler = (eventName: string, args: unknown[]) => {
+    const childHandler = childElement?.props?.[eventName];
+    if (typeof childHandler === "function") childHandler(...args);
+  };
+
+  /** 按逻辑焦点范围处理校验事件，避免把控件自己的 Portal 当成外部失焦。 */
+  const runEventValidation = (eventName: string, args: unknown[]) => {
+    if (eventName !== "onBlur") {
+      runValidation();
+      return;
+    }
+
+    const event = args[0] as React.FocusEvent<HTMLElement> | undefined;
+    const owner = event?.currentTarget;
+    if (!owner) {
+      runValidation();
+      return;
+    }
+    if (isTargetWithinOverlayScope(owner, event.relatedTarget)) return;
+    if (event.relatedTarget) {
+      runValidation();
+      return;
+    }
+
+    const view = owner.ownerDocument.defaultView;
+    if (!view) {
+      runValidation();
+      return;
+    }
+    view.requestAnimationFrame(() => {
+      if (!isTargetWithinOverlayScope(owner, owner.ownerDocument.activeElement)) {
+        runValidation();
+      }
+    });
+  };
+
+  const bound = childElement
+    ? React.cloneElement(childElement, {
+        [valuePropName]: value ?? getEmptyFormControlValue(childElement, valuePropName),
         [trigger]: (...args: unknown[]) => {
           const next = extractValue(valuePropName, args);
           store?.values && (store.values[name!] = next);
           store?.touched.add(name!);
           if (store) {
-            void validateField(store, name!).then(() => notifyField(store, name!));
+            if (validationEvents.includes(trigger)) runEventValidation(trigger, args);
             notifyField(store, name!);
             notifyAll(store);
             store.onValuesChange?.({ [name!]: next }, { ...store.values });
           }
-          const childTrigger = (children as React.ReactElement).props?.[trigger];
-          if (typeof childTrigger === "function") childTrigger(...args);
+          callChildHandler(trigger, args);
         },
-        disabled:
-          (children as React.ReactElement).props?.disabled ?? ctx?.disabled,
+        disabled: ctx?.disabled || (children as React.ReactElement).props?.disabled || undefined,
+        id: controlId,
+        "aria-invalid": hasError || childElement.props?.["aria-invalid"] || undefined,
+        "aria-required": isRequired || childElement.props?.["aria-required"] || undefined,
+        "aria-describedby": describedBy,
+        "aria-labelledby": childLabelledBy ?? (!childAriaLabel && label ? labelId : undefined),
         ...(hasError ? { invalid: true } : {}),
+        ...Object.fromEntries(
+          validationEvents
+            .filter((eventName) => eventName !== trigger)
+            .map((eventName) => [
+              eventName,
+              (...args: unknown[]) => {
+                callChildHandler(eventName, args);
+                runEventValidation(eventName, args);
+              },
+            ])
+        ),
       })
     : children;
 
+  // noStyle 不创建 DOM，因此 ref 与原生 wrapper 属性没有可挂载目标。
   if (noStyle) return <>{bound}</>;
 
   return (
-    <div className={`form-item ${hasError ? "has-error" : ""} ${className}`} style={style}>
+    <div ref={ref} className={`form-item ${hasError ? "has-error" : ""} ${className}`} style={style} {...rest}>
       {label && (
-        <div className="form-item-label">
+        <label id={labelId} className="form-item-label" htmlFor={controlId}>
           {isRequired && ctx?.requiredMark !== false && (
             <span className="form-item-required" aria-hidden>*</span>
           )}
           {label}
-        </div>
+        </label>
       )}
       <div className="form-item-control">{bound}</div>
       {hasError ? (
-        <div className="form-item-error">{errors[0]}</div>
+        <div id={messageId} className="form-item-error" role="alert">{errors[0]}</div>
       ) : help ? (
-        <div className="form-item-help">{help}</div>
+        <div id={messageId} className="form-item-help">{help}</div>
       ) : null}
       {extra && <div className="form-item-extra">{extra}</div>}
     </div>
   );
-};
+});
+FormItem.displayName = "FormItem";
 
 /* ---------------------------- Assembly ---------------------------- */
 

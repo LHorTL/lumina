@@ -4,6 +4,8 @@ import "./Tooltip.css";
 import * as React from "react";
 import { createPortal } from "react-dom";
 import { useFloating, type Placement } from "../../utils/useFloating";
+import { useOverlayLayer } from "../../utils/overlayStack";
+import { usePortalContainer } from "../../utils/portal";
 
 export type TooltipPlacement =
   | "top"
@@ -79,6 +81,7 @@ export const Tooltip = React.forwardRef<HTMLSpanElement, TooltipProps>(({
   closeDelay = 300,
   overlayClassName = "",
   popupClassName = "",
+  className = "",
   onMouseEnter,
   onMouseLeave,
   onPointerEnter,
@@ -87,15 +90,22 @@ export const Tooltip = React.forwardRef<HTMLSpanElement, TooltipProps>(({
   onBlur,
   ...rest
 }, ref) => {
+  const portalContainer = usePortalContainer();
   const [innerShow, setInnerShow] = React.useState(defaultOpen);
   const openTimerRef = React.useRef<number | undefined>();
   const closeTimerRef = React.useRef<number | undefined>();
   const controlledShow = openProp ?? visible;
   const show = controlledShow ?? innerShow;
+  const tooltipId = React.useId();
   const resolvedContent = content ?? title;
   const disabledTooltip = disabled || resolvedContent == null || resolvedContent === "";
+  const effectiveShow = show && !disabledTooltip;
+  const showRef = React.useRef(show);
+  showRef.current = show;
 
   const setShow = React.useCallback((next: boolean) => {
+    if (showRef.current === next) return;
+    showRef.current = next;
     if (controlledShow === undefined) setInnerShow(next);
     onOpenChange?.(next);
     onVisibleChange?.(next);
@@ -139,8 +149,9 @@ export const Tooltip = React.forwardRef<HTMLSpanElement, TooltipProps>(({
     floatingRef,
     floatingStyle,
     placement: resolved,
+    zIndex: tooltipZIndex,
   } = useFloating<HTMLSpanElement, HTMLDivElement>({
-    open: show,
+    open: effectiveShow,
     placement: normalized.placement,
     panelWidth: 160,
     panelHeight: 32,
@@ -156,11 +167,26 @@ export const Tooltip = React.forwardRef<HTMLSpanElement, TooltipProps>(({
     [ref, triggerRef]
   );
 
+  useOverlayLayer({
+    open: effectiveShow && portalContainer != null,
+    containerRef: floatingRef,
+    ownerRef: triggerRef,
+    zIndex: tooltipZIndex,
+    onEscape: () => setShow(false),
+  });
+
+  const childDescribedBy = children.props["aria-describedby"];
+  const triggerChild = React.cloneElement(children, {
+    "aria-describedby": [childDescribedBy, effectiveShow ? tooltipId : undefined]
+      .filter(Boolean)
+      .join(" ") || undefined,
+  } as React.HTMLAttributes<HTMLElement>);
+
   return (
     <>
       <span
         ref={setTriggerRef}
-        className="tip-anchor"
+        className={`tip-anchor ${className}`}
         onMouseEnter={(e) => {
           onMouseEnter?.(e);
           open();
@@ -187,12 +213,13 @@ export const Tooltip = React.forwardRef<HTMLSpanElement, TooltipProps>(({
         }}
         {...rest}
       >
-        {children}
+        {triggerChild}
       </span>
-      {show && typeof document !== "undefined" &&
+      {effectiveShow && portalContainer &&
         createPortal(
           <div
             ref={floatingRef}
+            id={tooltipId}
             className={`tip ${resolved} ${overlayClassName} ${popupClassName}`}
             style={floatingStyle}
             role="tooltip"
@@ -203,7 +230,7 @@ export const Tooltip = React.forwardRef<HTMLSpanElement, TooltipProps>(({
           >
             {resolvedContent}
           </div>,
-          document.body
+          portalContainer
         )}
     </>
   );

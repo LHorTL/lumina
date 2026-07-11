@@ -38,3 +38,8 @@
 .skeleton-box .skeleton-row {
   display: block;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton.wave,
+  .skeleton.pulse { animation: none; }
+}

@@ -32,7 +32,7 @@ const ControlCluster: React.FC = () => (
 );
 
 const PresetPreview: React.FC<{ preset: Exclude<SurfacePreset, "inherit"> }> = ({ preset }) => (
-  <Surface preset={preset} padding="lg" radius="xl" variant="raised" bordered>
+  <Surface preset={preset} padding="md" radius="lg" variant="raised" bordered>
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
       <div>
         <div style={{ fontSize: 15, fontWeight: 700 }}>{preset}</div>
@@ -42,9 +42,10 @@ const PresetPreview: React.FC<{ preset: Exclude<SurfacePreset, "inherit"> }> = (
         <Avatar size="sm" alt={preset.slice(0, 1).toUpperCase()} />
       </Badge>
     </div>
-    <div style={{ marginTop: 16 }}>
-      <ControlCluster />
-    </div>
+    <Row gap={6}>
+      <Button size="sm" variant="primary">操作</Button>
+      <Tag tone="info">{SURFACE_THEME_PRESETS[preset].base}</Tag>
+    </Row>
   </Surface>
 );
 
@@ -81,7 +82,7 @@ const SectionSurface: React.FC<SectionCtx> = () => (
               description="Surface 负责外部背景,Card 负责信息分组"
               actions={<Tag tone="info">Live</Tag>}
             >
-              <div style={{ display: "grid", gridTemplateColumns: "1.1fr 0.9fr", gap: 18, alignItems: "center" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: 18, alignItems: "center" }}>
                 <ControlCluster />
                 <Surface tone="sunken" padding="md" radius="md">
                   <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
@@ -107,7 +108,7 @@ const SectionSurface: React.FC<SectionCtx> = () => (
   <Input placeholder="清亮浅色面板" />
 </Surface>`,
         render: () => (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 18 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14 }}>
             {presetKeys.map((preset) => (
               <PresetPreview key={preset} preset={preset} />
             ))}
@@ -124,7 +125,7 @@ const SectionSurface: React.FC<SectionCtx> = () => (
 <Surface tone="sunken">sunken</Surface>
 <Surface tone="accent">accent</Surface>`,
         render: () => (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 14 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 140px), 1fr))", gap: 14 }}>
             {(["base", "raised", "sunken", "accent"] as const).map((tone) => (
               <Surface key={tone} tone={tone} variant={tone === "sunken" ? "sunken" : "raised"} padding="md" radius="lg">
                 <div style={{ fontWeight: 700 }}>{tone}</div>

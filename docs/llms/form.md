@@ -106,7 +106,7 @@ form.resetFields()
 | onFinish / onFinishFailed | `(values | {values, errorFields}) => void` | — | 提交成功/失败 |
 | onValuesChange | `(changed, all) => void` | — | 任一字段变化 |
 | requiredMark | `boolean` | `true` | 是否在必填 label 前显示 * |
-| disabled | `boolean` | — | 整体禁用 |
+| disabled | `boolean` | — | 强制整体禁用;子控件 disabled={false} 不会覆盖 |
 
 
 **Form.Item**
@@ -119,9 +119,12 @@ form.resetFields()
 | noStyle | `boolean` | — | 不渲染外层 item 包装 |
 | valuePropName | `string` | `"value"` | 注入值的 prop 名 |
 | trigger | `string` | `"onChange"` | 监听的事件名 |
+| validateTrigger | `string | string[]` | `"onChange"` | 触发校验的事件名，可配置多个 |
 | initialValue | `any` | — | 此字段初始值;优先级低于 Form initialValues |
+| required | `boolean` | — | 显示必填标记并向真实控件注入 aria-required |
 | help / extra | `ReactNode` | — | 辅助/补充说明 |
 | hidden | `boolean` | — | 隐藏(字段仍保留) |
+| ref / 原生 div 属性 | `Ref<HTMLDivElement> / HTMLAttributes` | — | ref 落到外层节点;支持 className / style / id / data-* / aria-* |
 
 
 **Rule**
@@ -132,7 +135,7 @@ form.resetFields()
 | message | `string` | — | 错误提示文案 |
 | pattern | `RegExp` | — | 正则校验 |
 | min / max / len | `number` | — | 字符串/数组长度或数字范围 |
-| type | `string` | — | "string" \| "number" \| "email" \| "url" \| "array" |
+| type | `"string" | "number" | "email" | "url" | "array"` | — | 字符串、数字、数组及严格 email / url 格式校验 |
 | validator | `(rule, value) => Promise<void>` | — | 自定义,抛出错误或 reject 视为失败 |
 
 

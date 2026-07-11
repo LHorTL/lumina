@@ -94,6 +94,10 @@
   pointer-events: none;
 }
 .slider-mark {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  font: inherit;
   position: absolute;
   transform: translateX(-50%);
   display: inline-flex;
@@ -122,6 +126,20 @@
 .slider.warning .slider-mark.active .slider-mark-dot { background: var(--warning); box-shadow: 0 0 6px color-mix(in oklch, var(--warning) 35%, transparent); }
 .slider.danger  .slider-mark.active .slider-mark-dot { background: var(--danger);  box-shadow: 0 0 6px color-mix(in oklch, var(--danger) 35%, transparent); }
 .slider-mark-label { white-space: nowrap; }
+.slider-mark.edge-start {
+  transform: none;
+  align-items: flex-start;
+}
+.slider-mark.edge-start .slider-mark-dot {
+  left: 0;
+}
+.slider-mark.edge-end {
+  transform: translateX(-100%);
+  align-items: flex-end;
+}
+.slider-mark.edge-end .slider-mark-dot {
+  left: 100%;
+}
 .slider-mark.active .slider-mark-label { color: var(--accent-ink); font-weight: 500; }
 .slider-mark:hover .slider-mark-label { color: var(--fg); }
 .slider.disabled .slider-mark { pointer-events: none; }

@@ -3,6 +3,8 @@ import "../../styles/shared.css";
 import "./ContextMenu.css";
 import * as React from "react";
 import ReactDOM from "react-dom";
+import { useOverlayLayer, useOverlayZIndex } from "../../utils/overlayStack";
+import { usePortalContainer } from "../../utils/portal";
 
 export interface ContextMenuItem {
   key: string;
@@ -36,6 +38,16 @@ export interface ContextMenuProps
 
 const ESTIMATED_ITEM_H = 32;
 const MARGIN = 8;
+/** 触发区域中原本就能通过键盘聚焦的元素。 */
+const KEYBOARD_TRIGGER_SELECTOR = [
+  "a[href]",
+  "button:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  "[tabindex]:not([tabindex='-1'])",
+  "[contenteditable='true']",
+].join(",");
 
 /**
  * `ContextMenu` — right-click menu. Wraps one child element; suppresses the
@@ -63,12 +75,19 @@ export const ContextMenu = React.forwardRef<HTMLSpanElement, ContextMenuProps>((
   className = "",
   style,
   onContextMenu,
+  onKeyDown,
+  tabIndex,
   ...rest
 }, ref) => {
+  const portalContainer = usePortalContainer();
   const [open, setOpen] = React.useState(false);
   const [pos, setPos] = React.useState<{ top: number; left: number }>({ top: 0, left: 0 });
   const [active, setActive] = React.useState(-1);
-  const menuRef = React.useRef<HTMLDivElement>(null);
+  const [useWrapperKeyboardFallback, setUseWrapperKeyboardFallback] = React.useState(false);
+  const menuRef = React.useRef<HTMLDivElement | null>(null);
+  const triggerRef = React.useRef<HTMLSpanElement | null>(null);
+  const returnFocusRef = React.useRef<HTMLElement | null>(null);
+  const overlayZIndex = useOverlayZIndex(open);
 
   const isSelectable = React.useCallback(
     (i: ContextMenuItem) => i.type !== "divider" && !i.disabled,
@@ -77,7 +96,59 @@ export const ContextMenu = React.forwardRef<HTMLSpanElement, ContextMenuProps>((
 
   const close = React.useCallback(() => setOpen(false), []);
 
+  /** 关闭菜单并把键盘焦点归还给打开前的控件。 */
+  const closeAndRestoreFocus = React.useCallback(() => {
+    close();
+    window.requestAnimationFrame(() => {
+      if (returnFocusRef.current?.isConnected) returnFocusRef.current.focus();
+    });
+  }, [close]);
+
+  React.useEffect(() => {
+    if (disabled && open) closeAndRestoreFocus();
+  }, [closeAndRestoreFocus, disabled, open]);
+
+  useOverlayLayer({
+    open: open && portalContainer != null,
+    containerRef: menuRef,
+    ownerRef: triggerRef,
+    zIndex: overlayZIndex,
+    onEscape: closeAndRestoreFocus,
+  });
+
+  React.useLayoutEffect(() => {
+    const wrapper = triggerRef.current;
+    if (!wrapper || disabled) {
+      setUseWrapperKeyboardFallback(false);
+      return;
+    }
+    if (wrapper.querySelector<HTMLElement>(KEYBOARD_TRIGGER_SELECTOR)) {
+      setUseWrapperKeyboardFallback(false);
+      return;
+    }
+
+    const HTMLElementConstructor = wrapper.ownerDocument.defaultView?.HTMLElement;
+    const candidate = Array.from(wrapper.children).find(
+      (child): child is HTMLElement =>
+        !!HTMLElementConstructor &&
+        child instanceof HTMLElementConstructor &&
+        !child.hasAttribute("tabindex") &&
+        !child.matches("button:disabled,input:disabled,select:disabled,textarea:disabled")
+    );
+    if (!candidate) {
+      setUseWrapperKeyboardFallback(true);
+      return;
+    }
+
+    setUseWrapperKeyboardFallback(false);
+    candidate.setAttribute("tabindex", "0");
+    return () => {
+      if (candidate.getAttribute("tabindex") === "0") candidate.removeAttribute("tabindex");
+    };
+  }, [children, disabled]);
+
   const openAt = (clientX: number, clientY: number) => {
+    returnFocusRef.current = document.activeElement as HTMLElement | null;
     // Estimate panel size for clamping; refined on next paint via measured rect.
     const vw = window.innerWidth;
     const vh = window.innerHeight;
@@ -91,49 +162,34 @@ export const ContextMenu = React.forwardRef<HTMLSpanElement, ContextMenuProps>((
     setOpen(true);
   };
 
-  // Close on Esc / outside click / scroll / window blur.
+  // Close on outside click / scroll / window blur. Escape 由全局浮层栈处理。
   React.useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") { e.stopPropagation(); close(); return; }
-      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-        e.preventDefault();
-        setActive((curr) => {
-          const dir = e.key === "ArrowDown" ? 1 : -1;
-          let i = curr;
-          for (let n = 0; n < items.length; n++) {
-            i = (i + dir + items.length) % items.length;
-            if (isSelectable(items[i])) return i;
-          }
-          return curr;
-        });
-      }
-      if (e.key === "Enter") {
-        const it = items[active];
-        if (it && isSelectable(it)) {
-          e.preventDefault();
-          it.onSelect?.();
-          close();
-        }
-      }
-    };
     const onOutside = (e: MouseEvent) => {
       if (!menuRef.current?.contains(e.target as Node)) close();
     };
     const onBlur = () => close();
-    window.addEventListener("keydown", onKey);
     window.addEventListener("mousedown", onOutside);
     window.addEventListener("scroll", close, true);
     window.addEventListener("resize", close);
     window.addEventListener("blur", onBlur);
     return () => {
-      window.removeEventListener("keydown", onKey);
       window.removeEventListener("mousedown", onOutside);
       window.removeEventListener("scroll", close, true);
       window.removeEventListener("resize", close);
       window.removeEventListener("blur", onBlur);
     };
-  }, [open, items, active, close, isSelectable]);
+  }, [open, close]);
+
+  React.useEffect(() => {
+    if (!open || active < 0) return;
+    const frame = window.requestAnimationFrame(() => {
+      menuRef.current
+        ?.querySelector<HTMLButtonElement>(`[data-context-index="${active}"]`)
+        ?.focus();
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [open, active]);
 
   // Clamp again after mount using the real measured size.
   React.useLayoutEffect(() => {
@@ -153,17 +209,70 @@ export const ContextMenu = React.forwardRef<HTMLSpanElement, ContextMenuProps>((
     openAt(e.clientX, e.clientY);
   };
 
+  /** 处理菜单内的方向键、首尾键和确认键。 */
+  const handleMenuKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Tab") {
+      close();
+      return;
+    }
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      setActive((current) => {
+        const direction = e.key === "ArrowDown" ? 1 : -1;
+        let index = current;
+        for (let count = 0; count < items.length; count += 1) {
+          index = (index + direction + items.length) % items.length;
+          if (isSelectable(items[index])) return index;
+        }
+        return current;
+      });
+      return;
+    }
+    if (e.key === "Home" || e.key === "End") {
+      e.preventDefault();
+      const indexes = items
+        .map((item, index) => ({ item, index }))
+        .filter(({ item }) => isSelectable(item));
+      const target = e.key === "Home" ? indexes[0] : indexes[indexes.length - 1];
+      if (target) setActive(target.index);
+      return;
+    }
+    if (e.key === "Enter") {
+      const item = items[active];
+      if (!disabled && item && isSelectable(item)) {
+        e.preventDefault();
+        item.onSelect?.();
+        closeAndRestoreFocus();
+      }
+    }
+  };
+
   // Wrap in a `display: contents` span so the handler lives on a DOM node we
   // fully control — React.cloneElement would fail to reach the DOM when
   // `children` is a React component that doesn't forward `onContextMenu`.
   const trigger = (
     <span
-      ref={ref}
+      ref={(node) => {
+        triggerRef.current = node;
+        if (typeof ref === "function") ref(node);
+        else if (ref) ref.current = node;
+      }}
       className={className}
-      style={{ display: "contents", ...style }}
+      tabIndex={tabIndex ?? (useWrapperKeyboardFallback && !disabled ? 0 : undefined)}
+      style={{ display: useWrapperKeyboardFallback || tabIndex != null ? "inline-block" : "contents", ...style }}
       onContextMenu={(e) => {
         onContextMenu?.(e);
         handleTriggerContextMenu(e);
+      }}
+      onKeyDown={(e) => {
+        onKeyDown?.(e);
+        if (e.defaultPrevented) return;
+        if (e.key === "ContextMenu" || (e.shiftKey && e.key === "F10")) {
+          e.preventDefault();
+          const target = e.target as HTMLElement;
+          const rect = target.getBoundingClientRect();
+          openAt(rect.left + Math.min(12, rect.width / 2), rect.bottom);
+        }
       }}
       {...rest}
     >
@@ -172,18 +281,22 @@ export const ContextMenu = React.forwardRef<HTMLSpanElement, ContextMenuProps>((
   );
 
   const panel =
-    open && typeof document !== "undefined"
+    open && portalContainer
       ? ReactDOM.createPortal(
           <div
             ref={menuRef}
             className="context-menu"
-            role="menu"
-            style={{
-              position: "fixed",
-              top: pos.top,
-              left: pos.left,
-              minWidth,
-            }}
+             role="menu"
+             aria-label="上下文菜单"
+             tabIndex={-1}
+             onKeyDown={handleMenuKeyDown}
+             style={{
+               position: "fixed",
+               top: pos.top,
+               left: pos.left,
+               minWidth,
+               zIndex: overlayZIndex,
+             }}
             onContextMenu={(e) => e.preventDefault()}
           >
             {items.map((it, i) =>
@@ -193,14 +306,16 @@ export const ContextMenu = React.forwardRef<HTMLSpanElement, ContextMenuProps>((
                 <button
                   key={it.key}
                   type="button"
-                  role="menuitem"
+                   role="menuitem"
+                   data-context-index={i}
+                   tabIndex={active === i ? 0 : -1}
                   disabled={it.disabled}
                   className={`context-menu-item ${active === i ? "active" : ""} ${it.danger ? "danger" : ""}`}
                   onMouseEnter={() => isSelectable(it) && setActive(i)}
                   onClick={() => {
-                    if (!isSelectable(it)) return;
+                    if (disabled || !isSelectable(it)) return;
                     it.onSelect?.();
-                    close();
+                    closeAndRestoreFocus();
                   }}
                 >
                   <span className="context-menu-icon">{it.icon}</span>
@@ -210,7 +325,7 @@ export const ContextMenu = React.forwardRef<HTMLSpanElement, ContextMenuProps>((
               )
             )}
           </div>,
-          document.body
+          portalContainer
         )
       : null;
 

@@ -5,7 +5,7 @@ import { defineSection, type SectionCtx } from "./_types";
 
 const SectionCollapse: React.FC<SectionCtx> = () => (
   <DocPage
-    whenToUse={<p>纵向折叠面板,适合 FAQ、设置项分组等场景。</p>}
+    whenToUse={<p>纵向折叠面板,适合 FAQ、设置项分组等场景。关闭面板会从键盘焦点顺序中移除内部控件。</p>}
     demos={[
       {
         id: "basic",
@@ -26,15 +26,33 @@ const SectionCollapse: React.FC<SectionCtx> = () => (
         id: "multiple",
         title: "多项展开",
         span: 2,
-        description: "multiple 允许同时展开多个面板。",
-        code: `<Collapse defaultActiveKey={["1", "2"]} ... />`,
+        description: "multiple={true} 允许同时展开多个面板，也是默认行为。",
+        code: `<Collapse multiple defaultActiveKey={["1", "2"]} ... />`,
         render: () => (
           <Collapse
+            multiple
             defaultActiveKey={["1", "2"]}
             items={[
               { key: "1", label: "面板 1", children: <div>内容 1</div> },
               { key: "2", label: "面板 2", children: <div>内容 2</div> },
               { key: "3", label: "面板 3", children: <div>内容 3</div> },
+            ]}
+          />
+        ),
+      },
+      {
+        id: "single-open",
+        title: "multiple={false}",
+        span: 2,
+        description: "单开模式最多保留一项；即使 activeKey / defaultActiveKey 传入数组，也只采用首项。",
+        code: `<Collapse multiple={false} defaultActiveKey={["1", "2"]} ... />`,
+        render: () => (
+          <Collapse
+            multiple={false}
+            defaultActiveKey={["1", "2"]}
+            items={[
+              { key: "1", label: "首项会被保留", children: <div>数组中的第二项会在初始化时被忽略。</div> },
+              { key: "2", label: "展开本项会收起首项", children: <div>单开行为与 accordion 一致。</div> },
             ]}
           />
         ),
@@ -97,12 +115,12 @@ const SectionCollapse: React.FC<SectionCtx> = () => (
         rows: [
           { prop: "items", description: "面板数据", type: "CollapseItem[]", required: true },
           { prop: "accordion", description: "手风琴模式(同一时刻最多一项)", type: "boolean", default: "false" },
-          { prop: "multiple", description: "可同时展开多个", type: "boolean", default: "true" },
+          { prop: "multiple", description: "是否可同时展开多个；false 时数组键值只保留首项", type: "boolean", default: "true" },
           { prop: "collapsible", description: "展开触发区域", type: `"header" | "icon" | "disabled"`, default: `"header"` },
-          { prop: "activeKey / defaultActiveKey", description: "受控/初始展开", type: "string | string[]" },
+          { prop: "activeKey / defaultActiveKey", description: "受控/初始展开；单开模式会归一为至多一项", type: "string | string[]" },
           { prop: "ghost", description: "无外框/阴影的轻量样式", type: "boolean", default: "false" },
           { prop: "size", description: "尺寸", type: `"small" | "middle" | "large"`, default: `"middle"` },
-          { prop: "onChange", description: "展开变更", type: "(keys: string[]) => void" },
+          { prop: "onChange", description: "展开变更；单开模式仍统一返回长度不超过 1 的数组", type: "(keys: string[]) => void" },
         ],
       },
     ]}

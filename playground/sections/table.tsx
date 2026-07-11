@@ -136,6 +136,7 @@ const SectionTable: React.FC<SectionCtx> = () => {
         {
           id: "basic",
           title: "基础表格",
+          category: "基础展示",
           span: 2,
           code: `<Table rowKey="id" columns={[...]} data={data} />`,
           render: () => (
@@ -154,6 +155,7 @@ const SectionTable: React.FC<SectionCtx> = () => {
         {
           id: "variants",
           title: "样式变体 / hover",
+          category: "基础展示",
           span: 2,
           description: "覆盖 variant 的四个取值,以及 striped 快捷属性和 hoverable 关闭状态。",
           code: `<Table variant="default" ... />
@@ -180,13 +182,14 @@ const SectionTable: React.FC<SectionCtx> = () => {
         {
           id: "pagination",
           title: "内置分页",
+          category: "分页与数据",
           span: 2,
-          description: "传入 pagination 即可自动分页;data 会按当前页切片。传 false 关闭。",
+          description: "传入 pagination 即可自动分页;这里从第 2 页开始,同时演示 defaultCurrent。传 false 关闭。",
           code: `<Table
   rowKey="id"
   columns={[...]}
   data={data}
-  pagination={{ pageSize: 6 }}
+  pagination={{ defaultCurrent: 2, pageSize: 4 }}
 />`,
           render: () => (
             <Table
@@ -199,15 +202,16 @@ const SectionTable: React.FC<SectionCtx> = () => {
                 { key: "joined", title: "加入时间", dataIndex: "joined" },
               ]}
               data={pagedData}
-              pagination={{ pageSize: 6 }}
+              pagination={{ defaultCurrent: 2, pageSize: 4 }}
             />
           ),
         },
         {
           id: "paginationConfig",
           title: "分页配置",
+          category: "分页与数据",
           span: 2,
-          description: "覆盖 current / defaultCurrent / pageSize / defaultPageSize / total / onChange / showQuickJumper / showSizeChanger / pageSizeOptions。",
+          description: "用一个受控案例集中展示 current、pageSize、total、快速跳页和每页条数切换,避免重复堆叠相同表格。",
           code: `<Table
   data={serverPageData}
   pagination={{
@@ -222,11 +226,6 @@ const SectionTable: React.FC<SectionCtx> = () => {
       setPageSize(nextPageSize);
     },
   }}
-/>
-
-<Table
-  data={allRows}
-  pagination={{ defaultCurrent: 2, defaultPageSize: 4 }}
 />`,
           render: () => (
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -254,22 +253,13 @@ const SectionTable: React.FC<SectionCtx> = () => {
                   },
                 }}
               />
-              <Table
-                rowKey="id"
-                columns={[
-                  { key: "id", title: "#", dataIndex: "id", width: 60 },
-                  { key: "name", title: "默认初始页", dataIndex: "name" },
-                  { key: "role", title: "部门", dataIndex: "role" },
-                ]}
-                data={pagedData}
-                pagination={{ defaultCurrent: 2, defaultPageSize: 4 }}
-              />
             </div>
           ),
         },
         {
           id: "scroll",
           title: "固定表头 / 横向滚动",
+          category: "基础展示",
           span: 2,
           description: "scroll.y 固定表头并限制表体最大高度;scroll.x 设置内容最小宽度。",
           code: `<Table
@@ -296,6 +286,7 @@ const SectionTable: React.FC<SectionCtx> = () => {
         {
           id: "sortingAndRowClick",
           title: "受控排序 / 行点击",
+          category: "排序与筛选",
           span: 2,
           description: "Table 负责渲染排序指示,排序后的 data 由外部状态计算后传入。",
           code: `<Table
@@ -338,6 +329,7 @@ const SectionTable: React.FC<SectionCtx> = () => {
         {
           id: "rowSelection",
           title: "行选择 (rowSelection)",
+          category: "选择与展开",
           span: 2,
           description: "rowSelection 提供表头全选、半选状态、受控选中项、回传选中行与按行禁用能力。",
           code: `<Table
@@ -382,6 +374,7 @@ const SectionTable: React.FC<SectionCtx> = () => {
         {
           id: "rowSelectionRadio",
           title: "行选择 · 单选",
+          category: "选择与展开",
           span: 2,
           description: "设置 rowSelection.type = 'radio' 变成单选模式,defaultSelectedRowKeys 设置非受控初始值。",
           code: `<Table
@@ -405,6 +398,7 @@ const SectionTable: React.FC<SectionCtx> = () => {
         {
           id: "legacySelection",
           title: "旧版选择 API",
+          category: "选择与展开",
           span: 2,
           description: "selectable / selected / onSelect 保留向后兼容,新代码优先使用 rowSelection。",
           code: `<Table
@@ -431,6 +425,7 @@ const SectionTable: React.FC<SectionCtx> = () => {
         {
           id: "expandable",
           title: "可展开行",
+          category: "选择与展开",
           span: 2,
           description: "点击左侧箭头按钮展开/收起,defaultExpandedRowKeys 设置非受控初始展开。",
           code: `<Table
@@ -471,6 +466,7 @@ const SectionTable: React.FC<SectionCtx> = () => {
         {
           id: "expandableControlled",
           title: "受控展开",
+          category: "选择与展开",
           span: 2,
           description: "expandedRowKeys 由外部状态控制,onExpand 负责同步展开 key。",
           code: `<Table
@@ -509,6 +505,7 @@ const SectionTable: React.FC<SectionCtx> = () => {
         {
           id: "filters",
           title: "列筛选",
+          category: "排序与筛选",
           span: 2,
           description: "filters + onFilter 生成列头筛选菜单;defaultFilteredValue 可设置非受控初始筛选。",
           code: `<Table
@@ -567,6 +564,7 @@ const SectionTable: React.FC<SectionCtx> = () => {
         {
           id: "filtersControlled",
           title: "受控筛选值",
+          category: "排序与筛选",
           span: 2,
           description: "filteredValue 由外部状态控制,适合和工具栏筛选器或 URL 状态同步。",
           code: `<Table
@@ -578,6 +576,7 @@ const SectionTable: React.FC<SectionCtx> = () => {
       onFilter: (value, row) => row.status === value,
     },
   ]}
+  onChange={({ filters }) => setFilteredValue(filters.status ?? [])}
 />`,
           render: () => (
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -620,6 +619,9 @@ const SectionTable: React.FC<SectionCtx> = () => {
                   },
                 ]}
                 data={data}
+                onChange={({ action, filters }) => {
+                  if (action === "filter") setFilterStatus(filters.status ?? []);
+                }}
               />
             </div>
           ),
@@ -627,6 +629,7 @@ const SectionTable: React.FC<SectionCtx> = () => {
         {
           id: "emptyAndNativeAttrs",
           title: "空状态 / 原生属性",
+          category: "基础展示",
           span: 2,
           description: "empty 自定义空态;className / style / id / data-* / aria-* 透传到表格外层容器;pagination={false} 显式关闭分页。",
           code: `<Table
@@ -673,6 +676,7 @@ const SectionTable: React.FC<SectionCtx> = () => {
             { prop: "sortKey", description: "当前排序列 key", type: "string" },
             { prop: "sortDir", description: "当前排序方向", type: `"asc" | "desc"`, default: `"asc"` },
             { prop: "onSort", description: "点击可排序表头时触发", type: "(key) => void" },
+            { prop: "onChange", description: "排序、筛选、分页的统一状态回调", type: "(info: TableChangeInfo) => void" },
             { prop: "rowSelection", description: "行选择配置", type: "RowSelectionConfig" },
             { prop: "selectable", description: "旧版多选开关,优先使用 rowSelection", type: "boolean" },
             { prop: "selected", description: "旧版受控选中 key", type: "(string | number)[]" },
@@ -680,6 +684,7 @@ const SectionTable: React.FC<SectionCtx> = () => {
             { prop: "expandable", description: "可展开行配置", type: "ExpandableConfig" },
             { prop: "pagination", description: "分页配置;false 关闭", type: "false | PaginationConfig" },
             { prop: "scroll", description: "滚动配置", type: "TableScrollConfig" },
+            { prop: "tableProps / caption", description: "透传原生 table 属性与语义标题", type: "TableHTMLAttributes / ReactNode" },
             { prop: "onRowClick", description: "点击行", type: "(row, index) => void" },
             { prop: "empty", description: "空数据占位内容", type: "ReactNode", default: `"暂无数据"` },
             { prop: "className / style / id / data-* / aria-*", description: "透传到外层 table-wrap 容器", type: "native attrs" },
@@ -713,6 +718,7 @@ const SectionTable: React.FC<SectionCtx> = () => {
             { prop: "showQuickJumper", description: "显示跳页输入", type: "boolean" },
             { prop: "showSizeChanger", description: "显示每页条数下拉选择", type: "boolean" },
             { prop: "pageSizeOptions", description: "每页条数选项", type: "number[]" },
+            { prop: "mode", description: "本地切片或远程预切片", type: `"local" | "remote"` },
           ],
         },
         {

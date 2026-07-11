@@ -5,6 +5,8 @@ import * as React from "react";
 import { createPortal } from "react-dom";
 import { Icon, type IconName } from "../Icon";
 import { useFloating } from "../../utils/useFloating";
+import { usePortalContainer } from "../../utils/portal";
+import { useOverlayLayer } from "../../utils/overlayStack";
 
 /* ============================================================================
  * Shared types
@@ -16,12 +18,14 @@ export interface CopyableConfig {
   /** Text to copy. Defaults to the rendered children string. */
   text?: string;
   /** Fired after a successful copy. */
-  onCopy?: (event: React.MouseEvent<HTMLSpanElement>) => void;
+  onCopy?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  /** 复制失败时触发，接收浏览器抛出的错误。 */
+  onCopyError?: (error: unknown) => void;
   /** Custom icons `[default, copied]`. */
   icon?: [React.ReactNode, React.ReactNode];
   /** Custom tooltip text `[default, copied]`. Pass `false` to disable. */
   tooltips?: [React.ReactNode, React.ReactNode] | false;
-  /** Format/MIME hint when calling `navigator.clipboard.write` is not used. */
+  /** 写入剪贴板时使用的文本格式。 */
   format?: "text/plain" | "text/html";
 }
 
@@ -48,7 +52,7 @@ export interface EditableConfig {
   icon?: React.ReactNode;
   /** Tooltip text on the trigger icon. Pass `false` to disable. */
   tooltip?: React.ReactNode | false;
-  /** Use a single-line input instead of textarea. */
+  /** 单行编辑器的确认按钮内容；默认使用勾选图标，传入 `null` 可隐藏。 */
   enterIcon?: React.ReactNode;
 }
 
@@ -142,11 +146,49 @@ function assignRef<T>(ref: React.Ref<T> | undefined, value: T | null) {
   (ref as React.MutableRefObject<T | null>).current = value;
 }
 
+/** 从排版组件属性中剥离视觉/行为属性，保留原生 DOM 属性。 */
+function getNativeTypographyProps(
+  props: BaseTypographyProps & React.HTMLAttributes<HTMLElement>
+): React.HTMLAttributes<HTMLElement> {
+  const {
+    type: _type,
+    disabled: _disabled,
+    mark: _mark,
+    code: _code,
+    keyboard: _keyboard,
+    underline: _underline,
+    delete: _delete,
+    strong: _strong,
+    italic: _italic,
+    copyable: _copyable,
+    editable: _editable,
+    ellipsis: _ellipsis,
+    className: _className,
+    style: _style,
+    children: _children,
+    ...nativeProps
+  } = props;
+  return nativeProps;
+}
+
+/** 合并内部测量 ref 与消费者 ref。 */
+function composeTypographyRef<T extends HTMLElement>(
+  internalRef: React.MutableRefObject<HTMLElement | null>,
+  forwardedRef: React.ForwardedRef<T>
+): React.RefCallback<T> {
+  return (node) => {
+    internalRef.current = node;
+    assignRef(forwardedRef, node);
+  };
+}
+
 const EllipsisTooltip = React.forwardRef<
   HTMLElement,
   { content: React.ReactNode; children: React.ReactElement }
 >(({ content, children }, forwardedRef) => {
   const [open, setOpen] = React.useState(false);
+  const tooltipId = React.useId();
+  const portalContainer = usePortalContainer();
   const openTimerRef = React.useRef<number | undefined>();
   const closeTimerRef = React.useRef<number | undefined>();
   const childRef = (children as React.ReactElement & { ref?: React.Ref<HTMLElement> }).ref;
@@ -155,12 +197,20 @@ const EllipsisTooltip = React.forwardRef<
     floatingRef,
     floatingStyle,
     placement,
+    zIndex: tooltipZIndex,
   } = useFloating<HTMLElement, HTMLDivElement>({
     open,
     placement: "top",
     panelWidth: 360,
     panelHeight: 96,
     alignCross: "center",
+  });
+  useOverlayLayer({
+    open: open && portalContainer != null,
+    containerRef: floatingRef,
+    ownerRef: triggerRef,
+    zIndex: tooltipZIndex,
+    onEscape: () => setOpen(false),
   });
 
   React.useEffect(() => {
@@ -205,12 +255,16 @@ const EllipsisTooltip = React.forwardRef<
     onPointerLeave?: React.PointerEventHandler<HTMLElement>;
     onFocus?: React.FocusEventHandler<HTMLElement>;
     onBlur?: React.FocusEventHandler<HTMLElement>;
+    "aria-describedby"?: string;
   };
 
   return (
     <>
       {React.cloneElement(children, {
         ref: setTriggerRef,
+        "aria-describedby": open
+          ? [childProps["aria-describedby"], tooltipId].filter(Boolean).join(" ")
+          : childProps["aria-describedby"],
         onMouseEnter: (event: React.MouseEvent<HTMLElement>) => {
           childProps.onMouseEnter?.(event);
           show();
@@ -248,9 +302,10 @@ const EllipsisTooltip = React.forwardRef<
           hide();
         },
       })}
-      {open && typeof document !== "undefined" &&
+      {open && portalContainer &&
         createPortal(
           <div
+            id={tooltipId}
             ref={floatingRef}
             className={`typo-ellipsis-tooltip ${placement}`}
             style={floatingStyle}
@@ -264,7 +319,7 @@ const EllipsisTooltip = React.forwardRef<
           >
             {content}
           </div>,
-          document.body
+          portalContainer
         )}
     </>
   );
@@ -273,11 +328,45 @@ EllipsisTooltip.displayName = "Typography.EllipsisTooltip";
 
 /* ---------- Copy button ---------- */
 
+/** 使用现代 Clipboard API 写入文本，并在不可用时回退到选区复制。 */
+async function writeTypographyClipboard(
+  text: string,
+  format: NonNullable<CopyableConfig["format"]>
+): Promise<void> {
+  if (typeof navigator !== "undefined" && navigator.clipboard) {
+    if (
+      format === "text/html" &&
+      navigator.clipboard.write &&
+      typeof ClipboardItem !== "undefined"
+    ) {
+      await navigator.clipboard.write([
+        new ClipboardItem({ "text/html": new Blob([text], { type: "text/html" }) }),
+      ]);
+      return;
+    }
+    if (navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+  }
+  if (typeof document === "undefined") throw new Error("Clipboard is unavailable");
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.inset = "-9999px auto auto -9999px";
+  document.body.appendChild(textarea);
+  textarea.select();
+  const copied = document.execCommand?.("copy") ?? false;
+  textarea.remove();
+  if (!copied) throw new Error("Clipboard write failed");
+}
+
 const CopyAction: React.FC<{
   config: CopyableConfig;
   fallbackText: string;
 }> = ({ config, fallbackText }) => {
-  const [copied, setCopied] = React.useState(false);
+  const [status, setStatus] = React.useState<"idle" | "copied" | "error">("idle");
   const timerRef = React.useRef<number | null>(null);
 
   React.useEffect(() => {
@@ -286,18 +375,20 @@ const CopyAction: React.FC<{
     };
   }, []);
 
-  const handleCopy = (event: React.MouseEvent<HTMLSpanElement>) => {
+  /** 执行复制，并仅在浏览器确认成功后触发成功回调。 */
+  const handleCopy = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     const text = config.text ?? fallbackText;
-    if (typeof navigator !== "undefined" && navigator.clipboard) {
-      navigator.clipboard.writeText(text).catch(() => {
-        /* swallow — user-visible feedback is already minimal */
-      });
+    try {
+      await writeTypographyClipboard(text, config.format ?? "text/plain");
+      config.onCopy?.(event);
+      setStatus("copied");
+    } catch (error) {
+      config.onCopyError?.(error);
+      setStatus("error");
     }
-    config.onCopy?.(event);
-    setCopied(true);
     if (timerRef.current != null) window.clearTimeout(timerRef.current);
-    timerRef.current = window.setTimeout(() => setCopied(false), 2400);
+    timerRef.current = window.setTimeout(() => setStatus("idle"), 2400);
   };
 
   const [defIcon, doneIcon] = config.icon ?? [
@@ -307,31 +398,26 @@ const CopyAction: React.FC<{
   const tipText =
     config.tooltips === false
       ? undefined
+      : status === "error"
+      ? "复制失败"
       : Array.isArray(config.tooltips)
-      ? copied
+      ? status === "copied"
         ? config.tooltips[1]
         : config.tooltips[0]
-      : copied
-      ? "已复制"
-      : "复制";
+      : status === "copied"
+        ? "已复制"
+        : "复制";
 
   return (
-    <span
-      role="button"
-      aria-label={typeof tipText === "string" ? tipText : "Copy"}
-      tabIndex={0}
+    <button
+      type="button"
+      aria-label={typeof tipText === "string" ? tipText : "复制"}
       title={typeof tipText === "string" ? tipText : undefined}
-      onClick={handleCopy}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          handleCopy(e as unknown as React.MouseEvent<HTMLSpanElement>);
-        }
-      }}
-      className={`typo-action typo-copy ${copied ? "copied" : ""}`}
+      onClick={(event) => void handleCopy(event)}
+      className={`typo-action typo-copy ${status}`}
     >
-      {copied ? doneIcon : defIcon}
-    </span>
+      {status === "copied" ? doneIcon : defIcon}
+    </button>
   );
 };
 
@@ -342,11 +428,15 @@ const EditableEditor: React.FC<{
   multiline: boolean;
   maxLength?: number;
   autoSize?: EditableConfig["autoSize"];
+  /** 单行编辑器的确认按钮内容。 */
+  enterIcon?: React.ReactNode;
   onConfirm: (value: string) => void;
   onCancel: () => void;
-}> = ({ initial, multiline, maxLength, autoSize, onConfirm, onCancel }) => {
+}> = ({ initial, multiline, maxLength, autoSize, enterIcon, onConfirm, onCancel }) => {
   const [value, setValue] = React.useState(initial);
   const ref = React.useRef<HTMLTextAreaElement | HTMLInputElement | null>(null);
+  const groupRef = React.useRef<HTMLSpanElement>(null);
+  const finishedRef = React.useRef(false);
 
   React.useEffect(() => {
     const el = ref.current;
@@ -356,6 +446,11 @@ const EditableEditor: React.FC<{
       el.setSelectionRange(len, len);
     }
   }, []);
+
+  React.useEffect(() => {
+    setValue(initial);
+    finishedRef.current = false;
+  }, [initial]);
 
   const resize = React.useCallback(() => {
     const el = ref.current as HTMLTextAreaElement | null;
@@ -377,17 +472,46 @@ const EditableEditor: React.FC<{
     resize();
   }, [value, resize]);
 
+  /** 确认当前编辑值，并阻止随后 blur 重复触发取消。 */
+  const confirm = () => {
+    if (finishedRef.current) return;
+    finishedRef.current = true;
+    try {
+      onConfirm(value);
+    } finally {
+      finishedRef.current = false;
+    }
+  };
+
+  /** 取消当前编辑，并阻止随后 blur 重复触发。 */
+  const cancel = () => {
+    if (finishedRef.current) return;
+    finishedRef.current = true;
+    try {
+      onCancel();
+    } finally {
+      finishedRef.current = false;
+    }
+  };
+
+  /** 仅在焦点真正离开编辑器组合时取消编辑。 */
+  const handleGroupBlur = (event: React.FocusEvent<HTMLSpanElement>) => {
+    const nextTarget = event.relatedTarget;
+    if (nextTarget instanceof Node && groupRef.current?.contains(nextTarget)) return;
+    cancel();
+  };
+
   const handleKeyDown = (
     e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>
   ) => {
     if (e.key === "Escape") {
       e.preventDefault();
-      onCancel();
+      cancel();
       return;
     }
     if (e.key === "Enter" && (!multiline || (e.metaKey || e.ctrlKey))) {
       e.preventDefault();
-      onConfirm(value);
+      confirm();
     }
   };
 
@@ -399,14 +523,36 @@ const EditableEditor: React.FC<{
     onChange: (
       e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
     ) => setValue(e.target.value),
-    onBlur: () => onConfirm(value),
     onKeyDown: handleKeyDown,
   } as const;
 
-  return multiline ? (
+  const editor = multiline ? (
     <textarea rows={1} {...common} />
   ) : (
     <input type="text" {...common} />
+  );
+  const resolvedEnterIcon = enterIcon === undefined
+    ? <Icon name="check" size={12} />
+    : enterIcon;
+  const showEnterAction =
+    !multiline && resolvedEnterIcon !== null && resolvedEnterIcon !== false;
+
+  return (
+    <span ref={groupRef} className="typo-editor-wrap" onBlur={handleGroupBlur}>
+      {editor}
+      {showEnterAction && (
+        <button
+          type="button"
+          className="typo-action typo-enter"
+          aria-label="确认编辑"
+          title="确认编辑"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={confirm}
+        >
+          {resolvedEnterIcon}
+        </button>
+      )}
+    </span>
   );
 };
 
@@ -417,6 +563,8 @@ const EditableEditor: React.FC<{
 interface RenderableProps extends BaseTypographyProps {
   ellipsisRows?: number;
   multilineEdit?: boolean;
+  /** 是否在正文内部渲染文本编辑触发器；Link 会自行复用锚点。 */
+  renderTextTrigger?: boolean;
 }
 
 function useTypographyBody(props: RenderableProps) {
@@ -434,10 +582,12 @@ function useTypographyBody(props: RenderableProps) {
   const [editingState, setEditingState] = React.useState(false);
   const editing = isControlledEdit ? editConf.editing! : editingState;
 
+  /** 进入编辑态，并遵循受控/非受控模式。 */
   const startEdit = () => {
     editConf.onStart?.();
     if (!isControlledEdit) setEditingState(true);
   };
+  /** 结束编辑态，并遵循受控/非受控模式。 */
   const endEdit = () => {
     editConf.onEnd?.();
     if (!isControlledEdit) setEditingState(false);
@@ -455,9 +605,34 @@ function useTypographyBody(props: RenderableProps) {
   const ellipsis = props.ellipsis;
   const ellConf: EllipsisConfig =
     ellipsis && typeof ellipsis === "object" ? ellipsis : {};
-  const rows = ellConf.rows ?? props.ellipsisRows ?? 1;
+  const rows = Math.max(1, Math.floor(ellConf.rows ?? props.ellipsisRows ?? 1));
   const wantClamp = !!ellipsis;
   const [expanded, setExpanded] = React.useState(false);
+  const [truncated, setTruncated] = React.useState(false);
+  const elementRef = React.useRef<HTMLElement | null>(null);
+  const ellipsisContentRef = React.useRef<HTMLSpanElement | null>(null);
+
+  React.useEffect(() => setExpanded(false), [fallbackText, rows, wantClamp]);
+
+  React.useLayoutEffect(() => {
+    const element = ellConf.suffix ? ellipsisContentRef.current : elementRef.current;
+    if (!element || !wantClamp || expanded) {
+      setTruncated(false);
+      return;
+    }
+    /** 根据真实滚动尺寸判断文本是否被截断。 */
+    const measure = () => {
+      const next = rows > 1
+        ? element.scrollHeight > element.clientHeight + 1
+        : element.scrollWidth > element.clientWidth + 1;
+      setTruncated(next);
+    };
+    measure();
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [ellConf.suffix, expanded, fallbackText, rows, wantClamp]);
 
   /* ---- content ---- */
   let inner: React.ReactNode = props.children;
@@ -472,7 +647,7 @@ function useTypographyBody(props: RenderableProps) {
 
   /* ---- copy node ---- */
   let copyNode: React.ReactNode = null;
-  if (props.copyable) {
+  if (props.copyable && !props.disabled) {
     const conf =
       typeof props.copyable === "object" ? props.copyable : ({} as CopyableConfig);
     copyNode = <CopyAction config={conf} fallbackText={fallbackText} />;
@@ -480,37 +655,40 @@ function useTypographyBody(props: RenderableProps) {
 
   /* ---- edit node ---- */
   let editIconNode: React.ReactNode = null;
-  if (editable) {
+  if (editable && !props.disabled && triggers.includes("icon")) {
     const tip = editConf.tooltip ?? "编辑";
     editIconNode = (
-      <span
-        role="button"
-        aria-label={typeof tip === "string" ? tip : "Edit"}
-        tabIndex={0}
+      <button
+        type="button"
+        aria-label={typeof tip === "string" ? tip : "编辑"}
         title={typeof tip === "string" && tip !== "" ? tip : undefined}
         onClick={(e) => {
           e.stopPropagation();
           startEdit();
         }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            startEdit();
-          }
-        }}
         className="typo-action typo-edit"
       >
         {editConf.icon ?? <Icon name="edit" size={12} />}
-      </span>
+      </button>
     );
   }
 
   /* ---- text-trigger edit ---- */
-  if (editable && triggers.includes("text") && !editing) {
+  const textEditTrigger =
+    !!editable && !props.disabled && triggers.includes("text") && !editing;
+  if (textEditTrigger && props.renderTextTrigger !== false) {
     inner = (
       <span
         className="typo-edit-text-trigger"
+        role="button"
+        tabIndex={0}
         onClick={() => startEdit()}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            startEdit();
+          }
+        }}
       >
         {inner}
       </span>
@@ -521,19 +699,39 @@ function useTypographyBody(props: RenderableProps) {
   let style: React.CSSProperties | undefined = props.style;
   let extraCls: string | undefined;
   if (wantClamp && !expanded) {
-    extraCls = rows > 1 ? "ellipsis-multi" : "ellipsis";
-    if (rows > 1) {
-      style = {
-        ...style,
-        WebkitLineClamp: rows,
-      } as React.CSSProperties;
+    const clampClassName = rows > 1 ? "ellipsis-multi" : "ellipsis";
+    if (ellConf.suffix) {
+      extraCls = "ellipsis-with-suffix";
+      inner = (
+        <>
+          <span
+            ref={ellipsisContentRef}
+            className={`typo-ellipsis-content ${clampClassName}`}
+            style={rows > 1 ? { WebkitLineClamp: rows } : undefined}
+          >
+            {inner}
+          </span>
+          <span className="typo-suffix">{ellConf.suffix}</span>
+        </>
+      );
+    } else {
+      extraCls = clampClassName;
+      if (rows > 1) {
+        style = {
+          ...style,
+          WebkitLineClamp: rows,
+        } as React.CSSProperties;
+      }
     }
+  } else if (ellConf.suffix) {
+    inner = <>{inner}<span className="typo-suffix">{ellConf.suffix}</span></>;
   }
 
   let expandNode: React.ReactNode = null;
-  if (wantClamp && ellConf.expandable && !expanded) {
+  if (wantClamp && truncated && ellConf.expandable && !expanded) {
     expandNode = (
-      <a
+      <button
+        type="button"
         className="typo-expand"
         onClick={(e) => {
           ellConf.onExpand?.(e);
@@ -541,12 +739,12 @@ function useTypographyBody(props: RenderableProps) {
         }}
       >
         {ellConf.symbol ?? "展开"}
-      </a>
+      </button>
     );
   }
 
   const tooltipContent =
-    wantClamp && !expanded && ellConf.tooltip
+    wantClamp && truncated && !expanded && ellConf.tooltip
       ? ellConf.tooltip === true
         ? fallbackText
         : ellConf.tooltip
@@ -558,6 +756,8 @@ function useTypographyBody(props: RenderableProps) {
     fallbackText,
     handleConfirm,
     handleCancel,
+    startEdit,
+    textEditTrigger,
     inner,
     copyNode,
     editIconNode,
@@ -565,6 +765,7 @@ function useTypographyBody(props: RenderableProps) {
     style,
     extraCls,
     tooltipContent,
+    elementRef,
   };
 }
 
@@ -574,7 +775,9 @@ function useTypographyBody(props: RenderableProps) {
 
 export type TitleLevel = 1 | 2 | 3 | 4 | 5;
 
-export interface TitleProps extends BaseTypographyProps {
+export interface TitleProps
+  extends BaseTypographyProps,
+    Omit<React.HTMLAttributes<HTMLHeadingElement>, keyof BaseTypographyProps> {
   /** Heading level — 1..5. Defaults to 1. */
   level?: TitleLevel;
 }
@@ -589,19 +792,24 @@ export const Title = React.forwardRef<HTMLElement, TitleProps>((props, ref) => {
   const { level = 1, ...rest } = props;
   const body = useTypographyBody({ ...rest, multilineEdit: false });
   const Tag = (`h${level}`) as "h1" | "h2" | "h3" | "h4" | "h5";
+  const nativeProps = getNativeTypographyProps(rest as TitleProps & React.HTMLAttributes<HTMLElement>);
+  const composedRef = composeTypographyRef(body.elementRef, ref);
 
   if (body.editing) {
     return (
       <Tag
-        ref={ref as React.Ref<HTMLHeadingElement>}
+        {...(nativeProps as React.HTMLAttributes<HTMLHeadingElement>)}
+        ref={composedRef as React.Ref<HTMLHeadingElement>}
         className={buildClass(rest, `typo typo-title h${level}`, "editing")}
         style={rest.style}
+        aria-disabled={rest.disabled || undefined}
       >
         <EditableEditor
           initial={body.editConf.text ?? body.fallbackText}
           multiline={false}
           maxLength={body.editConf.maxLength}
           autoSize={body.editConf.autoSize}
+          enterIcon={body.editConf.enterIcon}
           onConfirm={body.handleConfirm}
           onCancel={body.handleCancel}
         />
@@ -611,9 +819,11 @@ export const Title = React.forwardRef<HTMLElement, TitleProps>((props, ref) => {
 
   const element = (
     <Tag
-      ref={ref as React.Ref<HTMLHeadingElement>}
+      {...(nativeProps as React.HTMLAttributes<HTMLHeadingElement>)}
+      ref={composedRef as React.Ref<HTMLHeadingElement>}
       className={buildClass(rest, `typo typo-title h${level}`, body.extraCls)}
       style={body.style}
+      aria-disabled={rest.disabled || undefined}
     >
       {body.inner}
       {body.expandNode}
@@ -623,7 +833,7 @@ export const Title = React.forwardRef<HTMLElement, TitleProps>((props, ref) => {
   );
 
   return body.tooltipContent ? (
-    <EllipsisTooltip ref={ref as React.Ref<HTMLElement>} content={body.tooltipContent}>
+    <EllipsisTooltip content={body.tooltipContent}>
       {element}
     </EllipsisTooltip>
   ) : element;
@@ -634,7 +844,9 @@ Title.displayName = "Typography.Title";
  * Text — inline span
  * ========================================================================== */
 
-export interface TextProps extends BaseTypographyProps {
+export interface TextProps
+  extends BaseTypographyProps,
+    Omit<React.HTMLAttributes<HTMLElement>, keyof BaseTypographyProps> {
   /** Force the rendered tag (default `<span>`). */
   as?: keyof JSX.IntrinsicElements;
 }
@@ -651,19 +863,24 @@ export const Text = React.forwardRef<HTMLElement, TextProps>((props, ref) => {
   const { as = "span", ...rest } = props;
   const body = useTypographyBody({ ...rest, multilineEdit: false });
   const Tag = as as "span";
+  const nativeProps = getNativeTypographyProps(rest as TextProps & React.HTMLAttributes<HTMLElement>);
+  const composedRef = composeTypographyRef(body.elementRef, ref);
 
   if (body.editing) {
     return (
       <Tag
-        ref={ref as React.Ref<HTMLSpanElement>}
+        {...nativeProps}
+        ref={composedRef as React.Ref<HTMLSpanElement>}
         className={buildClass(rest, "typo typo-text", "editing")}
         style={rest.style}
+        aria-disabled={rest.disabled || undefined}
       >
         <EditableEditor
           initial={body.editConf.text ?? body.fallbackText}
           multiline={false}
           maxLength={body.editConf.maxLength}
           autoSize={body.editConf.autoSize}
+          enterIcon={body.editConf.enterIcon}
           onConfirm={body.handleConfirm}
           onCancel={body.handleCancel}
         />
@@ -673,9 +890,11 @@ export const Text = React.forwardRef<HTMLElement, TextProps>((props, ref) => {
 
   const element = (
     <Tag
-      ref={ref as React.Ref<HTMLSpanElement>}
+      {...nativeProps}
+      ref={composedRef as React.Ref<HTMLSpanElement>}
       className={buildClass(rest, "typo typo-text", body.extraCls)}
       style={body.style}
+      aria-disabled={rest.disabled || undefined}
     >
       {body.inner}
       {body.expandNode}
@@ -685,7 +904,7 @@ export const Text = React.forwardRef<HTMLElement, TextProps>((props, ref) => {
   );
 
   return body.tooltipContent ? (
-    <EllipsisTooltip ref={ref as React.Ref<HTMLElement>} content={body.tooltipContent}>
+    <EllipsisTooltip content={body.tooltipContent}>
       {element}
     </EllipsisTooltip>
   ) : element;
@@ -696,7 +915,9 @@ Text.displayName = "Typography.Text";
  * Paragraph — block <p>
  * ========================================================================== */
 
-export interface ParagraphProps extends BaseTypographyProps {}
+export interface ParagraphProps
+  extends BaseTypographyProps,
+    Omit<React.HTMLAttributes<HTMLParagraphElement>, keyof BaseTypographyProps> {}
 
 /**
  * `Typography.Paragraph` — block paragraph with the same decorations as `Text`.
@@ -707,13 +928,17 @@ export interface ParagraphProps extends BaseTypographyProps {}
 export const Paragraph = React.forwardRef<HTMLParagraphElement, ParagraphProps>(
   (props, ref) => {
     const body = useTypographyBody({ ...props, multilineEdit: true });
+    const nativeProps = getNativeTypographyProps(props as ParagraphProps & React.HTMLAttributes<HTMLElement>);
+    const composedRef = composeTypographyRef(body.elementRef, ref);
 
     if (body.editing) {
       return (
-        <div
-          ref={ref as unknown as React.Ref<HTMLDivElement>}
+        <p
+          {...(nativeProps as React.HTMLAttributes<HTMLParagraphElement>)}
+          ref={composedRef as React.Ref<HTMLParagraphElement>}
           className={buildClass(props, "typo typo-paragraph", "editing")}
           style={props.style}
+          aria-disabled={props.disabled || undefined}
         >
           <EditableEditor
             initial={body.editConf.text ?? body.fallbackText}
@@ -723,15 +948,17 @@ export const Paragraph = React.forwardRef<HTMLParagraphElement, ParagraphProps>(
             onConfirm={body.handleConfirm}
             onCancel={body.handleCancel}
           />
-        </div>
+        </p>
       );
     }
 
     const element = (
       <p
-        ref={ref}
+        {...(nativeProps as React.HTMLAttributes<HTMLParagraphElement>)}
+        ref={composedRef as React.Ref<HTMLParagraphElement>}
         className={buildClass(props, "typo typo-paragraph", body.extraCls)}
         style={body.style}
+        aria-disabled={props.disabled || undefined}
       >
         {body.inner}
         {body.expandNode}
@@ -741,7 +968,7 @@ export const Paragraph = React.forwardRef<HTMLParagraphElement, ParagraphProps>(
     );
 
     return body.tooltipContent ? (
-      <EllipsisTooltip ref={ref as React.Ref<HTMLElement>} content={body.tooltipContent}>
+      <EllipsisTooltip content={body.tooltipContent}>
         {element}
       </EllipsisTooltip>
     ) : element;
@@ -795,6 +1022,10 @@ export const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(
       externalIcon = "arrowRight",
       target,
       rel,
+      href,
+      tabIndex,
+      onClick: anchorOnClick,
+      onKeyDown: anchorOnKeyDown,
       ...anchorRest
     } = props;
     const body = useTypographyBody({
@@ -813,45 +1044,94 @@ export const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(
       className,
       style,
       children,
+      renderTextTrigger: false,
     });
 
     const safeRel =
       target === "_blank" ? rel ?? "noopener noreferrer" : rel;
+    const composedRef = composeTypographyRef(body.elementRef, ref);
 
     if (body.editing) {
       return (
-        <span
-          className={buildClass(props, "typo typo-link", "editing")}
-          style={style}
-        >
-          <EditableEditor
-            initial={body.editConf.text ?? body.fallbackText}
-            multiline={false}
-            maxLength={body.editConf.maxLength}
-            autoSize={body.editConf.autoSize}
-            onConfirm={body.handleConfirm}
-            onCancel={body.handleCancel}
+        <span className="typo-link-group typo-link-editing-group">
+          <a
+            {...anchorRest}
+            ref={composedRef as React.Ref<HTMLAnchorElement>}
+            className={[className, "typo-link-editing-anchor"].filter(Boolean).join(" ")}
+            style={style}
+            tabIndex={-1}
+            aria-hidden="true"
+            aria-disabled={disabled || undefined}
+            onClick={(event) => event.preventDefault()}
           />
+          <span
+            className={buildClass(
+              { ...props, className: "" },
+              "typo typo-link",
+              "editing typo-link-editor-shell"
+            )}
+            style={style}
+          >
+            <EditableEditor
+              initial={body.editConf.text ?? body.fallbackText}
+              multiline={false}
+              maxLength={body.editConf.maxLength}
+              autoSize={body.editConf.autoSize}
+              enterIcon={body.editConf.enterIcon}
+              onConfirm={body.handleConfirm}
+              onCancel={body.handleCancel}
+            />
+          </span>
         </span>
       );
     }
 
+    const linkExtraClass = [
+      body.extraCls,
+      body.textEditTrigger && "typo-edit-text-trigger",
+    ].filter(Boolean).join(" ");
     const element = (
       <a
-        ref={ref}
-        className={buildClass(props, "typo typo-link", body.extraCls)}
+        {...anchorRest}
+        ref={composedRef as React.Ref<HTMLAnchorElement>}
+        className={buildClass(props, "typo typo-link", linkExtraClass)}
         style={body.style}
-        target={target}
+        href={disabled ? undefined : href}
+        target={disabled ? undefined : target}
         rel={safeRel}
+        tabIndex={disabled ? -1 : tabIndex}
         aria-disabled={disabled || undefined}
         onClick={(e) => {
           if (disabled) {
             e.preventDefault();
+            e.stopPropagation();
             return;
           }
-          anchorRest.onClick?.(e);
+          if (body.textEditTrigger) {
+            e.preventDefault();
+            e.stopPropagation();
+            body.startEdit();
+            return;
+          }
+          anchorOnClick?.(e);
         }}
-        {...anchorRest}
+        onKeyDown={(event) => {
+          if (disabled) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+          }
+          anchorOnKeyDown?.(event);
+          if (
+            !event.defaultPrevented &&
+            body.textEditTrigger &&
+            (event.key === "Enter" || event.key === " ")
+          ) {
+            event.preventDefault();
+            event.stopPropagation();
+            body.startEdit();
+          }
+        }}
       >
         {body.inner}
         {external && (
@@ -859,17 +1139,26 @@ export const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(
             <Icon name={externalIcon} size={12} />
           </span>
         )}
-        {body.expandNode}
-        {body.copyNode}
-        {body.editIconNode}
       </a>
     );
 
-    return body.tooltipContent ? (
-      <EllipsisTooltip ref={ref as React.Ref<HTMLElement>} content={body.tooltipContent}>
+    const linkedElement = body.tooltipContent ? (
+      <EllipsisTooltip content={body.tooltipContent}>
         {element}
       </EllipsisTooltip>
     ) : element;
+
+    if (!body.expandNode && !body.copyNode && !body.editIconNode) {
+      return linkedElement;
+    }
+    return (
+      <span className="typo-link-group">
+        {linkedElement}
+        {body.expandNode}
+        {body.copyNode}
+        {body.editIconNode}
+      </span>
+    );
   }
 );
 Link.displayName = "Typography.Link";
@@ -878,13 +1167,13 @@ Link.displayName = "Typography.Link";
  * Typography wrapper (article-style block)
  * ========================================================================== */
 
-export interface TypographyProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface TypographyProps extends React.HTMLAttributes<HTMLElement> {
   children?: React.ReactNode;
 }
 
 interface TypographyComponent
   extends React.ForwardRefExoticComponent<
-    TypographyProps & React.RefAttributes<HTMLDivElement>
+    TypographyProps & React.RefAttributes<HTMLElement>
   > {
   Title: typeof Title;
   Text: typeof Text;
@@ -902,10 +1191,10 @@ interface TypographyComponent
  *   <Typography.Paragraph>段落…</Typography.Paragraph>
  * </Typography>
  */
-const TypographyBase = React.forwardRef<HTMLDivElement, TypographyProps>(
+const TypographyBase = React.forwardRef<HTMLElement, TypographyProps>(
   ({ className = "", children, ...rest }, ref) => (
     <article
-      ref={ref as unknown as React.Ref<HTMLElement>}
+      ref={ref}
       className={`typo-root ${className}`}
       {...(rest as React.HTMLAttributes<HTMLElement>)}
     >

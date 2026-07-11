@@ -16,7 +16,7 @@ const SectionIntro: React.FC<SectionCtx> = ({ go, setTweak, openTweaks }) => {
             用凸起关系替代边框,用柔和阴影替代分隔线。30+ 组件 · 6 种强调色 · 三档密度 ·
             全部由 CSS 变量驱动,运行时可改。
           </p>
-          <div style={{ display: "flex", gap: 10, marginTop: 24 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 24 }}>
             <Button variant="primary" trailingIcon="arrowRight" onClick={() => go("button")}>
               浏览组件
             </Button>

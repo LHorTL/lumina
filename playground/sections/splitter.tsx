@@ -116,9 +116,9 @@ const SectionSplitter: React.FC<SectionCtx> = () => (
         id: "controlled",
         title: "受控模式",
         span: 2,
-        description: "通过 size / onResize 可以持久化宽度或与其他状态联动。",
+        description: "通过 size / onResize 与外部状态联动；storageKey 可直接持久化最后一次完成的尺寸。",
         code: `const [w, setW] = useState(220);
-<Splitter size={w} onResize={setW}>...</Splitter>`,
+<Splitter size={w} onResize={setW} storageKey="workspace-sidebar">...</Splitter>`,
         render: () => {
           const Live = () => {
             const [w, setW] = React.useState(220);
@@ -157,6 +157,9 @@ const SectionSplitter: React.FC<SectionCtx> = () => (
           { prop: "onResizeEnd", description: "拖动结束回调", type: "(n: number) => void" },
           { prop: "min / max", description: "尺寸限制 (px)", type: "number", default: "80 / Infinity" },
           { prop: "step", description: "方向键步长 (px)", type: "number", default: "16" },
+          { prop: "secondMin", description: "第二面板保留的最小尺寸", type: "number", default: "24" },
+          { prop: "storageKey", description: "持久化尺寸的本地存储键", type: "string" },
+          { prop: "handleProps", description: "分隔手柄原生属性与 aria-label", type: "HTMLAttributes<HTMLDivElement>" },
           { prop: "children", description: "必须恰好两个子节点", type: "[ReactNode, ReactNode]", required: true },
         ],
       },

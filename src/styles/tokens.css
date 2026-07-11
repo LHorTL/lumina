@@ -127,6 +127,16 @@
   --dur-slow: 360ms;
 }
 
+/* 尊重系统的减少动态效果偏好，同时保持组件状态切换事件可完成。 */
+@media (prefers-reduced-motion: reduce) {
+  :root,
+  [data-theme] {
+    --dur-fast: 0.01ms;
+    --dur: 0.01ms;
+    --dur-slow: 0.01ms;
+  }
+}
+
 /* Explicit light reset for scoped ThemeProvider instances.
    :root already has these defaults, but nested [data-theme="light"] must not
    inherit a dark or custom parent surface. */

@@ -185,9 +185,17 @@ function escapePipes(s) {
 // several components — we list the section `id`'s canonical set.
 const COMPONENT_ALIAS = {
   intro: [],
-  theme: ["ThemeProvider", "useTheme", "applyTheme"],
+  theme: [
+    "ThemeProvider",
+    "useTheme",
+    "applyTheme",
+    "LUMINA_THEME_PRESETS",
+    "cloneLuminaThemePreset",
+    "pickLuminaThemePresets",
+    "Select",
+  ],
   button: ["Button", "IconButton"],
-  icon: ["Icon"],
+  icon: ["Icon", "DeleteOutlined", "LoadingOutlined", "StarFilled", "ICON_NAMES"],
   typography: ["Typography", "Title", "Text", "Paragraph", "Link"],
   input: ["Input", "Textarea"],
   textarea: ["Textarea", "TextArea", "Input"],
@@ -203,7 +211,7 @@ const COMPONENT_ALIAS = {
   datepicker: ["DatePicker"],
   datetimepicker: ["DateTimePicker"],
   timepicker: ["TimePicker"],
-  colorpicker: ["ColorPicker"],
+  colorpicker: ["ColorPicker", "type ColorPickerTriggerElement"],
   card: ["Card"],
   surface: ["Surface", "SURFACE_THEME_PRESETS"],
   themepanel: ["ThemeProvider", "ThemePanel", "THEME_PANEL_DEFAULT_PRESET_OPTIONS", "THEME_PANEL_DEFAULT_THEME_PRESETS"],

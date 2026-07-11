@@ -44,11 +44,13 @@ shape="square" 使用圆角方形,尺寸变化时圆角跟随变化。
 | Prop | 类型 | 默认 | 说明 |
 | --- | --- | --- | --- |
 | src | `string` | — | 图片 URL |
+| fallbackSrc | `string` | — | 主图片失败后的备用地址 |
 | alt | `string` | — | 替代文本/首字母来源 |
 | initials | `string` | — | 自定义首字母 |
 | size | `number | "sm" | "md" | "lg" | "xl"` | `"md"` | 尺寸 |
 | shape | `"circle" | "square"` | `"circle"` | 形状 |
 | status | `"online" | "busy" | "away" | "offline"` | — | 状态点 |
+| onImageError | `(event) => void` | — | 主图与备用图最终均失败时触发 |
 
 
 ---

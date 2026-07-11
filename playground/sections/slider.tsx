@@ -43,8 +43,17 @@ const SectionSlider: React.FC<SectionCtx> = () => {
           description: "range 模式下 value / onChange 采用 [min, max] 元组。",
           span: 2,
           code: `const [v, setV] = useState<[number, number]>([20, 70]);
-<Slider range value={v} onChange={setV} showValue />`,
-          render: () => <Slider range value={rangeVal} onChange={setRangeVal} showValue />,
+<Slider range value={v} onChange={setV} showValue
+  ariaLabel={["最低值", "最高值"]} />`,
+          render: () => (
+            <Slider
+              range
+              value={rangeVal}
+              onChange={setRangeVal}
+              showValue
+              ariaLabel={["最低值", "最高值"]}
+            />
+          ),
         },
         {
           id: "gradient",
@@ -86,12 +95,14 @@ const SectionSlider: React.FC<SectionCtx> = () => {
           rows: [
             { prop: "value / defaultValue", description: "受控/初始;range 模式下为 [number, number]", type: "number | [number, number]" },
             { prop: "onChange", description: "变更回调,range 模式返回元组", type: "(value) => void" },
-            { prop: "min / max / step", description: "区间与步进", type: "number" },
+            { prop: "min / max / step", description: "区间与步进;非法边界或非正步长会安全归一化", type: "number" },
             { prop: "range", description: "是否为双滑块区间模式", type: "boolean", default: "false" },
             { prop: "marks", description: "刻度,点击可跳到对应值", type: "Record<number, ReactNode>" },
             { prop: "tone", description: "色调", type: `"accent" | "success" | "warning" | "danger"`, default: `"accent"` },
             { prop: "colors", description: "渐变色数组,按位置插值;覆盖 tone", type: "string[]" },
             { prop: "showValue", description: "显示数值", type: "boolean", default: "false" },
+            { prop: "ariaLabel", description: "单滑块标签，或区间模式的起点/终点标签;支持方向键及 Home/End", type: "string | [string, string]" },
+            { prop: "原生 div 属性", description: "className / style / id / data-* 等会透传到根节点", type: "HTMLAttributes<HTMLDivElement>" },
             { prop: "disabled", description: "禁用", type: "boolean", default: "false" },
           ],
         },

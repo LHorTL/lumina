@@ -28,16 +28,29 @@ export const List = React.forwardRef<HTMLUListElement, ListProps>(({ items, divi
     style={{ listStyle: "none", margin: 0, ...style }}
     {...rest}
   >
-    {items.map((it) => (
-      <li key={it.key} className={`list-item ${it.onClick ? "clickable" : ""}`} onClick={it.onClick}>
-        {it.avatar && <div className="list-item-avatar">{it.avatar}</div>}
-        <div className="list-item-meta">
-          {it.title && <div className="list-item-title">{it.title}</div>}
-          {it.description && <div className="list-item-desc">{it.description}</div>}
-        </div>
-        {it.actions && <div className="list-item-actions">{it.actions}</div>}
-      </li>
-    ))}
+    {items.map((it) => {
+      const content = (
+        <>
+          {it.avatar && <span className="list-item-avatar">{it.avatar}</span>}
+          <span className="list-item-meta">
+            {it.title && <span className="list-item-title">{it.title}</span>}
+            {it.description && <span className="list-item-desc">{it.description}</span>}
+          </span>
+        </>
+      );
+      return (
+        <li key={it.key} className={`list-item ${it.onClick ? "clickable" : ""}`}>
+          {it.onClick ? (
+            <button type="button" className="list-item-trigger" onClick={it.onClick}>
+              {content}
+            </button>
+          ) : (
+            <div className="list-item-trigger">{content}</div>
+          )}
+          {it.actions && <div className="list-item-actions">{it.actions}</div>}
+        </li>
+      );
+    })}
   </ul>
 ));
 List.displayName = "List";

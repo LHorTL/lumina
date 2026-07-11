@@ -47,6 +47,12 @@ min / max 与 disabledDate 会同步作用于 Calendar 单元格和手动输入�
 <DatePicker size="lg" disabled />
 ```
 
+### 自定义格式与解析
+
+```tsx
+<DatePicker format={formatDotDate} parse={parseDotDate} />
+```
+
 ## API
 
 **DatePicker**
@@ -56,6 +62,7 @@ min / max 与 disabledDate 会同步作用于 Calendar 单元格和手动输入�
 | value / defaultValue | `Date | null` | — | 受控/初始日期 |
 | onChange | `(date: Date | null, dateString: string) => void` | — | 选择或清空时触发 |
 | format | `"YYYY-MM-DD" | "YYYY/MM/DD" | "YYYY年MM月DD日" | ((date) => string)` | `"YYYY-MM-DD"` | 显示格式或自定义格式化函数 |
+| parse | `(input: string) => Date | null` | — | 自定义 format 函数对应的输入解析器 |
 | min / max | `Date` | — | 可选日期范围 |
 | disabledDate | `(date: Date) => boolean` | — | 自定义禁用日期 |
 | size | `"sm" | "md" | "lg"` | `"md"` | 输入框尺寸 |
