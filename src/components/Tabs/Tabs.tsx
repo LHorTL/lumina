@@ -2,6 +2,7 @@ import "../../styles/tokens.css";
 import "../../styles/shared.css";
 import "./Tabs.css";
 import * as React from "react";
+import { withComponentTheme, type ComponentThemeProps } from "../Theme/ComponentTheme";
 
 export interface TabItem {
   key: string;
@@ -11,7 +12,8 @@ export interface TabItem {
 }
 
 export interface TabsProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange"> {
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange">,
+    ComponentThemeProps {
   items: TabItem[];
   activeKey?: string;
   defaultActiveKey?: string;
@@ -27,7 +29,7 @@ const getFirstEnabledKey = (items: TabItem[]): string | undefined =>
   items.find((item) => !item.disabled)?.key;
 
 /** `Tabs` — switchable sections. */
-export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(({
+const TabsBase = React.forwardRef<HTMLDivElement, TabsProps>(({
   items,
   activeKey,
   defaultActiveKey,
@@ -109,4 +111,6 @@ export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(({
     </div>
   );
 });
-Tabs.displayName = "Tabs";
+TabsBase.displayName = "Tabs";
+
+export const Tabs = withComponentTheme(TabsBase, "Tabs", "tabs");

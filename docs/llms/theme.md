@@ -1,6 +1,6 @@
 # Theme 主题
 
-> ThemeProvider + useTheme,覆盖深浅色、自定义模式、强调色、密度、圆角、字体、阴影强度。
+> ThemeProvider + 组件 theme，支持页面、区域、组件和 Portal 使用不同色板，并可按组件类型定向覆盖。
 
 ## 导入
 
@@ -33,6 +33,56 @@ function Root() {
     </ThemeProvider>
   );
 }
+```
+
+### 页面与组件多色组合
+
+baseColor 会生成完整拟态色板；普通组件的 theme 默认只作用于自身，Portal 浮层会复制同一色板。
+
+```tsx
+<ThemeProvider target="scope" baseColor="#e7f0fa">
+  <Card theme={{
+    baseColor: "#f5dfd4",
+    colors: { fg: "#4d342b" },
+  }}>
+    暖色卡片
+  </Card>
+
+  <Select
+    theme={{ baseColor: "#eee3f8", accent: "violet" }}
+    options={options}
+  />
+
+  <AimOutlined
+    theme={{ colors: { fg: "#7357c8" } }}
+    size={28}
+  />
+</ThemeProvider>
+```
+
+### 容器内定向修改组件
+
+components 按公共组件名称匹配后代实例，可分别覆盖派生色板、精确颜色、组件 token 与静态插槽样式。
+
+```tsx
+<Surface
+  baseColor="#f0ece6"
+  components={{
+    Button: {
+      baseColor: "#dceaf8",
+      accent: "violet",
+      tokens: { hoverBackground: "#cbdff2" },
+      styles: { root: { borderRadius: 999 } },
+    },
+    Tag: {
+      colors: { fgMuted: "#70483c" },
+    },
+  }}
+>
+  <Button>只影响容器内 Button</Button>
+  <Tag>只影响容器内 Tag</Tag>
+  <Input placeholder="未配置，继续继承容器色板" />
+</Surface>
 ```
 
 ### useTheme Hook
@@ -168,7 +218,10 @@ applyTheme(document.documentElement, {
 | --- | --- | --- | --- |
 | mode | `ThemeMode` | `"light"` | 深浅色模式或自定义模式名 |
 | colorScheme | `"light" | "dark"` | `"light"` | 自定义模式使用的 light/dark 基底 |
+| baseColor | `string` | — | 表面基色；自动生成背景、文字、边框、阴影与默认强调色 |
 | accent | `AccentKey | CustomAccentInput` | `"sky"` | 强调色,预设或自定义 |
+| colors | `ThemeColorOverrides` | — | 对派生色板做最终精确覆盖；未提供字段继续继承 |
+| components | `ComponentThemeOverrides` | — | 按公共组件名定向覆盖容器内实例 |
 | density | `"compact" | "comfortable" | "spacious"` | `"comfortable"` | 密度 |
 | intensity | `number` | `5` | 阴影强度;ThemePanel 默认调节范围 0-20 |
 | radius | `number` | `20` | 圆角基准 px |
@@ -180,6 +233,8 @@ applyTheme(document.documentElement, {
 | ThemePreset.label / description | `string` | — | 可选展示元信息;ThemePanel 会读取它作为卡片标题和说明 |
 | target | `"root" | "scope"` | `"root"` | 应用到根还是局部 |
 | as | `keyof JSX.IntrinsicElements` | `"div"` | scope 模式的元素标签 |
+| asChild | `boolean` | `false` | scope 模式把主题直接合并到唯一子元素，不增加包装节点 |
+| enabled | `boolean` | `true` | 关闭当前主题层但保留 Provider 与 DOM 拓扑，适合平滑切换局部主题 |
 | storageKey | `string` | — | 带版本号的 localStorage 持久化 key；同源多窗口会自动同步当前主题与自定义 themes |
 | onChange | `(value: ThemeValue) => void` | — | 主题值变更回调 |
 
@@ -191,6 +246,7 @@ applyTheme(document.documentElement, {
 | mode | `ThemeMode` | — | 请求的模式(保留 system) |
 | resolvedMode | `ResolvedThemeMode` | — | 解析后的具体模式;自定义模式保留名称 |
 | colorScheme | `"light" | "dark"` | — | 当前 light/dark 基底 |
+| baseColor / colors / components | `-` | — | 当前基色、精确颜色与组件类型覆盖 |
 | accent | `AccentKey | "custom"` | — | 预设 key 或 "custom" |
 | accentPalette | `AccentPalette` | — | 当前完整调色板 |
 | density / intensity / radius / font / tokens | `-` | — | 当前各维度状态 |
@@ -198,9 +254,25 @@ applyTheme(document.documentElement, {
 | setMode(m) | `(m: ThemeMode) => void` | — | 切换模式 |
 | toggleMode() | `() => void` | — | light ⇄ dark 切换 |
 | setAccent(a) | `(a: AccentKey | CustomAccentInput) => void` | — | 切换强调色 |
+| setBaseColor / setColors / setComponents | `-` | — | 更新多色主题与组件类型覆盖 |
 | setDensity / setIntensity / setRadius / setFont / setTokens / setThemes | `-` | — | 对应字段的 setter |
 | update(cfg) | `(cfg: Partial<ThemeConfig>) => void` | — | 浅合并多字段 |
 | reset() | `() => void` | — | 重置到初始 props |
+
+
+**组件 theme 与定向覆盖**
+
+| Prop | 类型 | 默认 | 说明 |
+| --- | --- | --- | --- |
+| theme | `ComponentTheme` | — | 所有公共 UI 组件共享；强调色 key 或其他颜色字符串可直接简写 |
+| theme.scope | `"self" | "subtree"` | `"self"` | self 只改当前组件；subtree 同时向业务后代传递完整色板 |
+| baseColor | `string` | — | 生成背景、文字、边框、阴影和默认强调色 |
+| colorScheme / accent / intensity | `-` | — | 控制深浅基底、强调色和拟态强度 |
+| colors | `ThemeColorOverrides` | — | 精确覆盖 bg / fg / border / shadow / accent / semantic 等颜色槽 |
+| tokens | `ThemeTokens` | — | 短键会写入组件前缀变量；以 -- 开头的键作为高级原始变量逃生口 |
+| components | `ComponentThemeOverrides` | — | 继续定向配置当前组件内部或 subtree 后代的组件类型 |
+| styles.root | `CSSProperties` | — | 所有组件都支持真实视觉根节点；调用方 style 仍保持最高优先级 |
+| styles.popup / overlay / body | `CSSProperties` | — | 浮层、遮罩和正文等组件专用静态插槽；定位与用户 popupStyle 不会被覆盖 |
 
 
 ---

@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   font-size: 14px;
-  color: var(--fg);
+  color: var(--lmn-timeline-fg, var(--fg));
 }
 
 /* ---- Item layout ---- */
@@ -39,7 +39,7 @@
 /* Alternate mode */
 .timeline-alternate .timeline-item-left .timeline-item-label {
   text-align: right;
-  color: var(--fg-muted);
+  color: var(--lmn-timeline-fg-muted, var(--fg-muted));
 }
 .timeline-alternate .timeline-item-left .timeline-item-content {
   text-align: left;
@@ -49,7 +49,7 @@
 }
 .timeline-alternate .timeline-item-right .timeline-item-content {
   text-align: right;
-  color: var(--fg-muted);
+  color: var(--lmn-timeline-fg-muted, var(--fg-muted));
 }
 .timeline-alternate .timeline-item-right {
   direction: rtl;
@@ -72,7 +72,7 @@
   width: 12px;
   height: 12px;
   border-radius: var(--r-pill);
-  box-shadow: var(--neu-shadow-control);
+  box-shadow: var(--lmn-timeline-neu-shadow-control, var(--neu-shadow-control));
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -82,12 +82,12 @@
   margin-top: var(--timeline-dot-offset, 4px);
 }
 
-.timeline-item-dot.accent { background: var(--accent); }
-.timeline-item-dot.success { background: var(--success); }
-.timeline-item-dot.warning { background: var(--warning); }
-.timeline-item-dot.danger { background: var(--danger); }
-.timeline-item-dot.info { background: var(--info); }
-.timeline-item-dot.muted { background: var(--fg-subtle); }
+.timeline-item-dot.accent { background: var(--lmn-timeline-accent, var(--accent)); }
+.timeline-item-dot.success { background: var(--lmn-timeline-success, var(--success)); }
+.timeline-item-dot.warning { background: var(--lmn-timeline-warning, var(--warning)); }
+.timeline-item-dot.danger { background: var(--lmn-timeline-danger, var(--danger)); }
+.timeline-item-dot.info { background: var(--lmn-timeline-info, var(--info)); }
+.timeline-item-dot.muted { background: var(--lmn-timeline-fg-subtle, var(--fg-subtle)); }
 
 /* Pending dot: clear default fill, Spin handles its own visuals */
 .timeline-item-dot.pending {
@@ -99,7 +99,7 @@
 .timeline-item-tail {
   width: 2px;
   flex: 1;
-  background: var(--divider);
+  background: var(--lmn-timeline-divider, var(--divider));
   margin-top: var(--gap-1);
   margin-bottom: 0;
   border-radius: 1px;
@@ -118,14 +118,14 @@
 .timeline-item-label {
   padding-bottom: var(--gap-5);
   line-height: 1.6;
-  color: var(--fg-muted);
+  color: var(--lmn-timeline-fg-muted, var(--fg-muted));
   font-size: 13px;
   min-width: 0;
 }
 
 /* ---- Pending animation ---- */
 .timeline-item-pending .timeline-item-content {
-  color: var(--fg-muted);
+  color: var(--lmn-timeline-fg-muted, var(--fg-muted));
 }
 
 /* When dot has custom content (Spin / Icon), expand to fit */

@@ -3,9 +3,11 @@ import "../../styles/shared.css";
 import "./Calendar.css";
 import * as React from "react";
 import { Icon } from "../Icon";
+import { withComponentTheme, type ComponentThemeProps } from "../Theme/ComponentTheme";
 
 export interface CalendarProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, "defaultValue" | "onChange"> {
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "defaultValue" | "onChange">,
+    ComponentThemeProps {
   /** 受控日期；传 null 表示当前没有选中日期。 */
   value?: Date | null;
   /** 非受控初始日期；传 null 时仍以今天作为初始可视月份。 */
@@ -47,7 +49,7 @@ const startOfDay = (date: Date): Date =>
   new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
 /** `Calendar` — month-view date picker. */
-export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(({
+const CalendarBase = React.forwardRef<HTMLDivElement, CalendarProps>(({
   value,
   defaultValue,
   onChange,
@@ -334,4 +336,6 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(({
     </div>
   );
 });
-Calendar.displayName = "Calendar";
+CalendarBase.displayName = "Calendar";
+
+export const Calendar = withComponentTheme(CalendarBase, "Calendar", "calendar");

@@ -3,11 +3,13 @@ import "../../styles/shared.css";
 import "./Alert.css";
 import * as React from "react";
 import { Icon, renderIconSlot, type IconSlot } from "../Icon";
+import { withComponentTheme, type ComponentThemeProps } from "../Theme/ComponentTheme";
 
 export type AlertTone = "info" | "success" | "warning" | "danger";
 
 export interface AlertProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, "title" | "children"> {
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "title" | "children">,
+    ComponentThemeProps {
   tone?: AlertTone;
   title?: React.ReactNode;
   children?: React.ReactNode;
@@ -22,7 +24,7 @@ export interface AlertProps
 }
 
 /** `Alert` — inline contextual message. */
-export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(({
+const AlertBase = React.forwardRef<HTMLDivElement, AlertProps>(({
   tone = "info",
   title,
   children,
@@ -71,4 +73,6 @@ export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(({
     </div>
   );
 });
-Alert.displayName = "Alert";
+AlertBase.displayName = "Alert";
+
+export const Alert = withComponentTheme(AlertBase, "Alert", "alert");

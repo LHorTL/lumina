@@ -351,7 +351,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:lib": "tsup",
+    "build:lib": "node --max-old-space-size=6144 ./node_modules/tsup/dist/cli-default.js",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "test:unit": "vitest run --root . --environment jsdom",

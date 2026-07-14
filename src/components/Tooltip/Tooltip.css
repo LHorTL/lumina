@@ -7,14 +7,14 @@
 .tip {
   display: block;
   box-sizing: border-box;
-  background: var(--bg-sunken);
-  color: var(--fg);
+  background: var(--lmn-tooltip-bg-sunken, var(--bg-sunken));
+  color: var(--lmn-tooltip-fg, var(--fg));
   padding: 6px 10px;
   border-radius: var(--r-sm);
   font-size: 11px;
   font-weight: 500;
   white-space: nowrap;
-  box-shadow: var(--neu-shadow-control);
+  box-shadow: var(--lmn-tooltip-neu-shadow-control, var(--neu-shadow-control));
   pointer-events: auto;
   animation: fadeIn var(--dur) var(--ease);
   z-index: 1000;

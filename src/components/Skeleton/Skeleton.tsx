@@ -2,6 +2,7 @@ import "../../styles/tokens.css";
 import "../../styles/shared.css";
 import "./Skeleton.css";
 import * as React from "react";
+import { withComponentTheme, type ComponentThemeProps } from "../Theme/ComponentTheme";
 
 export interface SkeletonAvatarConfig {
   shape?: "circle" | "square";
@@ -18,7 +19,8 @@ export interface SkeletonParagraphConfig {
 }
 
 export interface SkeletonProps
-  extends Omit<React.HTMLAttributes<HTMLElement>, "title"> {
+  extends Omit<React.HTMLAttributes<HTMLElement>, "title">,
+    ComponentThemeProps {
   width?: number | string;
   height?: number | string;
   circle?: boolean;
@@ -35,7 +37,7 @@ const AVATAR_SIZE_PX = { sm: 32, md: 40, lg: 56 } as const;
 /**
  * `Skeleton` — content placeholder during loading.
  */
-export const Skeleton = React.forwardRef<HTMLElement, SkeletonProps>(({
+const SkeletonBase = React.forwardRef<HTMLElement, SkeletonProps>(({
   width = "100%",
   height = 16,
   circle,
@@ -117,4 +119,6 @@ export const Skeleton = React.forwardRef<HTMLElement, SkeletonProps>(({
     </div>
   );
 });
-Skeleton.displayName = "Skeleton";
+SkeletonBase.displayName = "Skeleton";
+
+export const Skeleton = withComponentTheme(SkeletonBase, "Skeleton", "skeleton");

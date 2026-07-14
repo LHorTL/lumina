@@ -9,6 +9,12 @@ import { useFloating } from "../../utils/useFloating";
 import { useInputTriggerToggle } from "../../utils/useInputTriggerToggle";
 import { usePortalContainer } from "../../utils/portal";
 import { useOverlayLayer } from "../../utils/overlayStack";
+import {
+  InternalComponentThemePart,
+  useComponentPortalTheme,
+  withComponentTheme,
+  type ComponentThemeProps,
+} from "../Theme/ComponentTheme";
 
 export type TimePickerFormat = "HH:mm" | "HH:mm:ss";
 export type TimePickerSize = "sm" | "md" | "lg";
@@ -20,7 +26,8 @@ export interface TimePickerValue {
 }
 
 export interface TimePickerProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, "defaultValue" | "onChange"> {
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "defaultValue" | "onChange">,
+    ComponentThemeProps {
   /** Controlled time string. Use `null` for an empty picker. */
   value?: string | null;
   /** Initial time string when uncontrolled. */
@@ -140,7 +147,7 @@ const byDistanceFrom = (preferred: number) => (a: number, b: number): number =>
  * @example
  * <TimePicker value={time} onChange={setTime} minuteStep={15} />
  */
-export const TimePicker = React.forwardRef<HTMLDivElement, TimePickerProps>(
+const TimePickerBase = React.forwardRef<HTMLDivElement, TimePickerProps>(
   (
     {
       value,
@@ -215,6 +222,7 @@ export const TimePicker = React.forwardRef<HTMLDivElement, TimePickerProps>(
     const rootRef = React.useRef<HTMLDivElement | null>(null);
     const panelId = React.useId();
     const portalContainer = usePortalContainer();
+    const portalTheme = useComponentPortalTheme("TimePicker");
     const { triggerRef, floatingRef: panelRef, floatingStyle, zIndex: panelZIndex } = useFloating<HTMLDivElement, HTMLDivElement>({
       open,
       placement,
@@ -505,7 +513,8 @@ export const TimePicker = React.forwardRef<HTMLDivElement, TimePickerProps>(
 
     return (
       <div ref={setRootRef} className={rootClassName} onKeyDown={handleRootKeyDown} {...rest}>
-        <Input
+        <InternalComponentThemePart components={["Input", "Button"]}>
+          <Input
           id={fieldId}
           aria-label={ariaLabel}
           aria-labelledby={ariaLabelledBy}
@@ -539,7 +548,8 @@ export const TimePicker = React.forwardRef<HTMLDivElement, TimePickerProps>(
               className={`time-picker-panel ${includeSecond ? "with-second" : "without-second"} ${mergedPanelClassName}`}
               role="dialog"
               aria-label="选择时间"
-              style={floatingStyle}
+              {...portalTheme.dataAttributes}
+              style={{ ...floatingStyle, ...portalTheme.style, ...portalTheme.styles.popup }}
             >
               <div className="time-picker-columns">
                 {renderColumn("时", "hour", hourOptions)}
@@ -575,8 +585,15 @@ export const TimePicker = React.forwardRef<HTMLDivElement, TimePickerProps>(
             </div>,
             portalContainer
           )}
+        </InternalComponentThemePart>
       </div>
     );
   }
 );
-TimePicker.displayName = "TimePicker";
+TimePickerBase.displayName = "TimePicker";
+
+export const TimePicker = withComponentTheme(
+  TimePickerBase,
+  "TimePicker",
+  ["time-picker", "input", "button"]
+);

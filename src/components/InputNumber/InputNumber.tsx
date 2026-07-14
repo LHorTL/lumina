@@ -3,13 +3,16 @@ import "../../styles/shared.css";
 import "./InputNumber.css";
 import * as React from "react";
 import { Input } from "../Input";
+import { InputThemeIdentityProvider } from "../Input/inputThemeRuntime";
 import { Icon } from "../Icon";
+import type { ComponentThemeProps } from "../Theme/componentThemeTypes";
 
 export interface InputNumberProps
   extends Omit<
     React.InputHTMLAttributes<HTMLInputElement>,
     "value" | "defaultValue" | "onChange" | "size" | "prefix" | "suffix" | "type"
-  > {
+  >,
+    ComponentThemeProps {
   /** Controlled value. `null` = empty field. */
   value?: number | null;
   /** Uncontrolled initial value. */
@@ -86,6 +89,7 @@ export const InputNumber = React.forwardRef<HTMLInputElement, InputNumberProps>(
       autoFocus,
       id,
       name,
+      theme,
       ...rest
     },
     ref
@@ -205,32 +209,35 @@ export const InputNumber = React.forwardRef<HTMLInputElement, InputNumberProps>(
         : stepperSuffix ?? suffix;
 
     return (
-      <Input
-        ref={ref}
-        {...rest}
-        id={id}
-        name={name}
-        size={size}
-        value={text}
-        placeholder={placeholder}
-        disabled={disabled}
-        readOnly={readOnly}
-        invalid={invalid}
-        autoFocus={autoFocus}
-        prefix={prefix}
-        suffix={finalSuffix}
-        className={`input-number ${className}`}
-        inputMode="decimal"
-        role="spinbutton"
-        aria-valuemin={Number.isFinite(normalizedMin) ? normalizedMin : undefined}
-        aria-valuemax={Number.isFinite(normalizedMax) ? normalizedMax : undefined}
-        aria-valuenow={current ?? undefined}
-        onValueChange={handleInput}
-        onKeyDown={handleKeyDown}
-        onWheel={handleWheel}
-        onBlur={handleBlur}
-        onFocus={onFocus}
-      />
+      <InputThemeIdentityProvider value={{ component: "InputNumber", cssPrefix: "input" }}>
+        <Input
+          ref={ref}
+          {...rest}
+          id={id}
+          name={name}
+          size={size}
+          value={text}
+          placeholder={placeholder}
+          disabled={disabled}
+          readOnly={readOnly}
+          invalid={invalid}
+          autoFocus={autoFocus}
+          prefix={prefix}
+          suffix={finalSuffix}
+          className={`input-number ${className}`}
+          inputMode="decimal"
+          role="spinbutton"
+          aria-valuemin={Number.isFinite(normalizedMin) ? normalizedMin : undefined}
+          aria-valuemax={Number.isFinite(normalizedMax) ? normalizedMax : undefined}
+          aria-valuenow={current ?? undefined}
+          onValueChange={handleInput}
+          onKeyDown={handleKeyDown}
+          onWheel={handleWheel}
+          onBlur={handleBlur}
+          onFocus={onFocus}
+          theme={theme}
+        />
+      </InputThemeIdentityProvider>
     );
   }
 );

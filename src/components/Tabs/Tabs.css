@@ -4,8 +4,8 @@
   display: inline-flex;
   padding: 5px;
   border-radius: var(--r-md);
-  background: var(--bg);
-  box-shadow: var(--neu-shadow-inset);
+  background: var(--lmn-tabs-bg, var(--bg));
+  box-shadow: var(--lmn-tabs-neu-shadow-inset, var(--neu-shadow-inset));
   gap: 2px;
   align-self: flex-start;
 }
@@ -17,18 +17,18 @@
   font-size: 12px;
   font-weight: 500;
   font-family: inherit;
-  color: var(--fg-muted);
+  color: var(--lmn-tabs-fg-muted, var(--fg-muted));
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   transition: all var(--dur-fast) var(--ease);
 }
-.tabs-nav .tab:hover { color: var(--fg); }
+.tabs-nav .tab:hover { color: var(--lmn-tabs-fg, var(--fg)); }
 .tabs-nav .tab.active {
-  color: var(--accent-ink);
-  background: var(--bg);
-  box-shadow: var(--neu-shadow-control);
+  color: var(--lmn-tabs-accent-ink, var(--accent-ink));
+  background: var(--lmn-tabs-bg, var(--bg));
+  box-shadow: var(--lmn-tabs-neu-shadow-control, var(--neu-shadow-control));
   font-weight: 600;
 }
 .tabs-nav .tab[disabled] { opacity: 0.4; cursor: not-allowed; }
@@ -39,7 +39,7 @@
   background: transparent;
   box-shadow: none;
   border-radius: 0;
-  border-bottom: 1px solid var(--divider);
+  border-bottom: 1px solid var(--lmn-tabs-divider, var(--divider));
   align-self: stretch;
 }
 .tabs.line .tabs-nav .tab,
@@ -54,8 +54,8 @@
 .tabs.line .tabs-nav .tab.active::after,
 .tabs.underline .tabs-nav .tab.active::after {
   content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px;
-  background: var(--accent); border-radius: 999px;
-  box-shadow: 0 0 8px var(--accent-glow);
+  background: var(--lmn-tabs-accent, var(--accent)); border-radius: 999px;
+  box-shadow: 0 0 8px var(--lmn-tabs-accent-glow, var(--accent-glow));
 }
 
 /* Centered nav — works for pill / segmented (self-align) and line (flex-center) */

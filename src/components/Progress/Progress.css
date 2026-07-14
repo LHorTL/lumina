@@ -1,7 +1,7 @@
 /* ============ Progress ============ */
 .progress {
-  --progress-fill: var(--accent);
-  --progress-fill-glow: var(--accent-glow);
+  --progress-fill: var(--lmn-progress-accent, var(--accent));
+  --progress-fill-glow: var(--lmn-progress-accent-glow, var(--accent-glow));
   --progress-inset: 2px;
   width: 100%;
   display: flex;
@@ -11,22 +11,22 @@
 .progress.sm { --progress-inset: 1px; }
 .progress.lg { --progress-inset: 2px; }
 .progress.success {
-  --progress-fill: var(--success);
-  --progress-fill-glow: color-mix(in oklch, var(--success) 35%, transparent);
+  --progress-fill: var(--lmn-progress-success, var(--success));
+  --progress-fill-glow: color-mix(in oklch, var(--lmn-progress-success, var(--success)) 35%, transparent);
 }
 .progress.warning {
-  --progress-fill: var(--warning);
-  --progress-fill-glow: color-mix(in oklch, var(--warning) 35%, transparent);
+  --progress-fill: var(--lmn-progress-warning, var(--warning));
+  --progress-fill-glow: color-mix(in oklch, var(--lmn-progress-warning, var(--warning)) 35%, transparent);
 }
 .progress.danger {
-  --progress-fill: var(--danger);
-  --progress-fill-glow: color-mix(in oklch, var(--danger) 35%, transparent);
+  --progress-fill: var(--lmn-progress-danger, var(--danger));
+  --progress-fill-glow: color-mix(in oklch, var(--lmn-progress-danger, var(--danger)) 35%, transparent);
 }
 .progress-label {
   display: flex;
   justify-content: space-between;
   font-size: 12px;
-  color: var(--fg-muted);
+  color: var(--lmn-progress-fg-muted, var(--fg-muted));
 }
 .progress-label .v { font-family: var(--font-mono); }
 .progress-track {
@@ -37,10 +37,10 @@
   box-sizing: border-box;
   background: linear-gradient(
     180deg,
-    color-mix(in oklch, var(--bg) 88%, var(--shadow-light)),
-    color-mix(in oklch, var(--bg) 92%, var(--shadow-dark))
+    color-mix(in oklch, var(--lmn-progress-bg, var(--bg)) 88%, var(--lmn-progress-shadow-light, var(--shadow-light))),
+    color-mix(in oklch, var(--lmn-progress-bg, var(--bg)) 92%, var(--lmn-progress-shadow-dark, var(--shadow-dark)))
   );
-  box-shadow: var(--neu-shadow-inset);
+  box-shadow: var(--lmn-progress-neu-shadow-inset, var(--neu-shadow-inset));
   overflow: hidden;
   position: relative;
 }
@@ -52,15 +52,15 @@
   border-radius: inherit;
   background: linear-gradient(
     180deg,
-    color-mix(in oklch, var(--progress-fill) 68%, var(--shadow-light)) 0%,
+    color-mix(in oklch, var(--progress-fill) 68%, var(--lmn-progress-shadow-light, var(--shadow-light))) 0%,
     var(--progress-fill) 55%,
-    color-mix(in oklch, var(--progress-fill) 84%, var(--shadow-dark)) 100%
+    color-mix(in oklch, var(--progress-fill) 84%, var(--lmn-progress-shadow-dark, var(--shadow-dark))) 100%
   );
   box-shadow:
-    inset 1px 1px 2px color-mix(in oklch, var(--progress-fill) 18%, var(--shadow-dark)),
-    inset -1px -1px 2px color-mix(in oklch, var(--progress-fill) 14%, var(--shadow-light)),
-    1px 1px 4px color-mix(in oklch, var(--progress-fill) 16%, var(--shadow-dark)),
-    -1px -1px 4px color-mix(in oklch, var(--progress-fill) 10%, var(--shadow-light)),
+    inset 1px 1px 2px color-mix(in oklch, var(--progress-fill) 18%, var(--lmn-progress-shadow-dark, var(--shadow-dark))),
+    inset -1px -1px 2px color-mix(in oklch, var(--progress-fill) 14%, var(--lmn-progress-shadow-light, var(--shadow-light))),
+    1px 1px 4px color-mix(in oklch, var(--progress-fill) 16%, var(--lmn-progress-shadow-dark, var(--shadow-dark))),
+    -1px -1px 4px color-mix(in oklch, var(--progress-fill) 10%, var(--lmn-progress-shadow-light, var(--shadow-light))),
     0 0 10px var(--progress-fill-glow);
   transition: width var(--dur-slow) var(--ease), box-shadow var(--dur) var(--ease);
   overflow: hidden;
@@ -72,8 +72,8 @@
   border-radius: inherit;
   background: linear-gradient(
     180deg,
-    color-mix(in oklch, var(--shadow-light) 72%, transparent) 0%,
-    color-mix(in oklch, var(--shadow-light) 28%, transparent) 38%,
+    color-mix(in oklch, var(--lmn-progress-shadow-light, var(--shadow-light)) 72%, transparent) 0%,
+    color-mix(in oklch, var(--lmn-progress-shadow-light, var(--shadow-light)) 28%, transparent) 38%,
     transparent 70%
   );
   pointer-events: none;

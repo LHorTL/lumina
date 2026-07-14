@@ -1,9 +1,9 @@
 /* ============ Collapse ============ */
 .collapse { display: flex; flex-direction: column; gap: 10px; }
 .collapse-item {
-  background: var(--bg);
+  background: var(--lmn-collapse-bg, var(--bg));
   border-radius: var(--r-md);
-  box-shadow: var(--neu-shadow-control);
+  box-shadow: var(--lmn-collapse-neu-shadow-control, var(--neu-shadow-control));
   overflow: hidden;
 }
 .collapse.ghost .collapse-item {
@@ -24,7 +24,7 @@
   font-size: 13px;
   font-weight: 500;
   font-family: inherit;
-  color: var(--fg);
+  color: var(--lmn-collapse-fg, var(--fg));
   text-align: left;
 }
 .collapse.small .collapse-head { padding: 10px 14px; font-size: 12px; }
@@ -35,7 +35,7 @@
   max-height: 0;
   overflow: hidden;
   transition: max-height var(--dur) var(--ease);
-  color: var(--fg-muted);
+  color: var(--lmn-collapse-fg-muted, var(--fg-muted));
   font-size: 13px;
 }
 .collapse-body-inner { padding: 0 18px 16px; }
@@ -43,7 +43,7 @@
 .collapse.large .collapse-body-inner { padding: 0 22px 20px; }
 .collapse-chev {
   transition: transform var(--dur) var(--ease), color var(--dur) var(--ease);
-  color: var(--fg-subtle);
+  color: var(--lmn-collapse-fg-subtle, var(--fg-subtle));
   display: inline-flex;
   border-radius: var(--r-xs);
   padding: 2px;
@@ -54,5 +54,5 @@ button.collapse-chev {
   font: inherit;
 }
 .collapse-chev.clickable { cursor: pointer; }
-.collapse-chev.clickable:hover { color: var(--fg); background: var(--bg); box-shadow: var(--neu-shadow-subtle); }
-.collapse-item.open .collapse-chev { transform: rotate(180deg); color: var(--accent); }
+.collapse-chev.clickable:hover { color: var(--lmn-collapse-fg, var(--fg)); background: var(--lmn-collapse-bg, var(--bg)); box-shadow: var(--lmn-collapse-neu-shadow-subtle, var(--neu-shadow-subtle)); }
+.collapse-item.open .collapse-chev { transform: rotate(180deg); color: var(--lmn-collapse-accent, var(--accent)); }

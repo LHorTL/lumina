@@ -2,10 +2,11 @@ import "../../styles/tokens.css";
 import "../../styles/shared.css";
 import "./Spin.css";
 import * as React from "react";
+import { withComponentTheme, type ComponentThemeProps } from "../Theme/ComponentTheme";
 
 export type SpinSize = "small" | "default" | "large" | number;
 
-export interface SpinProps extends React.HTMLAttributes<HTMLSpanElement> {
+export interface SpinProps extends React.HTMLAttributes<HTMLSpanElement>, ComponentThemeProps {
   size?: SpinSize;
   tone?: "accent" | "success" | "warning" | "danger" | "current";
   /** Text rendered next to the indicator. */
@@ -31,7 +32,7 @@ const resolveSize = (size: SpinSize): number =>
 type IndicatorProps = React.HTMLAttributes<HTMLSpanElement> & React.RefAttributes<HTMLSpanElement>;
 
 /** `Spin` — loading indicator. */
-export const Spin = React.forwardRef<HTMLSpanElement, SpinProps>(({
+const SpinBase = React.forwardRef<HTMLSpanElement, SpinProps>(({
   size = "default",
   tone = "accent",
   tip,
@@ -91,4 +92,6 @@ export const Spin = React.forwardRef<HTMLSpanElement, SpinProps>(({
     </span>
   );
 });
-Spin.displayName = "Spin";
+SpinBase.displayName = "Spin";
+
+export const Spin = withComponentTheme(SpinBase, "Spin", "spin");

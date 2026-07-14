@@ -6,6 +6,11 @@ import { createPortal } from "react-dom";
 import { useFloating, type Placement } from "../../utils/useFloating";
 import { useOverlayLayer } from "../../utils/overlayStack";
 import { usePortalContainer } from "../../utils/portal";
+import {
+  useComponentPortalTheme,
+  withComponentTheme,
+  type ComponentThemeProps,
+} from "../Theme/ComponentTheme";
 
 export type TooltipPlacement =
   | "top"
@@ -22,7 +27,8 @@ export type TooltipPlacement =
   | "rightBottom";
 
 export interface TooltipProps
-  extends Omit<React.HTMLAttributes<HTMLSpanElement>, "children" | "content" | "title"> {
+  extends Omit<React.HTMLAttributes<HTMLSpanElement>, "children" | "content" | "title">,
+    ComponentThemeProps {
   content?: React.ReactNode;
   /** Alias for `content`. */
   title?: React.ReactNode;
@@ -66,7 +72,7 @@ const normalizePlacement = (
 };
 
 /** `Tooltip` — hover/focus text bubble. */
-export const Tooltip = React.forwardRef<HTMLSpanElement, TooltipProps>(({
+const TooltipBase = React.forwardRef<HTMLSpanElement, TooltipProps>(({
   content,
   title,
   placement = "top",
@@ -91,6 +97,7 @@ export const Tooltip = React.forwardRef<HTMLSpanElement, TooltipProps>(({
   ...rest
 }, ref) => {
   const portalContainer = usePortalContainer();
+  const portalTheme = useComponentPortalTheme("Tooltip");
   const [innerShow, setInnerShow] = React.useState(defaultOpen);
   const openTimerRef = React.useRef<number | undefined>();
   const closeTimerRef = React.useRef<number | undefined>();
@@ -221,7 +228,8 @@ export const Tooltip = React.forwardRef<HTMLSpanElement, TooltipProps>(({
             ref={floatingRef}
             id={tooltipId}
             className={`tip ${resolved} ${overlayClassName} ${popupClassName}`}
-            style={floatingStyle}
+            {...portalTheme.dataAttributes}
+            style={{ ...floatingStyle, ...portalTheme.style, ...portalTheme.styles.popup }}
             role="tooltip"
             onMouseEnter={open}
             onMouseLeave={close}
@@ -235,4 +243,6 @@ export const Tooltip = React.forwardRef<HTMLSpanElement, TooltipProps>(({
     </>
   );
 });
-Tooltip.displayName = "Tooltip";
+TooltipBase.displayName = "Tooltip";
+
+export const Tooltip = withComponentTheme(TooltipBase, "Tooltip", "tooltip");

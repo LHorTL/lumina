@@ -3,6 +3,7 @@ import "../../styles/shared.css";
 import "./Collapse.css";
 import * as React from "react";
 import { Icon } from "../Icon";
+import { withComponentTheme, type ComponentThemeProps } from "../Theme/ComponentTheme";
 
 export interface CollapseItem {
   key: string;
@@ -12,7 +13,8 @@ export interface CollapseItem {
 }
 
 export interface CollapseProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange"> {
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange">,
+    ComponentThemeProps {
   items: CollapseItem[];
   /** If true, at most one item can be open at a time. */
   accordion?: boolean;
@@ -85,7 +87,7 @@ const normalizeKeys = (value: string | string[] | undefined, singleOpen = false)
 };
 
 /** `Collapse` — collapsible sections. */
-export const Collapse = React.forwardRef<HTMLDivElement, CollapseProps>(({
+const CollapseBase = React.forwardRef<HTMLDivElement, CollapseProps>(({
   items,
   accordion = false,
   multiple = true,
@@ -176,4 +178,6 @@ export const Collapse = React.forwardRef<HTMLDivElement, CollapseProps>(({
     </div>
   );
 });
-Collapse.displayName = "Collapse";
+CollapseBase.displayName = "Collapse";
+
+export const Collapse = withComponentTheme(CollapseBase, "Collapse", "collapse");

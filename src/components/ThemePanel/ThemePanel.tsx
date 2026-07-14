@@ -2,28 +2,45 @@ import "../../styles/tokens.css";
 import "../../styles/shared.css";
 import "./ThemePanel.css";
 import * as React from "react";
-import { Button } from "../Button";
-import { ColorPicker } from "../ColorPicker";
+import { Button as ButtonBase } from "../Button";
+import { ColorPicker as ColorPickerBase } from "../ColorPicker";
 import { Icon } from "../Icon";
-import { Input } from "../Input";
-import { RadioGroup } from "../Radio";
-import { Slider } from "../Slider";
-import { Switch } from "../Switch";
+import { Input as InputBase } from "../Input";
+import { RadioGroup as RadioGroupBase } from "../Radio";
+import { Slider as SliderBase } from "../Slider";
+import { Switch as SwitchBase } from "../Switch";
 import {
   ACCENT_PRESETS,
   FONT_STACKS,
   useTheme,
-  type AccentPalette,
-  type AccentKey,
   type DensityMode,
   type FontConfig,
   type FontKey,
-  type ThemeBaseMode,
   type ThemeConfig,
   type ThemeMode,
   type ThemePreset,
-} from "../Theme";
+} from "../Theme/Theme";
+import type {
+  AccentKey,
+  AccentPalette,
+  ThemeBaseMode,
+} from "../Theme/themeTypes";
+import type { ComponentThemeOverrides } from "../Theme/componentThemeTypes";
+import {
+  withInternalComponentThemePart,
+  withComponentTheme,
+  type ComponentThemeProps,
+} from "../Theme/ComponentTheme";
 import { pickLuminaThemePresets } from "../Theme/presets";
+import { mergeComponentThemeOverrides } from "../Theme/themeRuntime";
+
+// ThemePanel 是封闭复合控件，这些别名只标记它自己渲染的公共子控件。
+const Button = withInternalComponentThemePart(ButtonBase, "Button");
+const ColorPicker = withInternalComponentThemePart(ColorPickerBase, "ColorPicker");
+const Input = withInternalComponentThemePart(InputBase, "Input");
+const RadioGroup = withInternalComponentThemePart(RadioGroupBase, ["RadioGroup", "Radio"]);
+const Slider = withInternalComponentThemePart(SliderBase, "Slider");
+const Switch = withInternalComponentThemePart(SwitchBase, "Switch");
 
 export type ThemePanelSection =
   | "mode"
@@ -90,7 +107,9 @@ export const THEME_PANEL_DEFAULT_PRESET_OPTIONS: ThemePanelPresetOption[] = [
   { key: "assistantDark", label: "助手暗", description: "Soft", preset: THEME_PANEL_DEFAULT_THEME_PRESETS.assistantDark },
 ];
 
-export interface ThemePanelProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
+export interface ThemePanelProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "title">,
+    ComponentThemeProps {
   /** Header title. Pass `null` to hide the title text while keeping the panel layout. */
   title?: React.ReactNode;
   /** Secondary header text. */
@@ -518,7 +537,7 @@ function formatScaleToken(value: number): string {
  * </ThemeProvider>
  * ```
  */
-export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
+const ThemePanelBase = React.forwardRef<HTMLDivElement, ThemePanelProps>(
   (
     {
       title = "主题",
@@ -576,6 +595,7 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
     const [draftIntensity, setDraftIntensity] = React.useState(5);
     const [draftRadius, setDraftRadius] = React.useState(20);
     const [draftFont, setDraftFont] = React.useState<NonNullable<ThemeConfig["font"]>>("sf");
+    const [draftComponents, setDraftComponents] = React.useState<ComponentThemeOverrides>({});
     const [createMode, setCreateMode] = React.useState<ThemeCreateMode>("simple");
     const [advancedFontMode, setAdvancedFontMode] = React.useState<AdvancedFontMode>("preset");
     const [liveAdvancedFontMode, setLiveAdvancedFontMode] = React.useState<AdvancedFontMode>("preset");
@@ -611,8 +631,18 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
         radius: draftRadius,
         font: draftFont,
         tokens: draftTokens,
+        components: draftComponents,
       }),
-      [draftAccentPalette, draftBase, draftDensity, draftFont, draftIntensity, draftRadius, draftTokens]
+      [
+        draftAccentPalette,
+        draftBase,
+        draftDensity,
+        draftFont,
+        draftIntensity,
+        draftRadius,
+        draftTokens,
+        draftComponents,
+      ]
     );
 
     const resolvedPresetOptions = React.useMemo<ThemePanelPresetOption[]>(() => {
@@ -658,12 +688,15 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
       updateThemeRef.current({
         mode: DRAFT_THEME_MODE,
         colorScheme: draftPreset.base,
+        baseColor: draftPreset.baseColor,
         accent: draftPreset.accent,
         density: draftPreset.density,
         intensity: draftPreset.intensity,
         radius: draftPreset.radius,
         font: draftPreset.font,
+        colors: draftPreset.colors ?? {},
         tokens: draftPreset.tokens,
+        components: draftPreset.components ?? {},
       });
     }, [draftPreset, isCreatingTheme, previewDraft]);
 
@@ -692,7 +725,14 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
     const applyMode = (mode: string) => {
       clearCreateState();
       if (mode === "light" || mode === "dark" || mode === "system") {
-        theme.update({ mode, colorScheme: mode === "system" ? theme.colorScheme : mode, tokens: {} });
+        theme.update({
+          mode,
+          colorScheme: mode === "system" ? theme.colorScheme : mode,
+          baseColor: undefined,
+          colors: {},
+          tokens: {},
+          components: {},
+        });
         return;
       }
       theme.setMode(mode);
@@ -712,12 +752,15 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
         ...(!isBuiltInMode ? { themes: { ...theme.themes, [key]: preset } } : null),
         mode: option.key,
         colorScheme: preset.base ?? theme.colorScheme,
+        baseColor: preset.baseColor,
         accent: preset.accent ?? fallbackAccent,
         density: preset.density ?? theme.density,
         intensity: preset.intensity ?? theme.intensity,
         radius: preset.radius ?? theme.radius,
         font: preset.font ?? theme.font,
+        colors: { ...(preset.colors ?? {}) },
         tokens: preset.tokens ?? {},
+        components: mergeComponentThemeOverrides(undefined, preset.components),
       });
     };
 
@@ -735,12 +778,15 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
         ? {
             mode: nextBase,
             colorScheme: fallbackPreset.base,
+            baseColor: fallbackPreset.baseColor,
             accent: fallbackPreset.accent,
             density: fallbackPreset.density,
             intensity: fallbackPreset.intensity,
             radius: fallbackPreset.radius,
             font: fallbackPreset.font,
+            colors: { ...(fallbackPreset.colors ?? {}) },
             tokens: fallbackPreset.tokens,
+            components: mergeComponentThemeOverrides(undefined, fallbackPreset.components),
           }
         : {};
 
@@ -813,12 +859,15 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
       label: meta.label,
       description: meta.description,
       base: theme.colorScheme,
+      baseColor: theme.baseColor,
       accent: theme.accent === "custom" ? { ...theme.accentPalette } : theme.accent,
       density: theme.density,
       intensity: theme.intensity,
       radius: theme.radius,
       font: theme.font,
+      colors: { ...theme.colors },
       tokens: { ...tokens },
+      components: mergeComponentThemeOverrides(undefined, theme.components),
     });
 
     const updateLiveBase = (base: ThemeBaseMode) => {
@@ -859,12 +908,15 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
         themes: nextThemes,
         mode: key,
         colorScheme: preset.base,
+        baseColor: preset.baseColor,
         accent: preset.accent,
         density: preset.density,
         intensity: preset.intensity,
         radius: preset.radius,
         font: preset.font,
+        colors: preset.colors ?? {},
         tokens: preset.tokens,
+        components: preset.components ?? {},
       });
       setCreatedThemeMeta((current) => ({ ...current, [key]: meta }));
       onUpdateTheme?.({ ...meta, preset, previousPreset, presetOption });
@@ -888,12 +940,15 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
         themes: nextThemes,
         mode: key,
         colorScheme: preset.base,
+        baseColor: preset.baseColor,
         accent: preset.accent,
         density: preset.density,
         intensity: preset.intensity,
         radius: preset.radius,
         font: preset.font,
+        colors: preset.colors ?? {},
         tokens: preset.tokens,
+        components: preset.components ?? {},
       });
       onCreateTheme?.({ ...meta, preset, presetOption });
     };
@@ -910,12 +965,15 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
       const currentTokens = readCurrentThemeTokens(root, base);
       const currentPreset: ThemePreset = {
         base,
+        baseColor: theme.baseColor,
         accent: accentPalette,
         density: theme.density,
         intensity: theme.intensity,
         radius: theme.radius,
         font: theme.font,
+        colors: { ...theme.colors },
         tokens: currentTokens,
+        components: mergeComponentThemeOverrides(undefined, theme.components),
       };
       const basePresets: Record<ThemeBaseMode, ThemePreset> = {
         light: base === "light" ? currentPreset : THEME_PANEL_DEFAULT_THEME_PRESETS.light,
@@ -925,12 +983,15 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
       previewSnapshotRef.current = {
         mode: theme.mode,
         colorScheme: theme.colorScheme,
+        baseColor: theme.baseColor,
         accent: theme.accent === "custom" ? theme.accentPalette : theme.accent,
         density: theme.density,
         intensity: theme.intensity,
         radius: theme.radius,
         font: theme.font,
+        colors: theme.colors,
         tokens: theme.tokens,
+        components: theme.components,
         themes: theme.themes,
       };
       setDraftBasePresets(basePresets);
@@ -948,6 +1009,7 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
       setDraftIntensity(theme.intensity);
       setDraftRadius(theme.radius);
       setDraftFont(theme.font ?? "sf");
+      setDraftComponents(mergeComponentThemeOverrides(undefined, theme.components));
       setAdvancedFontMode(toFontKey(theme.font) === theme.font ? "preset" : "custom");
       setCreateMode("simple");
         setCustomAccent(accent);
@@ -1021,12 +1083,15 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
         themes: nextThemes,
         mode: key,
         colorScheme: preset.base,
+        baseColor: preset.baseColor,
         accent: preset.accent,
         density: preset.density,
         intensity: preset.intensity,
         radius: preset.radius,
         font: preset.font,
+        colors: preset.colors ?? {},
         tokens: preset.tokens,
+        components: preset.components ?? {},
       });
       setCustomAccent(draftAccent);
       onCreateTheme?.({ ...meta, preset, presetOption });
@@ -1289,8 +1354,8 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
                         onClick={() => applyPreset(option)}
                       >
                         <span className="theme-panel-preset-ink" aria-hidden>
-                          <span style={{ background: preset?.tokens?.bg ?? "var(--bg)" }} />
-                          <span style={{ background: preset?.tokens?.["bg-raised"] ?? "var(--bg-raised)" }} />
+                          <span style={{ background: preset?.tokens?.bg ?? "var(--lmn-theme-panel-bg, var(--bg))" }} />
+                          <span style={{ background: preset?.tokens?.["bg-raised"] ?? "var(--lmn-theme-panel-bg-raised, var(--bg-raised))" }} />
                           <span style={{ background: accentFromPreset(preset) }} />
                         </span>
                         <span className="theme-panel-preset-copy">
@@ -1722,4 +1787,10 @@ export const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(
     );
   }
 );
-ThemePanel.displayName = "ThemePanel";
+ThemePanelBase.displayName = "ThemePanel";
+
+export const ThemePanel = withComponentTheme(
+  ThemePanelBase,
+  "ThemePanel",
+  ["theme-panel", "button", "color-picker", "input", "radio", "slider", "switch"]
+);

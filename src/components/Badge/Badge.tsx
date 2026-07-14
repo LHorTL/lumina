@@ -3,8 +3,9 @@ import "../../styles/shared.css";
 import "./Badge.css";
 import * as React from "react";
 import type { TagTone } from "../Tag";
+import { withComponentTheme, type ComponentThemeProps } from "../Theme/ComponentTheme";
 
-export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
+export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement>, ComponentThemeProps {
   /** Numeric count — renders as "max+" if greater than `max`. */
   count?: number;
   /** Maximum number to display before adding "+". */
@@ -20,7 +21,7 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 }
 
 /** `Badge` — notification dot / count. Wrap around another element. */
-export const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(({
+const BadgeBase = React.forwardRef<HTMLSpanElement, BadgeProps>(({
   count,
   max = 99,
   dot,
@@ -50,4 +51,6 @@ export const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(({
     </span>
   );
 });
-Badge.displayName = "Badge";
+BadgeBase.displayName = "Badge";
+
+export const Badge = withComponentTheme(BadgeBase, "Badge", "badge");

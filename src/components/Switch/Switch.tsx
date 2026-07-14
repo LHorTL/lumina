@@ -2,9 +2,11 @@ import "../../styles/tokens.css";
 import "../../styles/shared.css";
 import "./Switch.css";
 import * as React from "react";
+import { withComponentTheme, type ComponentThemeProps } from "../Theme/ComponentTheme";
 
 export interface SwitchProps
-  extends Omit<React.LabelHTMLAttributes<HTMLLabelElement>, "onChange" | "children" | "id"> {
+  extends Omit<React.LabelHTMLAttributes<HTMLLabelElement>, "onChange" | "children" | "id">,
+    ComponentThemeProps {
   checked?: boolean;
   defaultChecked?: boolean;
   onChange?: (checked: boolean) => void;
@@ -30,7 +32,7 @@ export interface SwitchProps
 /**
  * `Switch` — on/off toggle. Controlled or uncontrolled.
  */
-export const Switch = React.forwardRef<HTMLLabelElement, SwitchProps>(({
+const SwitchBase = React.forwardRef<HTMLLabelElement, SwitchProps>(({
   checked,
   defaultChecked,
   onChange,
@@ -108,4 +110,6 @@ export const Switch = React.forwardRef<HTMLLabelElement, SwitchProps>(({
     </label>
   );
 });
-Switch.displayName = "Switch";
+SwitchBase.displayName = "Switch";
+
+export const Switch = withComponentTheme(SwitchBase, "Switch", "switch");

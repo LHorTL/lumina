@@ -13,16 +13,16 @@
   gap: 8px;
   padding: 4px;
   border: none;
-  background: var(--bg);
-  box-shadow: var(--neu-shadow-subtle);
+  background: var(--lmn-color-picker-bg, var(--bg));
+  box-shadow: var(--lmn-color-picker-neu-shadow-subtle, var(--neu-shadow-subtle));
   border-radius: 10px;
   cursor: pointer;
   transition: box-shadow var(--dur) var(--ease);
-  color: var(--fg);
+  color: var(--lmn-color-picker-fg, var(--fg));
   font: inherit;
 }
 .cp-trigger:hover:not(:disabled) {
-  box-shadow: var(--neu-shadow-panel);
+  box-shadow: var(--lmn-color-picker-neu-shadow-panel, var(--neu-shadow-panel));
 }
 .cp-trigger:disabled {
   opacity: 0.5;
@@ -48,7 +48,7 @@
   width: 22px;
   height: 22px;
   border-radius: 6px;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08), var(--neu-shadow-inset);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--lmn-color-picker-fg, var(--fg)) 10%, transparent), var(--lmn-color-picker-neu-shadow-inset, var(--neu-shadow-inset));
   background-clip: padding-box;
 }
 .cp-trigger.sm .cp-swatch { width: 18px; height: 18px; border-radius: 5px; }
@@ -63,7 +63,7 @@
 .cp-text {
   font-family: var(--font-mono);
   font-size: 12px;
-  color: var(--fg-muted);
+  color: var(--lmn-color-picker-fg-muted, var(--fg-muted));
   padding-right: 6px;
 }
 
@@ -76,9 +76,9 @@
   z-index: 1000;
   width: 232px;
   padding: 12px;
-  background: var(--bg);
+  background: var(--lmn-color-picker-bg, var(--bg));
   border-radius: var(--r-md);
-  box-shadow: var(--neu-shadow-float);
+  box-shadow: var(--lmn-color-picker-neu-shadow-float, var(--neu-shadow-float));
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -104,6 +104,7 @@
   cursor: crosshair;
   touch-action: none;
   user-select: none;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--lmn-color-picker-fg, var(--fg)) 10%, transparent);
 }
 
 .cp-board-white,
@@ -149,7 +150,7 @@
     hsl(300, 100%, 50%),
     hsl(360, 100%, 50%)
   );
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--lmn-color-picker-fg, var(--fg)) 10%, transparent);
   cursor: pointer;
   touch-action: none;
   user-select: none;
@@ -182,16 +183,16 @@
   padding: 0 10px;
   border: none;
   outline: none;
-  background: var(--bg-sunken);
-  box-shadow: var(--neu-shadow-inset);
+  background: var(--lmn-color-picker-bg-sunken, var(--bg-sunken));
+  box-shadow: var(--lmn-color-picker-neu-shadow-inset, var(--neu-shadow-inset));
   border-radius: 7px;
   font-family: var(--font-mono);
   font-size: 12px;
-  color: var(--fg);
+  color: var(--lmn-color-picker-fg, var(--fg));
   text-transform: lowercase;
 }
 .cp-input:focus {
-  box-shadow: var(--neu-shadow-inset), 0 0 0 2px var(--accent-soft);
+  box-shadow: var(--lmn-color-picker-neu-shadow-inset, var(--neu-shadow-inset)), 0 0 0 2px var(--lmn-color-picker-accent-soft, var(--accent-soft));
 }
 
 .cp-presets {
@@ -206,29 +207,12 @@
   border: none;
   padding: 0;
   cursor: pointer;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--lmn-color-picker-fg, var(--fg)) 10%, transparent);
   transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
 }
 .cp-preset:hover {
   transform: scale(1.1);
 }
 .cp-preset.active {
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08), 0 0 0 2px var(--accent);
-}
-
-/* Dark mode tweaks */
-[data-theme="dark"] .cp-swatch {
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12), var(--neu-shadow-inset);
-}
-[data-theme="dark"] .cp-preset {
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
-}
-[data-theme="dark"] .cp-preset.active {
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 0 0 2px var(--accent);
-}
-[data-theme="dark"] .cp-board {
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
-}
-[data-theme="dark"] .cp-hue {
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--lmn-color-picker-fg, var(--fg)) 10%, transparent), 0 0 0 2px var(--lmn-color-picker-accent, var(--accent));
 }

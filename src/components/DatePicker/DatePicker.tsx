@@ -10,12 +10,19 @@ import { useFloating } from "../../utils/useFloating";
 import { useInputTriggerToggle } from "../../utils/useInputTriggerToggle";
 import { usePortalContainer } from "../../utils/portal";
 import { useOverlayLayer } from "../../utils/overlayStack";
+import {
+  InternalComponentThemePart,
+  useComponentPortalTheme,
+  withComponentTheme,
+  type ComponentThemeProps,
+} from "../Theme/ComponentTheme";
 
 export type DatePickerFormat = "YYYY-MM-DD" | "YYYY/MM/DD" | "YYYY年MM月DD日";
 export type DatePickerSize = "sm" | "md" | "lg";
 
 export interface DatePickerProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, "defaultValue" | "onChange"> {
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "defaultValue" | "onChange">,
+    ComponentThemeProps {
   /** Controlled selected date. Use `null` for an empty picker. */
   value?: Date | null;
   /** Initial selected date when uncontrolled. */
@@ -101,7 +108,7 @@ const parseDateInput = (input: string): Date | null => {
  * @example
  * <DatePicker value={date} onChange={setDate} allowClear />
  */
-export const DatePicker = React.forwardRef<HTMLDivElement, DatePickerProps>(
+const DatePickerBase = React.forwardRef<HTMLDivElement, DatePickerProps>(
   (
     {
       value,
@@ -173,6 +180,7 @@ export const DatePicker = React.forwardRef<HTMLDivElement, DatePickerProps>(
     const rootRef = React.useRef<HTMLDivElement | null>(null);
     const panelId = React.useId();
     const portalContainer = usePortalContainer();
+    const portalTheme = useComponentPortalTheme("DatePicker");
     const { triggerRef, floatingRef: panelRef, floatingStyle, zIndex: panelZIndex } = useFloating<HTMLDivElement, HTMLDivElement>({
       open,
       placement,
@@ -294,7 +302,8 @@ export const DatePicker = React.forwardRef<HTMLDivElement, DatePickerProps>(
 
     return (
       <div ref={setRootRef} className={rootClassName} onKeyDown={handleRootKeyDown} {...rest}>
-        <Input
+        <InternalComponentThemePart components={["Input", "Calendar", "Button"]}>
+          <Input
           id={fieldId}
           aria-label={ariaLabel}
           aria-labelledby={ariaLabelledBy}
@@ -328,7 +337,8 @@ export const DatePicker = React.forwardRef<HTMLDivElement, DatePickerProps>(
               className={`date-picker-panel ${mergedPanelClassName}`}
               role="dialog"
               aria-label="选择日期"
-              style={floatingStyle}
+              {...portalTheme.dataAttributes}
+              style={{ ...floatingStyle, ...portalTheme.style, ...portalTheme.styles.popup }}
             >
               <Calendar
                 value={calendarValue}
@@ -363,8 +373,15 @@ export const DatePicker = React.forwardRef<HTMLDivElement, DatePickerProps>(
             </div>,
             portalContainer
           )}
+        </InternalComponentThemePart>
       </div>
     );
   }
 );
-DatePicker.displayName = "DatePicker";
+DatePickerBase.displayName = "DatePicker";
+
+export const DatePicker = withComponentTheme(
+  DatePickerBase,
+  "DatePicker",
+  ["date-picker", "calendar", "input", "button"]
+);

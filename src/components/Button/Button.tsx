@@ -3,12 +3,17 @@ import "../../styles/shared.css";
 import "./Button.css";
 import * as React from "react";
 import { renderIconSlot, type IconSlot } from "../Icon";
+import {
+  withComponentTheme,
+  type ComponentThemeProps,
+} from "../Theme/ComponentTheme";
 
 export type ButtonVariant = "default" | "primary" | "ghost" | "danger";
 export type ButtonSize = "sm" | "md" | "lg";
 
 export interface ButtonProps
-  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "type"> {
+  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "type">,
+    ComponentThemeProps {
   /** Visual variant. `primary` uses the accent color; `ghost` is borderless; `danger` is red. */
   variant?: ButtonVariant;
   /** Control height preset. */
@@ -46,7 +51,7 @@ export interface IconButtonProps
  * <Button variant="primary" icon="plus">新建</Button>
  * <Button variant="ghost" loading>保存</Button>
  */
-export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+const ButtonBase = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
       children,
@@ -103,7 +108,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     );
   }
 );
-Button.displayName = "Button";
+ButtonBase.displayName = "Button";
+
+export const Button = withComponentTheme(ButtonBase, "Button", "button");
 
 /**
  * `IconButton` — square icon-only command button.
@@ -111,9 +118,15 @@ Button.displayName = "Button";
  * @example
  * <IconButton icon="settings" tip="设置" />
  */
-export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
+const IconButtonBase = React.forwardRef<HTMLButtonElement, IconButtonProps>(
   ({ icon, ...rest }, ref) => (
     <Button ref={ref} icon={icon} iconOnly {...rest} />
   )
 );
-IconButton.displayName = "IconButton";
+IconButtonBase.displayName = "IconButton";
+
+export const IconButton = withComponentTheme(
+  IconButtonBase,
+  "IconButton",
+  "button"
+);

@@ -5,12 +5,23 @@ import * as React from "react";
 import { Icon, isIconName, renderIconSlot, type IconSlot } from "../Icon";
 import { Textarea, type TextareaProps } from "../Textarea";
 import { createValueOverrideTarget } from "../../utils/inputEvents";
+import {
+  ComponentThemeBoundary,
+  mergeComponentRootStyleWithInstanceStyle,
+  useComponentThemeRootRef,
+  type ComponentThemeProps,
+} from "../Theme/ComponentTheme";
+import {
+  InputThemeIdentityProvider,
+  useInputThemeIdentity,
+} from "./inputThemeRuntime";
 
 export interface InputProps
   extends Omit<
     React.InputHTMLAttributes<HTMLInputElement>,
     "size" | "onChange" | "prefix" | "value" | "defaultValue"
-  > {
+  >,
+    ComponentThemeProps {
   value?: string;
   defaultValue?: string;
   /** Native input change event. */
@@ -78,11 +89,20 @@ const InputBase = React.forwardRef<HTMLInputElement, InputProps>(
       prefix,
       suffix,
       className = "",
+      theme,
+      style,
       ...rest
     },
     ref
   ) => {
     const [inner, setInner] = React.useState(defaultValue ?? "");
+    const themeIdentity = useInputThemeIdentity();
+    const themeComponent = themeIdentity?.component ?? "Input";
+    const themeCssPrefix = themeIdentity?.cssPrefix ?? "input";
+    const [themeRootElement, themeRootRef] = useComponentThemeRootRef<HTMLDivElement>(
+      undefined,
+      { component: themeComponent, theme }
+    );
     const inputRef = React.useRef<HTMLInputElement | null>(null);
     const isControlled = value !== undefined;
     const currentValue = isControlled ? value : inner;
@@ -193,47 +213,72 @@ const InputBase = React.forwardRef<HTMLInputElement, InputProps>(
     const showClear = !!allowClear && !!currentValue && !disabled;
     const count = currentValue ? currentValue.length : 0;
 
-    const inputElement = (
-      <div className={wrapCls}>
-        {renderAffixIcon(leadingIcon, "lead", onLeadingIconClick)}
-        {prefix && <span className="input-affix prefix">{prefix}</span>}
-        <input
-          ref={setInputRef}
-          className="input"
-          value={isControlled ? value : undefined}
-          defaultValue={isControlled ? undefined : defaultValue}
-          onChange={handleChange}
-          placeholder={placeholder}
-          disabled={disabled}
-          maxLength={maxLength}
-          {...rest}
-        />
-        {suffix && <span className="input-affix suffix">{suffix}</span>}
-        {showClear && (
-          <button
-            type="button"
-            className="input-clear"
-            role="button"
-            aria-label="Clear"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={handleClear}
-          >
-            <Icon name="x" size={12} />
-          </button>
-        )}
-        {renderAffixIcon(trailingIcon, "trail", onTrailingIconClick)}
-      </div>
-    );
-
-    if (!showCount) return inputElement;
-
     return (
-      <div className="input-shell">
-        {inputElement}
-        <div className="input-count">
-          {maxLength != null ? `${count} / ${maxLength}` : `${count}`}
-        </div>
-      </div>
+      <ComponentThemeBoundary
+        component={themeComponent}
+        cssPrefix={themeCssPrefix}
+        theme={theme}
+        rootElement={themeRootElement}
+      >
+        {(themeState) => {
+          const mergedRootStyle = mergeComponentRootStyleWithInstanceStyle(
+            themeState.rootStyle,
+            style
+          );
+          const inputElement = (
+            <div
+              ref={showCount ? undefined : themeRootRef}
+              className={wrapCls}
+              {...(!showCount ? themeState.rootDataAttributes : null)}
+              style={showCount ? themeState.styles.control : mergedRootStyle}
+            >
+              {renderAffixIcon(leadingIcon, "lead", onLeadingIconClick)}
+              {prefix && <span className="input-affix prefix">{prefix}</span>}
+              <input
+                ref={setInputRef}
+                className="input"
+                value={isControlled ? value : undefined}
+                defaultValue={isControlled ? undefined : defaultValue}
+                onChange={handleChange}
+                placeholder={placeholder}
+                disabled={disabled}
+                maxLength={maxLength}
+                {...rest}
+                style={{ ...themeState.styles.input, ...style }}
+              />
+              {suffix && <span className="input-affix suffix">{suffix}</span>}
+              {showClear && (
+                <button
+                  type="button"
+                  className="input-clear"
+                  role="button"
+                  aria-label="Clear"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={handleClear}
+                >
+                  <Icon name="x" size={12} />
+                </button>
+              )}
+              {renderAffixIcon(trailingIcon, "trail", onTrailingIconClick)}
+            </div>
+          );
+
+          if (!showCount) return inputElement;
+          return (
+            <div
+              ref={themeRootRef}
+              className="input-shell"
+              {...themeState.rootDataAttributes}
+              style={mergedRootStyle}
+            >
+              {inputElement}
+              <div className="input-count" style={themeState.styles.count}>
+                {maxLength != null ? `${count} / ${maxLength}` : `${count}`}
+              </div>
+            </div>
+          );
+        }}
+      </ComponentThemeBoundary>
     );
   }
 );
@@ -274,15 +319,17 @@ export const InputPassword = React.forwardRef<HTMLInputElement, InputPasswordPro
       ) : null;
 
     return (
-      <InputBase
-        ref={ref}
-        {...rest}
-        type={visible ? "text" : "password"}
-        suffix={toggleNode ? <>{suffix}{toggleNode}</> : suffix}
-        trailingIcon={useDefaultToggle ? (visible ? "eyeOff" : "eye") : undefined}
-        onTrailingIconClick={useDefaultToggle ? () => setVisible((v) => !v) : undefined}
-        onValueChange={onValueChange}
-      />
+      <InputThemeIdentityProvider value={{ component: "InputPassword", cssPrefix: "input" }}>
+        <InputBase
+          ref={ref}
+          {...rest}
+          type={visible ? "text" : "password"}
+          suffix={toggleNode ? <>{suffix}{toggleNode}</> : suffix}
+          trailingIcon={useDefaultToggle ? (visible ? "eyeOff" : "eye") : undefined}
+          onTrailingIconClick={useDefaultToggle ? () => setVisible((v) => !v) : undefined}
+          onValueChange={onValueChange}
+        />
+      </InputThemeIdentityProvider>
     );
   }
 );

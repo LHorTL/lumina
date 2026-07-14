@@ -2,10 +2,10 @@
 .context-menu {
   z-index: 5000;
   padding: 6px;
-  background: var(--bg);
+  background: var(--lmn-context-menu-bg, var(--bg));
   border-radius: var(--r-md);
-  box-shadow: var(--neu-shadow-float);
-  border: 1px solid var(--divider);
+  box-shadow: var(--lmn-context-menu-neu-shadow-float, var(--neu-shadow-float));
+  border: 1px solid var(--lmn-context-menu-divider, var(--divider));
   display: flex;
   flex-direction: column;
   gap: 1px;
@@ -26,34 +26,34 @@
   box-shadow: none;
   font: inherit;
   font-size: 13px;
-  color: var(--fg);
+  color: var(--lmn-context-menu-fg, var(--fg));
   text-align: left;
   border-radius: var(--r-sm);
   cursor: pointer;
   transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease),
     box-shadow var(--dur-fast) var(--ease);
 }
-.context-menu-item:disabled { color: var(--fg-subtle); cursor: not-allowed; }
+.context-menu-item:disabled { color: var(--lmn-context-menu-fg-subtle, var(--fg-subtle)); cursor: not-allowed; }
 .context-menu-item.active:not(:disabled) {
-  background: var(--bg);
-  color: var(--accent-ink);
-  box-shadow: var(--neu-shadow-inset);
+  background: var(--lmn-context-menu-bg, var(--bg));
+  color: var(--lmn-context-menu-accent-ink, var(--accent-ink));
+  box-shadow: var(--lmn-context-menu-neu-shadow-inset, var(--neu-shadow-inset));
 }
-.context-menu-item.danger { color: var(--danger); }
+.context-menu-item.danger { color: var(--lmn-context-menu-danger, var(--danger)); }
 .context-menu-item.danger.active:not(:disabled) {
-  background: var(--bg);
-  color: var(--danger);
-  box-shadow: var(--neu-shadow-inset);
+  background: var(--lmn-context-menu-bg, var(--bg));
+  color: var(--lmn-context-menu-danger, var(--danger));
+  box-shadow: var(--lmn-context-menu-neu-shadow-inset, var(--neu-shadow-inset));
 }
 
 .context-menu-icon {
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  color: var(--fg-muted);
+  color: var(--lmn-context-menu-fg-muted, var(--fg-muted));
 }
 .context-menu-item.active:not(:disabled) .context-menu-icon { color: inherit; }
-.context-menu-item.danger .context-menu-icon { color: var(--danger); }
+.context-menu-item.danger .context-menu-icon { color: var(--lmn-context-menu-danger, var(--danger)); }
 
 .context-menu-label {
   overflow: hidden;
@@ -64,13 +64,13 @@
 .context-menu-shortcut {
   font-family: var(--font-mono);
   font-size: 11px;
-  color: var(--fg-subtle);
+  color: var(--lmn-context-menu-fg-subtle, var(--fg-subtle));
   padding-left: 12px;
 }
 .context-menu-item.active:not(:disabled) .context-menu-shortcut { color: inherit; opacity: 0.8; }
 
 .context-menu-divider {
   height: 1px;
-  background: var(--divider);
+  background: var(--lmn-context-menu-divider, var(--divider));
   margin: 4px 4px;
 }

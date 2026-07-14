@@ -1,14 +1,14 @@
 /* ============ Skeleton ============ */
 .skeleton {
   display: block;
-  background: color-mix(in oklch, var(--accent-soft) 55%, var(--bg-sunken));
+  background: color-mix(in oklch, var(--lmn-skeleton-accent-soft, var(--accent-soft)) 55%, var(--lmn-skeleton-bg-sunken, var(--bg-sunken)));
   border-radius: var(--r-sm);
 }
 .skeleton.wave {
   background: linear-gradient(90deg,
-    color-mix(in oklch, var(--accent-soft) 35%, var(--bg-sunken)),
-    color-mix(in oklch, var(--accent-soft) 75%, var(--bg-sunken)),
-    color-mix(in oklch, var(--accent-soft) 35%, var(--bg-sunken)));
+    color-mix(in oklch, var(--lmn-skeleton-accent-soft, var(--accent-soft)) 35%, var(--lmn-skeleton-bg-sunken, var(--bg-sunken))),
+    color-mix(in oklch, var(--lmn-skeleton-accent-soft, var(--accent-soft)) 75%, var(--lmn-skeleton-bg-sunken, var(--bg-sunken))),
+    color-mix(in oklch, var(--lmn-skeleton-accent-soft, var(--accent-soft)) 35%, var(--lmn-skeleton-bg-sunken, var(--bg-sunken))));
   background-size: 200% 100%;
   animation: skel-wave 1.4s ease-in-out infinite;
 }

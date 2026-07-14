@@ -1,8 +1,8 @@
 /* ============ Table ============ */
 .table-wrap {
   border-radius: var(--r-lg);
-  background: var(--bg);
-  box-shadow: var(--neu-shadow-inset);
+  background: var(--lmn-table-bg, var(--bg));
+  box-shadow: var(--lmn-table-neu-shadow-inset, var(--neu-shadow-inset));
   overflow: auto;
 }
 /* When scroll=y is on, the wrap itself becomes the scroll region. */
@@ -18,22 +18,22 @@
 .table th {
   text-align: left;
   padding: 14px 18px;
-  background: var(--bg);
+  background: var(--lmn-table-bg, var(--bg));
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--fg-subtle);
-  border-bottom: 1px solid var(--divider);
+  color: var(--lmn-table-fg-subtle, var(--fg-subtle));
+  border-bottom: 1px solid var(--lmn-table-divider, var(--divider));
   position: sticky; top: 0;
   z-index: 1;
 }
 /* When the wrap is the scroll container (scroll.y), position:sticky on th needs
    top:0 relative to the wrap — browsers already handle that. Adding a stronger
    bg so content under the header doesn't bleed through. */
-.table.sticky-head th { background: var(--bg); }
+.table.sticky-head th { background: var(--lmn-table-bg, var(--bg)); }
 .table th.sortable { user-select: none; }
-.table th.sortable:hover { color: var(--fg); }
+.table th.sortable:hover { color: var(--lmn-table-fg, var(--fg)); }
 .table-sort-trigger.btn {
   height: auto;
   min-height: 24px;
@@ -48,35 +48,35 @@
   display: inline-flex;
   width: 16px; height: 16px;
   border-radius: 6px;
-  background: var(--bg);
-  box-shadow: var(--neu-shadow-subtle);
+  background: var(--lmn-table-bg, var(--bg));
+  box-shadow: var(--lmn-table-neu-shadow-subtle, var(--neu-shadow-subtle));
   align-items: center; justify-content: center;
   margin-left: 6px;
-  color: var(--fg-subtle);
+  color: var(--lmn-table-fg-subtle, var(--fg-subtle));
   vertical-align: middle;
 }
-.table th.sorted .sort-ind { color: var(--accent); box-shadow: var(--neu-shadow-inset); }
+.table th.sorted .sort-ind { color: var(--lmn-table-accent, var(--accent)); box-shadow: var(--lmn-table-neu-shadow-inset, var(--neu-shadow-inset)); }
 .table td {
   padding: 12px 18px;
-  border-bottom: 1px solid var(--divider);
+  border-bottom: 1px solid var(--lmn-table-divider, var(--divider));
   vertical-align: middle;
 }
-.table.hoverable tbody tr:hover td { background: color-mix(in oklch, var(--accent-soft) 40%, transparent); }
+.table.hoverable tbody tr:hover td { background: color-mix(in oklch, var(--lmn-table-accent-soft, var(--accent-soft)) 40%, transparent); }
 .table tbody tr.clickable { cursor: pointer; }
 .table tbody tr.clickable:focus-visible td {
-  background: color-mix(in oklch, var(--accent-soft) 55%, transparent);
-  box-shadow: inset 0 0 0 2px var(--accent-glow);
+  background: color-mix(in oklch, var(--lmn-table-accent-soft, var(--accent-soft)) 55%, transparent);
+  box-shadow: inset 0 0 0 2px var(--lmn-table-accent-glow, var(--accent-glow));
 }
-.table tbody tr.selected td { background: color-mix(in oklch, var(--accent-soft) 80%, transparent); color: var(--accent-ink); }
+.table tbody tr.selected td { background: color-mix(in oklch, var(--lmn-table-accent-soft, var(--accent-soft)) 80%, transparent); color: var(--lmn-table-accent-ink, var(--accent-ink)); }
 .table tbody tr:last-child td { border-bottom: none; }
 .table.striped tbody tr:nth-child(even) td {
-  background: color-mix(in oklch, var(--bg-sunken) 40%, transparent);
+  background: color-mix(in oklch, var(--lmn-table-bg-sunken, var(--bg-sunken)) 40%, transparent);
 }
 
 /* Embossed: each row sits on the surface */
 .table.embossed { border-spacing: 0; }
 .table.embossed tbody td {
-  background: var(--bg);
+  background: var(--lmn-table-bg, var(--bg));
 }
 
 /* Card-row variant: each row is its own raised pill */
@@ -97,8 +97,8 @@
   inset: 0;
   z-index: -1;
   border-radius: var(--r-md);
-  background: var(--bg);
-  box-shadow: var(--neu-shadow-control);
+  background: var(--lmn-table-bg, var(--bg));
+  box-shadow: var(--lmn-table-neu-shadow-control, var(--neu-shadow-control));
   pointer-events: none;
   transition: box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
@@ -126,41 +126,41 @@
 .table.cards.hoverable tbody tr:hover {
   transform: translateY(-1px);
 }
-.table.cards.hoverable tbody tr:hover .card-row-surface { box-shadow: var(--neu-shadow-panel); }
+.table.cards.hoverable tbody tr:hover .card-row-surface { box-shadow: var(--lmn-table-neu-shadow-panel, var(--neu-shadow-panel)); }
 .table.cards.hoverable tbody tr:hover td { background: transparent; }
 
 .table .row-check { width: 44px; }
 .table .row-check .checkbox { display: inline-flex; }
 .table .row-expand { width: 40px; text-align: center; }
-.table-empty { padding: 60px 20px; text-align: center; color: var(--fg-muted); }
+.table-empty { padding: 60px 20px; text-align: center; color: var(--lmn-table-fg-muted, var(--fg-muted)); }
 
 /* Expand button */
 .expand-btn {
   width: 22px; height: 22px;
   border: none;
   border-radius: var(--r-sm);
-  background: var(--bg);
-  box-shadow: var(--neu-shadow-subtle);
-  color: var(--fg-subtle);
+  background: var(--lmn-table-bg, var(--bg));
+  box-shadow: var(--lmn-table-neu-shadow-subtle, var(--neu-shadow-subtle));
+  color: var(--lmn-table-fg-subtle, var(--fg-subtle));
   display: inline-flex; align-items: center; justify-content: center;
   cursor: pointer;
   transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
 }
-.expand-btn:hover { color: var(--accent-ink); box-shadow: var(--neu-shadow-control); }
-.expand-btn.open { transform: rotate(90deg); color: var(--accent-ink); box-shadow: var(--neu-shadow-inset); }
+.expand-btn:hover { color: var(--lmn-table-accent-ink, var(--accent-ink)); box-shadow: var(--lmn-table-neu-shadow-control, var(--neu-shadow-control)); }
+.expand-btn.open { transform: rotate(90deg); color: var(--lmn-table-accent-ink, var(--accent-ink)); box-shadow: var(--lmn-table-neu-shadow-inset, var(--neu-shadow-inset)); }
 
 /* Expanded row panel */
 .table tbody tr.expanded-row td {
   padding: 14px 18px;
-  border-bottom: 1px solid var(--divider);
-  background: color-mix(in oklch, var(--bg-sunken) 25%, transparent);
+  border-bottom: 1px solid var(--lmn-table-divider, var(--divider));
+  background: color-mix(in oklch, var(--lmn-table-bg-sunken, var(--bg-sunken)) 25%, transparent);
 }
 .expanded-panel {
   padding: 14px 16px;
   border-radius: var(--r-md);
-  background: var(--bg);
-  box-shadow: var(--neu-shadow-inset);
-  color: var(--fg);
+  background: var(--lmn-table-bg, var(--bg));
+  box-shadow: var(--lmn-table-neu-shadow-inset, var(--neu-shadow-inset));
+  color: var(--lmn-table-fg, var(--fg));
   font-size: 13px;
 }
 
@@ -170,21 +170,21 @@
   border-radius: 50%;
   border: none;
   padding: 0;
-  background: var(--bg);
-  box-shadow: var(--neu-shadow-inset);
+  background: var(--lmn-table-bg, var(--bg));
+  box-shadow: var(--lmn-table-neu-shadow-inset, var(--neu-shadow-inset));
   display: inline-flex; align-items: center; justify-content: center;
   cursor: pointer;
   transition: box-shadow var(--dur-fast) var(--ease);
 }
 .table .row-check .radio-dot:disabled { opacity: 0.5; cursor: not-allowed; }
 .table .row-check .radio-dot.checked {
-  box-shadow: var(--neu-shadow-control);
+  box-shadow: var(--lmn-table-neu-shadow-control, var(--neu-shadow-control));
 }
 .table .row-check .radio-dot.checked::after {
   content: "";
   width: 8px; height: 8px;
   border-radius: 50%;
-  background: var(--accent);
+  background: var(--lmn-table-accent, var(--accent));
 }
 
 /* Filter button on header */
@@ -192,9 +192,9 @@
   display: inline-flex;
   width: 18px; height: 18px;
   border-radius: 5px;
-  background: var(--bg);
-  box-shadow: var(--neu-shadow-subtle);
-  color: var(--fg-subtle);
+  background: var(--lmn-table-bg, var(--bg));
+  box-shadow: var(--lmn-table-neu-shadow-subtle, var(--neu-shadow-subtle));
+  color: var(--lmn-table-fg-subtle, var(--fg-subtle));
   align-items: center; justify-content: center;
   margin-left: 6px;
   cursor: pointer;
@@ -203,10 +203,10 @@
   padding: 0;
   transition: color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
 }
-.table th.filterable .filter-ind:hover { color: var(--fg); }
+.table th.filterable .filter-ind:hover { color: var(--lmn-table-fg, var(--fg)); }
 .table th.filterable .filter-ind.active {
-  color: var(--accent-ink);
-  box-shadow: var(--neu-shadow-inset);
+  color: var(--lmn-table-accent-ink, var(--accent-ink));
+  box-shadow: var(--lmn-table-neu-shadow-inset, var(--neu-shadow-inset));
 }
 
 /* Filter popover panel (portaled to body) */
@@ -214,9 +214,9 @@
   z-index: 1001;
   min-width: 200px;
   max-width: 260px;
-  background: var(--bg);
+  background: var(--lmn-table-bg, var(--bg));
   border-radius: var(--r-md);
-  box-shadow: var(--neu-shadow-float);
+  box-shadow: var(--lmn-table-neu-shadow-float, var(--neu-shadow-float));
   padding: 10px;
   animation: menuIn var(--dur) var(--ease);
 }
@@ -235,12 +235,12 @@
   padding: 6px 8px;
   border-radius: var(--r-sm);
   font-size: 13px;
-  color: var(--fg);
+  color: var(--lmn-table-fg, var(--fg));
   cursor: pointer;
   transition: background var(--dur-fast) var(--ease);
 }
 .table-filter-item:hover {
-  background: color-mix(in oklch, var(--accent-soft) 40%, transparent);
+  background: color-mix(in oklch, var(--lmn-table-accent-soft, var(--accent-soft)) 40%, transparent);
 }
 .table-filter-actions {
   display: flex;
@@ -248,24 +248,24 @@
   gap: 6px;
   margin-top: 6px;
   padding-top: 8px;
-  border-top: 1px solid var(--divider);
+  border-top: 1px solid var(--lmn-table-divider, var(--divider));
 }
 .table-filter-actions .tf-btn {
   border: none;
   padding: 6px 12px;
   border-radius: var(--r-sm);
-  background: var(--bg);
-  box-shadow: var(--neu-shadow-control);
+  background: var(--lmn-table-bg, var(--bg));
+  box-shadow: var(--lmn-table-neu-shadow-control, var(--neu-shadow-control));
   font-size: 12px;
   font-family: inherit;
-  color: var(--fg);
+  color: var(--lmn-table-fg, var(--fg));
   cursor: pointer;
   transition: box-shadow var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
 }
-.table-filter-actions .tf-btn:hover { box-shadow: var(--neu-shadow-inset); }
-.table-filter-actions .tf-btn.primary { color: var(--accent-ink); font-weight: 600; }
-.table-filter-actions .tf-btn.ghost { color: var(--fg-muted); box-shadow: var(--neu-shadow-subtle); }
-.table-filter-actions .tf-btn.ghost:hover { box-shadow: var(--neu-shadow-inset); }
+.table-filter-actions .tf-btn:hover { box-shadow: var(--lmn-table-neu-shadow-inset, var(--neu-shadow-inset)); }
+.table-filter-actions .tf-btn.primary { color: var(--lmn-table-accent-ink, var(--accent-ink)); font-weight: 600; }
+.table-filter-actions .tf-btn.ghost { color: var(--lmn-table-fg-muted, var(--fg-muted)); box-shadow: var(--lmn-table-neu-shadow-subtle, var(--neu-shadow-subtle)); }
+.table-filter-actions .tf-btn.ghost:hover { box-shadow: var(--lmn-table-neu-shadow-inset, var(--neu-shadow-inset)); }
 
 .table-sr-only {
   position: absolute;

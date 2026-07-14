@@ -1,4 +1,5 @@
-import type { ThemeBaseMode, ThemePreset, ThemeTokens } from "./Theme";
+import type { ThemePreset } from "./Theme";
+import type { ThemeBaseMode, ThemeTokens } from "./themeTypes";
 
 /** Lumina 内置主题预设名称。 */
 export type BuiltInLuminaThemePresetKey =
@@ -209,10 +210,34 @@ export function cloneLuminaThemePreset<K extends BuiltInLuminaThemePresetKey>(
   key: K
 ): BuiltInLuminaThemePresetMap[K] {
   const preset = LUMINA_THEME_PRESETS[key];
+  const components = preset.components
+    ? Object.fromEntries(
+        Object.entries(preset.components).map(([name, override]) => [
+          name,
+          override
+            ? {
+                ...override,
+                colors: override.colors ? { ...override.colors } : undefined,
+                tokens: override.tokens ? { ...override.tokens } : undefined,
+                styles: override.styles
+                  ? Object.fromEntries(
+                      Object.entries(override.styles).map(([slot, style]) => [
+                        slot,
+                        style ? { ...style } : style,
+                      ])
+                    )
+                  : undefined,
+              }
+            : override,
+        ])
+      )
+    : undefined;
   return {
     ...preset,
     accent: typeof preset.accent === "object" ? { ...preset.accent } : preset.accent,
+    colors: preset.colors ? { ...preset.colors } : undefined,
     tokens: { ...preset.tokens },
+    components,
   };
 }
 

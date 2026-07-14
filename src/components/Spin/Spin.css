@@ -9,18 +9,18 @@
   display: inline-block;
 }
 
-.spin.accent  { color: var(--accent); }
-.spin.success { color: var(--success); }
-.spin.warning { color: var(--warning); }
-.spin.danger  { color: var(--danger); }
+.spin.accent  { color: var(--lmn-spin-accent, var(--accent)); }
+.spin.success { color: var(--lmn-spin-success, var(--success)); }
+.spin.warning { color: var(--lmn-spin-warning, var(--warning)); }
+.spin.danger  { color: var(--lmn-spin-danger, var(--danger)); }
 
 .spin.ring {
   position: relative;
   display: inline-block;
   border: none;
   border-radius: 50%;
-  background: var(--bg);
-  box-shadow: var(--neu-shadow-inset);
+  background: var(--lmn-spin-bg, var(--bg));
+  box-shadow: var(--lmn-spin-neu-shadow-inset, var(--neu-shadow-inset));
   animation: none;
 }
 
@@ -66,9 +66,9 @@
   height: 0.4em;
   border-radius: 999px;
   background: radial-gradient(circle at 32% 28%,
-    color-mix(in oklch, currentColor 40%, var(--bg)),
+    color-mix(in oklch, currentColor 40%, var(--lmn-spin-bg, var(--bg))),
     currentColor 62%,
-    color-mix(in oklch, currentColor 82%, var(--fg)) 100%);
+    color-mix(in oklch, currentColor 82%, var(--lmn-spin-fg, var(--fg))) 100%);
   box-shadow:
     0 0.06em 0.14em color-mix(in oklch, currentColor 45%, transparent),
     0 0 0.35em color-mix(in oklch, currentColor 50%, transparent);
@@ -88,7 +88,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: var(--fg-muted);
+  color: var(--lmn-spin-fg-muted, var(--fg-muted));
 }
 
 .spin-label { font-size: 12px; }

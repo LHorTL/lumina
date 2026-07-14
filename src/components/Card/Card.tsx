@@ -2,6 +2,11 @@ import "../../styles/tokens.css";
 import "../../styles/shared.css";
 import "./Card.css";
 import * as React from "react";
+import {
+  InternalComponentThemePart,
+  withComponentTheme,
+  type ComponentThemeProps,
+} from "../Theme/ComponentTheme";
 import { Button } from "../Button";
 import { Spin } from "../Spin";
 
@@ -78,7 +83,9 @@ function handleCardControlKeyDown(event: React.KeyboardEvent<HTMLButtonElement>)
   event.currentTarget.click();
 }
 
-export interface CardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
+export interface CardProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "title">,
+    ComponentThemeProps {
   /** Visual variant. `raised` protrudes; `sunken` recesses; `flat` is subtle. */
   variant?: "raised" | "sunken" | "flat";
   /** Custom card background. Accepts CSS colors, theme tokens, color-mix and gradients. */
@@ -117,7 +124,7 @@ export interface CardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "t
 /**
  * `Card` — neumorphic surface container. Use to group related content.
  */
-export const Card = React.forwardRef<HTMLDivElement, CardProps>(
+const CardBase = React.forwardRef<HTMLDivElement, CardProps>(
   ({
     variant = "raised",
     padding = "md",
@@ -243,16 +250,18 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
         {...rest}
       >
         {isInteractive && (
-          <Button
-            type="button"
-            variant="ghost"
-            className="card-interactive-control"
-            aria-label={interactiveLabel}
-            aria-labelledby={ariaLabelledBy}
-            tabIndex={disabled || loading ? -1 : tabIndex ?? 0}
-            disabled={disabled || loading}
-            onKeyDown={handleCardControlKeyDown}
-          />
+          <InternalComponentThemePart components="Button">
+            <Button
+              type="button"
+              variant="ghost"
+              className="card-interactive-control"
+              aria-label={interactiveLabel}
+              aria-labelledby={ariaLabelledBy}
+              tabIndex={disabled || loading ? -1 : tabIndex ?? 0}
+              disabled={disabled || loading}
+              onKeyDown={handleCardControlKeyDown}
+            />
+          </InternalComponentThemePart>
         )}
         {(title || description || actions) && (
           <div ref={headRef} className="card-head">
@@ -273,7 +282,11 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
           </div>
           {loading && (
             <div className="card-loading-overlay" aria-live="polite">
-              {loadingOverlay ?? <Spin tip="加载中..." />}
+              {loadingOverlay ?? (
+                <InternalComponentThemePart components="Spin">
+                  <Spin tip="加载中..." />
+                </InternalComponentThemePart>
+              )}
             </div>
           )}
         </div>
@@ -281,4 +294,10 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
     );
   }
 );
-Card.displayName = "Card";
+CardBase.displayName = "Card";
+
+export const Card = withComponentTheme(
+  CardBase,
+  "Card",
+  ["card", "button", "spin"]
+);

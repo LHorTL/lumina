@@ -4,7 +4,7 @@
 
 .typo-root {
   font-family: var(--font-sans);
-  color: var(--fg);
+  color: var(--lmn-typography-fg, var(--fg));
   line-height: 1.7;
   font-size: 14px;
 }
@@ -16,17 +16,17 @@
 
 /* ---- Base ---- */
 .typo {
-  color: var(--fg);
+  color: var(--lmn-typography-fg, var(--fg));
   font-family: var(--font-sans);
   word-wrap: break-word;
 }
 
 /* Semantic colors */
-.typo.secondary { color: var(--fg-muted); }
-.typo.success   { color: var(--success); }
-.typo.warning   { color: var(--warning); }
-.typo.danger    { color: var(--danger); }
-.typo.disabled  { color: var(--fg-subtle); cursor: not-allowed; user-select: none; }
+.typo.secondary { color: var(--lmn-typography-fg-muted, var(--fg-muted)); }
+.typo.success   { color: var(--lmn-typography-success, var(--success)); }
+.typo.warning   { color: var(--lmn-typography-warning, var(--warning)); }
+.typo.danger    { color: var(--lmn-typography-danger, var(--danger)); }
+.typo.disabled  { color: var(--lmn-typography-fg-subtle, var(--fg-subtle)); cursor: not-allowed; user-select: none; }
 
 /* Decorations */
 .typo.strong    { font-weight: 600; }
@@ -36,7 +36,7 @@
 
 /* mark / code / kbd render their own elements; we still color the shell */
 .typo mark {
-  background: color-mix(in oklch, var(--warning) 35%, transparent);
+  background: color-mix(in oklch, var(--lmn-typography-warning, var(--warning)) 33%, transparent);
   color: inherit;
   padding: 0 3px;
   border-radius: 3px;
@@ -47,9 +47,9 @@
   font-size: 0.88em;
   padding: 1px 6px;
   border-radius: 5px;
-  background: var(--bg-sunken);
-  box-shadow: var(--neu-shadow-inset);
-  color: var(--accent-ink);
+  background: var(--lmn-typography-bg-sunken, var(--bg-sunken));
+  box-shadow: var(--lmn-typography-neu-shadow-inset, var(--neu-shadow-inset));
+  color: var(--lmn-typography-accent-ink, var(--accent-ink));
   margin: 0 2px;
 }
 
@@ -58,10 +58,10 @@
   font-size: 0.82em;
   padding: 1px 7px;
   border-radius: 5px;
-  background: var(--bg-raised);
-  box-shadow: var(--neu-shadow-subtle);
-  border: 1px solid var(--border);
-  color: var(--fg);
+  background: var(--lmn-typography-bg-raised, var(--bg-raised));
+  box-shadow: var(--lmn-typography-neu-shadow-subtle, var(--neu-shadow-subtle));
+  border: 1px solid var(--lmn-typography-border, var(--border));
+  color: var(--lmn-typography-fg, var(--fg));
   margin: 0 2px;
   line-height: 1.4;
   display: inline-block;
@@ -74,7 +74,7 @@
   font-weight: 700;
   letter-spacing: -0.01em;
   line-height: 1.25;
-  color: var(--fg);
+  color: var(--lmn-typography-fg, var(--fg));
   margin: 0;
 }
 .typo-title.h1 { font-size: 32px; letter-spacing: -0.02em; }
@@ -89,7 +89,7 @@
   font-size: 14px;
   line-height: 1.75;
   margin: 0;
-  color: var(--fg);
+  color: var(--lmn-typography-fg, var(--fg));
 }
 
 /* ---- Text ---- */
@@ -106,7 +106,7 @@
 .typo-link-group > .typo-action,
 .typo-link-group > .typo-expand { flex: 0 0 auto; }
 .typo-link {
-  color: var(--accent-ink);
+  color: var(--lmn-typography-accent-ink, var(--accent-ink));
   text-decoration: none;
   transition: color var(--dur-fast) var(--ease), text-decoration-color var(--dur-fast) var(--ease);
   cursor: pointer;
@@ -115,14 +115,14 @@
   align-items: center;
   gap: 3px;
 }
-.typo-link:hover { color: var(--accent); text-decoration: underline; }
+.typo-link:hover { color: var(--lmn-typography-accent, var(--accent)); text-decoration: underline; }
 .typo-link:focus-visible {
-  outline: 2px solid var(--accent-glow);
+  outline: 2px solid var(--lmn-typography-accent-glow, var(--accent-glow));
   outline-offset: 2px;
   border-radius: 2px;
 }
 .typo-link.disabled {
-  color: var(--fg-subtle);
+  color: var(--lmn-typography-fg-subtle, var(--fg-subtle));
   cursor: not-allowed;
   pointer-events: auto;
   text-decoration: none;
@@ -146,7 +146,7 @@
   margin-left: 5px;
   border-radius: 6px;
   cursor: pointer;
-  color: var(--fg-subtle);
+  color: var(--lmn-typography-fg-subtle, var(--fg-subtle));
   line-height: 1;
   transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
   vertical-align: -0.18em;
@@ -161,16 +161,16 @@
   flex-shrink: 0;
 }
 .typo-action:hover {
-  color: var(--accent-ink);
-  background: var(--bg);
-  box-shadow: var(--neu-shadow-subtle);
+  color: var(--lmn-typography-accent-ink, var(--accent-ink));
+  background: var(--lmn-typography-bg, var(--bg));
+  box-shadow: var(--lmn-typography-neu-shadow-subtle, var(--neu-shadow-subtle));
 }
 .typo-action:focus-visible {
-  outline: 2px solid var(--accent-glow);
+  outline: 2px solid var(--lmn-typography-accent-glow, var(--accent-glow));
   outline-offset: 1px;
 }
-.typo-copy.copied { color: var(--success); }
-.typo-copy.error { color: var(--danger); }
+.typo-copy.copied { color: var(--lmn-typography-success, var(--success)); }
+.typo-copy.error { color: var(--lmn-typography-danger, var(--danger)); }
 
 /* Editable text trigger overlays */
 .typo-edit-text-trigger {
@@ -180,7 +180,7 @@
   padding: 0 2px;
   margin: 0 -2px;
 }
-.typo-edit-text-trigger:hover { background: color-mix(in oklch, var(--accent) 8%, transparent); }
+.typo-edit-text-trigger:hover { background: color-mix(in oklch, var(--lmn-typography-accent, var(--accent)) 8%, transparent); }
 
 /* ---- Editor (input / textarea) ---- */
 .typo.editing { display: block; }
@@ -205,8 +205,8 @@
 .typo-editor {
   font: inherit;
   color: inherit;
-  background: var(--bg-sunken);
-  box-shadow: var(--neu-shadow-inset-strong);
+  background: var(--lmn-typography-bg-sunken, var(--bg-sunken));
+  box-shadow: var(--lmn-typography-neu-shadow-inset-strong, var(--neu-shadow-inset-strong));
   border: none;
   outline: none;
   width: 100%;
@@ -221,7 +221,7 @@
   font-family: inherit;
 }
 .typo-editor:focus {
-  box-shadow: var(--neu-shadow-inset-strong), 0 0 0 3px var(--accent-glow);
+  box-shadow: var(--lmn-typography-neu-shadow-inset-strong, var(--neu-shadow-inset-strong)), 0 0 0 3px var(--lmn-typography-accent-glow, var(--accent-glow));
 }
 
 /* ---- Ellipsis ---- */
@@ -287,7 +287,7 @@
 
 .typo-expand {
   margin-left: 4px;
-  color: var(--accent-ink);
+  color: var(--lmn-typography-accent-ink, var(--accent-ink));
   cursor: pointer;
   font-size: 0.92em;
   user-select: none;
@@ -296,7 +296,7 @@
   background: transparent;
   font: inherit;
 }
-.typo-expand:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+.typo-expand:hover { color: var(--lmn-typography-accent, var(--accent)); text-decoration: underline; text-underline-offset: 3px; }
 .typo-suffix {
   flex: none;
   margin-left: 0.25em;
@@ -308,9 +308,9 @@
   max-width: min(520px, calc(100vw - 32px));
   padding: 7px 10px;
   border-radius: var(--r-sm);
-  background: var(--bg-sunken);
-  color: var(--fg);
-  box-shadow: var(--neu-shadow-control);
+  background: var(--lmn-typography-bg-sunken, var(--bg-sunken));
+  color: var(--lmn-typography-fg, var(--fg));
+  box-shadow: var(--lmn-typography-neu-shadow-control, var(--neu-shadow-control));
   font-size: 12px;
   font-weight: 500;
   line-height: 1.55;
@@ -325,10 +325,4 @@
   pointer-events: auto;
   animation: fadeIn var(--dur) var(--ease);
   z-index: 1000;
-}
-
-/* In dark mode, mark needs slightly higher contrast */
-[data-theme="dark"] .typo mark {
-  background: color-mix(in oklch, var(--warning) 30%, transparent);
-  color: var(--fg);
 }

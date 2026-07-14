@@ -5,7 +5,7 @@
   align-self: stretch;
   margin: 4px -6px 4px 6px;
   width: 16px;
-  border-left: 1px solid var(--divider);
+  border-left: 1px solid var(--lmn-input-divider, var(--divider));
   overflow: hidden;
   border-top-right-radius: calc(var(--r-md) - 4px);
   border-bottom-right-radius: calc(var(--r-md) - 4px);
@@ -21,18 +21,18 @@
   padding: 0;
   border: none;
   background: transparent;
-  color: var(--fg-subtle);
+  color: var(--lmn-input-fg-subtle, var(--fg-subtle));
   cursor: pointer;
   transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
 }
-.ipn-step.up:not(.down) { border-bottom: 1px solid var(--divider); }
-.ipn-step.up            { border-bottom: 1px solid var(--divider); }
+.ipn-step.up:not(.down) { border-bottom: 1px solid var(--lmn-input-divider, var(--divider)); }
+.ipn-step.up            { border-bottom: 1px solid var(--lmn-input-divider, var(--divider)); }
 .ipn-step:hover:not(:disabled) {
-  color: var(--accent-ink);
-  background: var(--bg-sunken);
+  color: var(--lmn-input-accent-ink, var(--accent-ink));
+  background: var(--lmn-input-bg-sunken, var(--bg-sunken));
 }
 .ipn-step:active:not(:disabled) {
-  color: var(--accent);
+  color: var(--lmn-input-accent, var(--accent));
 }
 .ipn-step:disabled {
   cursor: not-allowed;

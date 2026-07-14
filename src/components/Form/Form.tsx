@@ -3,6 +3,7 @@ import "../../styles/shared.css";
 import "./Form.css";
 import * as React from "react";
 import { isTargetWithinOverlayScope } from "../../utils/overlayStack";
+import { withComponentTheme, type ComponentThemeProps } from "../Theme/ComponentTheme";
 
 /* ============================================================================
  * Form — compact form with validation + field binding.
@@ -256,7 +257,8 @@ const FormCtx = React.createContext<FormCtxValue | null>(null);
 /* ---------------------------- Form Root ---------------------------- */
 
 export interface FormProps<V extends Record<string, unknown> = Record<string, unknown>>
-  extends Omit<React.FormHTMLAttributes<HTMLFormElement>, "onChange" | "onSubmit"> {
+  extends Omit<React.FormHTMLAttributes<HTMLFormElement>, "onChange" | "onSubmit">,
+    ComponentThemeProps {
   form?: FormInstance<V>;
   layout?: FormLayout;
   initialValues?: Partial<V>;
@@ -351,12 +353,21 @@ const FormRootInner = <V extends Record<string, unknown> = Record<string, unknow
   );
 };
 
-const FormRoot = React.forwardRef(FormRootInner) as FormRootComponent;
-(FormRoot as any).displayName = "Form";
+const FormRootBase = React.forwardRef(FormRootInner) as FormRootComponent;
+(FormRootBase as any).displayName = "Form";
+const FormRoot = withComponentTheme(
+  FormRootBase as React.ForwardRefExoticComponent<
+    FormProps & React.RefAttributes<HTMLFormElement>
+  >,
+  "Form",
+  "form"
+) as FormRootComponent;
 
 /* ---------------------------- Form.Item ---------------------------- */
 
-export interface FormItemProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "children"> {
+export interface FormItemProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "children">,
+    ComponentThemeProps {
   /** Field key. Omit for layout-only wrappers (no value binding). */
   name?: string;
   label?: React.ReactNode;
@@ -414,7 +425,7 @@ function getEmptyFormControlValue(element: React.ReactElement, valuePropName: st
   return "";
 }
 
-export const FormItem = React.forwardRef<HTMLDivElement, FormItemProps>(({
+const FormItemBase = React.forwardRef<HTMLDivElement, FormItemProps>(({
   name,
   label,
   rules,
@@ -608,7 +619,9 @@ export const FormItem = React.forwardRef<HTMLDivElement, FormItemProps>(({
     </div>
   );
 });
-FormItem.displayName = "FormItem";
+FormItemBase.displayName = "FormItem";
+
+export const FormItem = withComponentTheme(FormItemBase, "FormItem", "form");
 
 /* ---------------------------- Assembly ---------------------------- */
 

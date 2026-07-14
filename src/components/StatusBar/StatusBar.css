@@ -5,9 +5,9 @@
   position: relative;
   height: 26px;
   padding: 0 10px;
-  background: var(--bg);
-  border-top: 1px solid var(--divider);
-  color: var(--fg-muted);
+  background: var(--lmn-status-bar-bg, var(--bg));
+  border-top: 1px solid var(--lmn-status-bar-divider, var(--divider));
+  color: var(--lmn-status-bar-fg-muted, var(--fg-muted));
   font-size: 11.5px;
   user-select: none;
   flex-shrink: 0;
@@ -42,13 +42,13 @@
   white-space: nowrap;
 }
 .statusbar-item.clickable { cursor: pointer; }
-.statusbar-item.clickable:hover { background: var(--bg-sunken); color: var(--fg); }
+.statusbar-item.clickable:hover { background: var(--lmn-status-bar-bg-sunken, var(--bg-sunken)); color: var(--lmn-status-bar-fg, var(--fg)); }
 
-.statusbar-item.tone-muted   { color: var(--fg-subtle); }
-.statusbar-item.tone-accent  { color: var(--accent-ink); }
-.statusbar-item.tone-success { color: var(--success); }
-.statusbar-item.tone-warning { color: var(--warning); }
-.statusbar-item.tone-danger  { color: var(--danger); }
+.statusbar-item.tone-muted   { color: var(--lmn-status-bar-fg-subtle, var(--fg-subtle)); }
+.statusbar-item.tone-accent  { color: var(--lmn-status-bar-accent-ink, var(--accent-ink)); }
+.statusbar-item.tone-success { color: var(--lmn-status-bar-success, var(--success)); }
+.statusbar-item.tone-warning { color: var(--lmn-status-bar-warning, var(--warning)); }
+.statusbar-item.tone-danger  { color: var(--lmn-status-bar-danger, var(--danger)); }
 
 .statusbar-item-icon { display: inline-flex; flex-shrink: 0; }
 .statusbar-item-label { overflow: hidden; text-overflow: ellipsis; }

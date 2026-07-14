@@ -2,6 +2,7 @@ import "../../styles/tokens.css";
 import "../../styles/shared.css";
 import "./Icon.css";
 import * as React from "react";
+import { withComponentTheme, type ComponentThemeProps } from "../Theme/ComponentTheme";
 
 /**
  * Name of a built-in icon. To add your own, pass `children` (raw SVG paths) instead.
@@ -86,7 +87,9 @@ export type IconName =
   | "unorderedList"
   | "starFilled";
 
-export interface IconProps extends Omit<React.SVGAttributes<SVGSVGElement>, "stroke"> {
+export interface IconProps
+  extends Omit<React.SVGAttributes<SVGSVGElement>, "stroke">,
+    ComponentThemeProps {
   name: IconName;
   size?: number | string;
   stroke?: number;
@@ -159,8 +162,8 @@ search:    <><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></>,
     caretDown: <><path d="m7 9 5 6 5-6z" fill="currentColor" stroke="none"/></>,
     caretUp:   <><path d="m7 15 5-6 5 6z" fill="currentColor" stroke="none"/></>,
     checkCircle:<><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></>,
-    checkCircleFilled:<><circle cx="12" cy="12" r="10" fill="currentColor" stroke="none"/><path d="m7.8 12.2 2.7 2.7 5.8-6" stroke="var(--bg)" strokeWidth="2.2" fill="none"/></>,
-    clockCircleFilled:<><circle cx="12" cy="12" r="10" fill="currentColor" stroke="none"/><path d="M12 6.5v5.7l3.6 2.1" stroke="var(--bg)" strokeWidth="2.1" fill="none"/></>,
+    checkCircleFilled:<><circle cx="12" cy="12" r="10" fill="currentColor" stroke="none"/><path d="m7.8 12.2 2.7 2.7 5.8-6" stroke="var(--lmn-icon-bg, var(--bg))" strokeWidth="2.2" fill="none"/></>,
+    clockCircleFilled:<><circle cx="12" cy="12" r="10" fill="currentColor" stroke="none"/><path d="M12 6.5v5.7l3.6 2.1" stroke="var(--lmn-icon-bg, var(--bg))" strokeWidth="2.1" fill="none"/></>,
     closeCircle:<><circle cx="12" cy="12" r="10"/><path d="M8 8l8 8M16 8l-8 8"/></>,
     dashboard: <><path d="M4 13a8 8 0 1 1 16 0"/><path d="M12 13l4-4"/><path d="M7 17h10"/></>,
     environment:<><path d="M12 22s7-5.2 7-12a7 7 0 0 0-14 0c0 6.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></>,
@@ -183,7 +186,7 @@ search:    <><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></>,
  * @example
  * <Icon name="plus" size={18} />
  */
-export const Icon = React.forwardRef<SVGSVGElement, IconProps>(
+const IconBase = React.forwardRef<SVGSVGElement, IconProps>(
   ({
     name,
     size = 16,
@@ -223,7 +226,9 @@ export const Icon = React.forwardRef<SVGSVGElement, IconProps>(
     );
   }
 );
-Icon.displayName = "Icon";
+IconBase.displayName = "Icon";
+
+export const Icon = withComponentTheme(IconBase, "Icon", "icon");
 
 export const isIconName = (value: IconSlot): value is IconName =>
   typeof value === "string" &&
@@ -301,7 +306,8 @@ export const resolveIconName = (
   (NAMED_ICON_MAP as Record<string, IconName | undefined>)[name] ?? fallback;
 
 export interface NamedIconProps
-  extends Omit<React.HTMLAttributes<HTMLSpanElement>, "children"> {
+  extends Omit<React.HTMLAttributes<HTMLSpanElement>, "children">,
+    ComponentThemeProps {
   /** 是否播放旋转动画。LoadingOutlined 默认启用。 */
   spin?: boolean;
   /** 静态顺时针旋转角度，单位为度。 */
@@ -310,12 +316,13 @@ export interface NamedIconProps
   size?: number | string;
 }
 
+/** 创建与 Icon 共享主题身份和真实 span ref 的具名图标组件。 */
 const createNamedIcon = (
   displayName: NamedIconComponentName,
   defaultSpin = false
 ) => {
   const iconName = NAMED_ICON_MAP[displayName];
-  const Component = React.forwardRef<HTMLSpanElement, NamedIconProps>(
+  const NamedIconBase = React.forwardRef<HTMLSpanElement, NamedIconProps>(
     ({ spin, rotate, size = "1em", className = "", style, ...rest }, ref) => {
       const shouldSpin = spin ?? defaultSpin;
       const transform = rotate
@@ -338,7 +345,7 @@ const createNamedIcon = (
           }}
           {...rest}
         >
-          <Icon
+          <IconBase
             name={iconName}
             size={size}
           />
@@ -346,8 +353,10 @@ const createNamedIcon = (
       );
     }
   );
-  Component.displayName = displayName;
-  return Component;
+  NamedIconBase.displayName = displayName;
+  const NamedIcon = withComponentTheme(NamedIconBase, "Icon", "icon");
+  NamedIcon.displayName = displayName;
+  return NamedIcon;
 };
 
 export const AimOutlined = createNamedIcon("AimOutlined");

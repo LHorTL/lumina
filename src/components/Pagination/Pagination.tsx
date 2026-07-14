@@ -5,9 +5,15 @@ import * as React from "react";
 import { Icon } from "../Icon";
 import { Select } from "../Select";
 import { Input } from "../Input";
+import {
+  InternalComponentThemePart,
+  withComponentTheme,
+  type ComponentThemeProps,
+} from "../Theme/ComponentTheme";
 
 export interface PaginationProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange"> {
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange">,
+    ComponentThemeProps {
   /** Total number of items. */
   total: number;
   /** Items per page. */
@@ -42,7 +48,7 @@ const clampPage = (value: number, pages: number): number =>
   Number.isFinite(value) ? Math.min(pages, Math.max(1, Math.trunc(value))) : 1;
 
 /** `Pagination` — page number controls. */
-export const Pagination = React.forwardRef<HTMLDivElement, PaginationProps>(({
+const PaginationBase = React.forwardRef<HTMLDivElement, PaginationProps>(({
   total,
   pageSize = 10,
   page,
@@ -108,10 +114,11 @@ export const Pagination = React.forwardRef<HTMLDivElement, PaginationProps>(({
 
   return (
     <div ref={ref} className={`pagination ${className}`} role="navigation" aria-label="分页" {...rest}>
-      <span className="pg-info">
-        共 {normalizedTotal} 条 · 第 {cur} / {pages} 页
-      </span>
-      <div className="pg-controls">
+      <InternalComponentThemePart components={["Select", "Input"]}>
+        <span className="pg-info">
+          共 {normalizedTotal} 条 · 第 {cur} / {pages} 页
+        </span>
+        <div className="pg-controls">
         <button
           type="button"
           className={`pg ${cur === 1 ? "disabled" : ""}`}
@@ -171,8 +178,15 @@ export const Pagination = React.forwardRef<HTMLDivElement, PaginationProps>(({
             <span className="pg-jumper-label">页</span>
           </label>
         )}
-      </div>
+        </div>
+      </InternalComponentThemePart>
     </div>
   );
 });
-Pagination.displayName = "Pagination";
+PaginationBase.displayName = "Pagination";
+
+export const Pagination = withComponentTheme(
+  PaginationBase,
+  "Pagination",
+  ["pagination", "select", "input"]
+);

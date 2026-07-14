@@ -2,11 +2,13 @@ import "../../styles/tokens.css";
 import "../../styles/shared.css";
 import "./Splitter.css";
 import * as React from "react";
+import { withComponentTheme, type ComponentThemeProps } from "../Theme/ComponentTheme";
 
 export type SplitterDirection = "horizontal" | "vertical";
 
 export interface SplitterProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, "children" | "onResize"> {
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "children" | "onResize">,
+    ComponentThemeProps {
   /**
    * Layout direction.
    * - `"horizontal"` (default) — children placed left/right, handle is a vertical bar.
@@ -70,7 +72,7 @@ function readStoredSplitterSize(storageKey: string | undefined): number | undefi
  * </Splitter>
  * ```
  */
-export const Splitter = React.forwardRef<HTMLDivElement, SplitterProps>(({
+const SplitterBase = React.forwardRef<HTMLDivElement, SplitterProps>(({
   direction = "horizontal",
   defaultSize = 240,
   size,
@@ -248,4 +250,6 @@ export const Splitter = React.forwardRef<HTMLDivElement, SplitterProps>(({
     </div>
   );
 });
-Splitter.displayName = "Splitter";
+SplitterBase.displayName = "Splitter";
+
+export const Splitter = withComponentTheme(SplitterBase, "Splitter", "splitter");

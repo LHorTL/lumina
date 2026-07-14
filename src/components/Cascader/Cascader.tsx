@@ -8,10 +8,20 @@ import { Input } from "../Input";
 import { useFloating } from "../../utils/useFloating";
 import { usePortalContainer } from "../../utils/portal";
 import { useOverlayLayer } from "../../utils/overlayStack";
+import {
+  InternalComponentThemePart,
+  useComponentPortalTheme,
+  withComponentTheme,
+  type ComponentThemeProps,
+} from "../Theme/ComponentTheme";
 
 export interface CascaderOption {
   value: string;
   label: React.ReactNode;
+  /** 复杂标签参与默认路径搜索时使用的独立文本。 */
+  text?: string;
+  /** 复杂标签或 optionRender 使用的独立可访问名称。 */
+  ariaLabel?: string;
   /** Leading icon. Accepts a built-in icon name or custom React node. */
   icon?: IconSlot;
   children?: CascaderOption[];
@@ -32,7 +42,8 @@ export interface CascaderOptionRenderInfo {
 }
 
 export interface CascaderProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange" | "defaultValue"> {
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange" | "defaultValue">,
+    ComponentThemeProps {
   options: CascaderOption[];
   value?: string[];
   defaultValue?: string[];
@@ -75,14 +86,30 @@ const defaultSearchFilter = (inputValue: string, path: CascaderOption[]) => {
   const q = inputValue.trim().toLowerCase();
   if (!q) return true;
   return path
-    .map((option) => String(option.label ?? option.value))
+    .map(getCascaderOptionText)
     .join(" / ")
     .toLowerCase()
     .includes(q);
 };
 
+/** 返回级联节点用于搜索和可访问名称的稳定纯文本。 */
+function getCascaderOptionText(option: CascaderOption): string {
+  if (option.text) return option.text;
+  if (typeof option.label === "string" || typeof option.label === "number") {
+    return String(option.label);
+  }
+  return option.value;
+}
+
+/** 返回级联路径按钮的可访问名称。 */
+function getCascaderPathAriaLabel(path: CascaderOption[]): string {
+  return path
+    .map((option) => option.ariaLabel ?? getCascaderOptionText(option))
+    .join(" / ");
+}
+
 /** `Cascader` — multi-column hierarchical selector. */
-export const Cascader = React.forwardRef<HTMLDivElement, CascaderProps>(({
+const CascaderBase = React.forwardRef<HTMLDivElement, CascaderProps>(({
   options,
   value,
   defaultValue = [],
@@ -117,6 +144,7 @@ export const Cascader = React.forwardRef<HTMLDivElement, CascaderProps>(({
   const [query, setQuery] = React.useState("");
   const searchRef = React.useRef<HTMLInputElement>(null);
   const portalContainer = usePortalContainer();
+  const portalTheme = useComponentPortalTheme("Cascader");
   const panelId = React.useId();
   const searchConfig = typeof showSearch === "object" ? showSearch : {};
   const searchable = !!showSearch;
@@ -250,6 +278,8 @@ export const Cascader = React.forwardRef<HTMLDivElement, CascaderProps>(({
     .join(" ");
   const panelStyle = {
     ...floatingStyle,
+    ...portalTheme.style,
+    ...portalTheme.styles.popup,
     ["--cascader-list-height" as string]: `${mergedListHeight}px`,
     ...popupStyle,
   } as React.CSSProperties;
@@ -300,24 +330,34 @@ export const Cascader = React.forwardRef<HTMLDivElement, CascaderProps>(({
             <Icon name="x" size={12} />
           </span>
         )}
-        <span style={{ position: "absolute", right: 12, color: "var(--fg-subtle)" }}>
+        <span style={{ position: "absolute", right: 12, color: "var(--lmn-cascader-fg-subtle, var(--fg-subtle))" }}>
           <Icon name="chevDown" size={14} />
         </span>
       </button>
       {open && portalContainer &&
         createPortal(
-          <div ref={panelRef} id={panelId} role="dialog" aria-label="级联选择" className={panelClassName} style={panelStyle}>
+          <div
+            ref={panelRef}
+            id={panelId}
+            role="dialog"
+            aria-label="级联选择"
+            className={panelClassName}
+            {...portalTheme.dataAttributes}
+            style={panelStyle}
+          >
             {searchable && (
               <div className="cascader-search">
-                <Input
-                  ref={searchRef}
-                  size="sm"
-                  leadingIcon="search"
-                  value={query}
-                  onValueChange={setQuery}
-                  placeholder="搜索..."
-                  aria-label="搜索级联选项"
-                />
+                <InternalComponentThemePart components="Input">
+                  <Input
+                    ref={searchRef}
+                    size="sm"
+                    leadingIcon="search"
+                    value={query}
+                    onValueChange={setQuery}
+                    placeholder="搜索..."
+                    aria-label="搜索级联选项"
+                  />
+                </InternalComponentThemePart>
               </div>
             )}
             {searchable && query.trim() ? (
@@ -330,6 +370,7 @@ export const Cascader = React.forwardRef<HTMLDivElement, CascaderProps>(({
                       key={itemPath.map((item) => item.value).join("__")}
                       type="button"
                       role="option"
+                      aria-label={getCascaderPathAriaLabel(itemPath)}
                       className="cascader-search-item"
                       onClick={() => commit(itemPath.map((item) => item.value), true)}
                     >
@@ -358,6 +399,7 @@ export const Cascader = React.forwardRef<HTMLDivElement, CascaderProps>(({
                           type="button"
                           role="option"
                           aria-selected={isActive}
+                          aria-label={o.ariaLabel ?? getCascaderOptionText(o)}
                           className={`cascader-item ${isActive ? "active" : ""}`}
                           disabled={o.disabled}
                           onClick={() => pick(depth, o.value, hasChildren)}
@@ -390,4 +432,10 @@ export const Cascader = React.forwardRef<HTMLDivElement, CascaderProps>(({
     </div>
   );
 });
-Cascader.displayName = "Cascader";
+CascaderBase.displayName = "Cascader";
+
+export const Cascader = withComponentTheme(
+  CascaderBase,
+  "Cascader",
+  ["cascader", "input"]
+);

@@ -2,6 +2,7 @@ import "../../styles/tokens.css";
 import "../../styles/shared.css";
 import "./List.css";
 import * as React from "react";
+import { withComponentTheme, type ComponentThemeProps } from "../Theme/ComponentTheme";
 
 export interface ListItem {
   key: string;
@@ -13,7 +14,8 @@ export interface ListItem {
 }
 
 export interface ListProps
-  extends Omit<React.HTMLAttributes<HTMLUListElement>, "children"> {
+  extends Omit<React.HTMLAttributes<HTMLUListElement>, "children">,
+    ComponentThemeProps {
   items: ListItem[];
   /** Show dividers between items. */
   dividers?: boolean;
@@ -21,7 +23,7 @@ export interface ListProps
 }
 
 /** `List` — vertical list of rows. */
-export const List = React.forwardRef<HTMLUListElement, ListProps>(({ items, dividers = true, className = "", style, ...rest }, ref) => (
+const ListBase = React.forwardRef<HTMLUListElement, ListProps>(({ items, dividers = true, className = "", style, ...rest }, ref) => (
   <ul
     ref={ref}
     className={`list ${dividers ? "with-dividers" : ""} ${className}`}
@@ -53,4 +55,6 @@ export const List = React.forwardRef<HTMLUListElement, ListProps>(({ items, divi
     })}
   </ul>
 ));
-List.displayName = "List";
+ListBase.displayName = "List";
+
+export const List = withComponentTheme(ListBase, "List", "list");

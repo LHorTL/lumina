@@ -2,9 +2,11 @@ import "../../styles/tokens.css";
 import "../../styles/shared.css";
 import "./Empty.css";
 import * as React from "react";
+import { withComponentTheme, type ComponentThemeProps } from "../Theme/ComponentTheme";
 
 export interface EmptyProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, "title" | "children"> {
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "title" | "children">,
+    ComponentThemeProps {
   title?: React.ReactNode;
   description?: React.ReactNode;
   icon?: React.ReactNode;
@@ -16,7 +18,7 @@ export interface EmptyProps
 }
 
 /** `Empty` — empty state placeholder. */
-export const Empty = React.forwardRef<HTMLDivElement, EmptyProps>(({
+const EmptyBase = React.forwardRef<HTMLDivElement, EmptyProps>(({
   title = "暂无内容",
   description,
   icon,
@@ -33,4 +35,6 @@ export const Empty = React.forwardRef<HTMLDivElement, EmptyProps>(({
     {action && <div className="empty-action">{action}</div>}
   </div>
 ));
-Empty.displayName = "Empty";
+EmptyBase.displayName = "Empty";
+
+export const Empty = withComponentTheme(EmptyBase, "Empty", "empty");

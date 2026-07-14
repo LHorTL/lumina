@@ -3,8 +3,15 @@ import "../../styles/shared.css";
 import "./AppShell.css";
 import * as React from "react";
 import { Icon } from "../Icon";
+import {
+  withComponentTheme,
+  withInternalComponentThemePart,
+  type ComponentThemeProps,
+} from "../Theme/ComponentTheme";
 
-export interface WindowControlsProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface WindowControlsProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    ComponentThemeProps {
   /** macOS traffic lights or Windows-style buttons. */
   platform?: "mac" | "windows";
   onMinimize?: () => void;
@@ -19,7 +26,7 @@ export interface WindowControlsProps extends React.HTMLAttributes<HTMLDivElement
  * `WindowControls` — standalone window control buttons.
  * Mac: traffic lights (close/min/max). Windows: rectangular controls.
  */
-export const WindowControls = React.forwardRef<HTMLDivElement, WindowControlsProps>(({
+const WindowControlsBase = React.forwardRef<HTMLDivElement, WindowControlsProps>(({
   platform = "mac",
   onMinimize,
   onMaximize,
@@ -72,10 +79,23 @@ export const WindowControls = React.forwardRef<HTMLDivElement, WindowControlsPro
     </div>
   );
 });
-WindowControls.displayName = "WindowControls";
+WindowControlsBase.displayName = "WindowControls";
+
+export const WindowControls = withComponentTheme(
+  WindowControlsBase,
+  "WindowControls",
+  "app-shell"
+);
+
+/** TitleBar 内部窗口控制按钮继续使用标题栏自身主题。 */
+const InternalWindowControls = withInternalComponentThemePart(
+  WindowControls,
+  "WindowControls"
+);
 
 export interface TitleBarProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "title">,
+    ComponentThemeProps {
   title?: React.ReactNode;
   /** Platform appearance — affects button placement. Default "mac". */
   platform?: "mac" | "windows";
@@ -97,7 +117,7 @@ export interface TitleBarProps
  * `TitleBar` — Electron-style window chrome. Attach at the top of your app.
  * Buttons are non-draggable regions so clicks register correctly.
  */
-export const TitleBar = React.forwardRef<HTMLDivElement, TitleBarProps>(({
+const TitleBarBase = React.forwardRef<HTMLDivElement, TitleBarProps>(({
   title,
   platform = "mac",
   onMinimize,
@@ -120,7 +140,7 @@ export const TitleBar = React.forwardRef<HTMLDivElement, TitleBarProps>(({
   return (
     <div ref={ref} className={`titlebar ${platform} ${draggable ? "draggable" : "no-drag"} ${className}`} {...rest} style={dragStyle}>
       {platform === "mac" && (
-        <WindowControls platform="mac" onMinimize={onMinimize} onMaximize={onMaximize} onClose={onClose} maximized={maximized} />
+        <InternalWindowControls platform="mac" onMinimize={onMinimize} onMaximize={onMaximize} onClose={onClose} maximized={maximized} />
       )}
       <div className="titlebar-title">{title}</div>
       {center && (
@@ -134,12 +154,14 @@ export const TitleBar = React.forwardRef<HTMLDivElement, TitleBarProps>(({
         </div>
       )}
       {platform === "windows" && (
-        <WindowControls platform="windows" onMinimize={onMinimize} onMaximize={onMaximize} onClose={onClose} maximized={maximized} />
+        <InternalWindowControls platform="windows" onMinimize={onMinimize} onMaximize={onMaximize} onClose={onClose} maximized={maximized} />
       )}
     </div>
   );
 });
-TitleBar.displayName = "TitleBar";
+TitleBarBase.displayName = "TitleBar";
+
+export const TitleBar = withComponentTheme(TitleBarBase, "TitleBar", "app-shell");
 
 export interface SidebarItem {
   key: string;
@@ -152,7 +174,8 @@ export interface SidebarItem {
 }
 
 export interface SidebarProps
-  extends Omit<React.HTMLAttributes<HTMLElement>, "onSelect" | "children"> {
+  extends Omit<React.HTMLAttributes<HTMLElement>, "onSelect" | "children">,
+    ComponentThemeProps {
   items: SidebarItem[];
   activeKey?: string;
   onSelect?: (key: string) => void;
@@ -181,7 +204,7 @@ const collectExpandableSidebarKeys = (items: SidebarItem[]): string[] =>
   ]);
 
 /** `Sidebar` — navigation rail. Pair with `AppShell`. */
-export const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(({
+const SidebarBase = React.forwardRef<HTMLElement, SidebarProps>(({
   items,
   activeKey,
   onSelect,
@@ -261,9 +284,13 @@ export const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(({
     </aside>
   );
 });
-Sidebar.displayName = "Sidebar";
+SidebarBase.displayName = "Sidebar";
 
-export interface AppShellProps extends React.HTMLAttributes<HTMLDivElement> {
+export const Sidebar = withComponentTheme(SidebarBase, "Sidebar", "app-shell");
+
+export interface AppShellProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    ComponentThemeProps {
   sidebar?: React.ReactNode;
   titleBar?: React.ReactNode;
   children?: React.ReactNode;
@@ -273,7 +300,7 @@ export interface AppShellProps extends React.HTMLAttributes<HTMLDivElement> {
 /**
  * `AppShell` — 3-zone Electron layout: title bar across top, sidebar on left, content fills rest.
  */
-export const AppShell = React.forwardRef<HTMLDivElement, AppShellProps>(({ sidebar, titleBar, children, className = "", ...rest }, ref) => (
+const AppShellBase = React.forwardRef<HTMLDivElement, AppShellProps>(({ sidebar, titleBar, children, className = "", ...rest }, ref) => (
   <div ref={ref} className={`app-shell ${className}`} {...rest}>
     {titleBar}
     <div className="app-shell-body">
@@ -282,4 +309,6 @@ export const AppShell = React.forwardRef<HTMLDivElement, AppShellProps>(({ sideb
     </div>
   </div>
 ));
-AppShell.displayName = "AppShell";
+AppShellBase.displayName = "AppShell";
+
+export const AppShell = withComponentTheme(AppShellBase, "AppShell", "app-shell");
