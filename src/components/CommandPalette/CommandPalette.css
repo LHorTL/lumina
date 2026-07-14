@@ -3,22 +3,21 @@
   position: fixed;
   inset: 0;
   z-index: 4000;
-  background: color-mix(in oklch, var(--fg) 22%, transparent);
+  background: var(--mask-bg);
   display: flex;
   justify-content: center;
   align-items: flex-start;
   padding-top: 14vh;
   animation: fadeIn var(--dur-fast) var(--ease);
 }
-[data-theme="dark"] .cmdp-overlay { background: color-mix(in oklch, black 55%, transparent); }
 
 .cmdp-panel {
   width: min(560px, calc(100vw - 48px));
   max-height: 60vh;
-  background: var(--bg);
+  background: var(--lmn-command-palette-bg, var(--bg));
   border-radius: var(--r-lg);
-  box-shadow: var(--neu-shadow-float);
-  border: 1px solid var(--divider);
+  box-shadow: var(--lmn-command-palette-neu-shadow-float, var(--neu-shadow-float));
+  border: 1px solid var(--lmn-command-palette-divider, var(--divider));
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -45,7 +44,7 @@
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--fg-subtle);
+  color: var(--lmn-command-palette-fg-subtle, var(--fg-subtle));
   padding: 8px 10px 4px;
   font-weight: 600;
 }
@@ -60,7 +59,7 @@
   border: none;
   background: transparent;
   box-shadow: none;
-  color: var(--fg);
+  color: var(--lmn-command-palette-fg, var(--fg));
   font: inherit;
   font-size: 13px;
   text-align: left;
@@ -69,18 +68,18 @@
   transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease),
     box-shadow var(--dur-fast) var(--ease);
 }
-.cmdp-item:disabled { color: var(--fg-subtle); cursor: not-allowed; }
+.cmdp-item:disabled { color: var(--lmn-command-palette-fg-subtle, var(--fg-subtle)); cursor: not-allowed; }
 .cmdp-item.active:not(:disabled) {
-  background: var(--bg);
-  color: var(--accent-ink);
-  box-shadow: var(--neu-shadow-inset);
+  background: var(--lmn-command-palette-bg, var(--bg));
+  color: var(--lmn-command-palette-accent-ink, var(--accent-ink));
+  box-shadow: var(--lmn-command-palette-neu-shadow-inset, var(--neu-shadow-inset));
 }
 
 .cmdp-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--fg-muted);
+  color: var(--lmn-command-palette-fg-muted, var(--fg-muted));
 }
 .cmdp-item.active:not(:disabled) .cmdp-icon { color: inherit; }
 
@@ -92,7 +91,7 @@
 }
 .cmdp-desc {
   font-size: 11.5px;
-  color: var(--fg-subtle);
+  color: var(--lmn-command-palette-fg-subtle, var(--fg-subtle));
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -102,14 +101,14 @@
 .cmdp-shortcut {
   font-family: var(--font-mono);
   font-size: 11px;
-  color: var(--fg-subtle);
+  color: var(--lmn-command-palette-fg-subtle, var(--fg-subtle));
 }
 .cmdp-item.active:not(:disabled) .cmdp-shortcut { color: inherit; opacity: 0.8; }
 
 .cmdp-empty {
   padding: 28px 16px;
   text-align: center;
-  color: var(--fg-subtle);
+  color: var(--lmn-command-palette-fg-subtle, var(--fg-subtle));
   font-size: 13px;
 }
 
@@ -117,10 +116,10 @@
   display: flex;
   gap: 16px;
   padding: 8px 14px;
-  border-top: 1px solid var(--divider);
-  background: var(--bg-sunken);
+  border-top: 1px solid var(--lmn-command-palette-divider, var(--divider));
+  background: var(--lmn-command-palette-bg-sunken, var(--bg-sunken));
   font-size: 11.5px;
-  color: var(--fg-subtle);
+  color: var(--lmn-command-palette-fg-subtle, var(--fg-subtle));
 }
 .cmdp-footer span { display: inline-flex; align-items: center; gap: 4px; }
 
@@ -131,9 +130,9 @@
   height: 18px;
   padding: 0 5px;
   border-radius: 5px;
-  background: var(--bg);
-  box-shadow: var(--neu-shadow-subtle);
+  background: var(--lmn-command-palette-bg, var(--bg));
+  box-shadow: var(--lmn-command-palette-neu-shadow-subtle, var(--neu-shadow-subtle));
   font-family: var(--font-mono);
   font-size: 10.5px;
-  color: var(--fg-muted);
+  color: var(--lmn-command-palette-fg-muted, var(--fg-muted));
 }

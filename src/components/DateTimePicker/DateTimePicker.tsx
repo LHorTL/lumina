@@ -11,6 +11,12 @@ import { useFloating } from "../../utils/useFloating";
 import { useInputTriggerToggle } from "../../utils/useInputTriggerToggle";
 import { usePortalContainer } from "../../utils/portal";
 import { useOverlayLayer } from "../../utils/overlayStack";
+import {
+  InternalComponentThemePart,
+  useComponentPortalTheme,
+  withComponentTheme,
+  type ComponentThemeProps,
+} from "../Theme/ComponentTheme";
 
 export type DateTimePickerFormat = "YYYY-MM-DD HH:mm" | "YYYY-MM-DD HH:mm:ss";
 export type DateTimePickerSize = "sm" | "md" | "lg";
@@ -27,7 +33,8 @@ interface DayAvailability {
 }
 
 export interface DateTimePickerProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, "defaultValue" | "onChange"> {
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "defaultValue" | "onChange">,
+    ComponentThemeProps {
   /** Controlled selected date and time. Use `null` for an empty picker. */
   value?: Date | null;
   /** Initial selected date and time when uncontrolled. */
@@ -182,7 +189,7 @@ const getNow = (includeSecond: boolean): Date => normalizeDateTime(new Date(), i
  * @example
  * <DateTimePicker value={startAt} onChange={setStartAt} minuteStep={15} />
  */
-export const DateTimePicker = React.forwardRef<HTMLDivElement, DateTimePickerProps>(
+const DateTimePickerBase = React.forwardRef<HTMLDivElement, DateTimePickerProps>(
   (
     {
       value,
@@ -275,6 +282,7 @@ export const DateTimePicker = React.forwardRef<HTMLDivElement, DateTimePickerPro
     const rootRef = React.useRef<HTMLDivElement | null>(null);
     const panelId = React.useId();
     const portalContainer = usePortalContainer();
+    const portalTheme = useComponentPortalTheme("DateTimePicker");
     const { triggerRef, floatingRef: panelRef, floatingStyle, zIndex: panelZIndex } = useFloating<HTMLDivElement, HTMLDivElement>({
       open,
       placement,
@@ -685,7 +693,8 @@ export const DateTimePicker = React.forwardRef<HTMLDivElement, DateTimePickerPro
 
     return (
       <div ref={setRootRef} className={rootClassName} onKeyDown={handleRootKeyDown} {...rest}>
-        <Input
+        <InternalComponentThemePart components={["Input", "Calendar", "Button"]}>
+          <Input
           id={fieldId}
           aria-label={ariaLabel}
           aria-labelledby={ariaLabelledBy}
@@ -719,7 +728,8 @@ export const DateTimePicker = React.forwardRef<HTMLDivElement, DateTimePickerPro
               className={`date-time-picker-panel ${includeSecond ? "with-second" : "without-second"} ${mergedPanelClassName}`}
               role="dialog"
               aria-label="选择日期和时间"
-              style={floatingStyle}
+              {...portalTheme.dataAttributes}
+              style={{ ...floatingStyle, ...portalTheme.style, ...portalTheme.styles.popup }}
             >
               <div className="date-time-picker-body">
                 <Calendar
@@ -769,8 +779,15 @@ export const DateTimePicker = React.forwardRef<HTMLDivElement, DateTimePickerPro
             </div>,
             portalContainer
           )}
+        </InternalComponentThemePart>
       </div>
     );
   }
 );
-DateTimePicker.displayName = "DateTimePicker";
+DateTimePickerBase.displayName = "DateTimePicker";
+
+export const DateTimePicker = withComponentTheme(
+  DateTimePickerBase,
+  "DateTimePicker",
+  ["date-time-picker", "calendar", "input", "button"]
+);

@@ -7,6 +7,13 @@ import { Input } from "../Input";
 import { useFloating } from "../../utils/useFloating";
 import { usePortalContainer } from "../../utils/portal";
 import { useOverlayLayer } from "../../utils/overlayStack";
+import {
+  ComponentThemeBoundary,
+  InternalComponentThemePart,
+  mergeComponentRootStyleWithInstanceStyle,
+  useComponentThemeRootRef,
+  type ComponentThemeProps,
+} from "../Theme/ComponentTheme";
 
 export interface AutoCompleteOption {
   value: string;
@@ -19,7 +26,8 @@ export interface AutoCompleteProps
   extends Omit<
     React.InputHTMLAttributes<HTMLInputElement>,
     "value" | "defaultValue" | "onChange" | "onSelect" | "size"
-  > {
+  >,
+    ComponentThemeProps {
   value?: string;
   defaultValue?: string;
   onChange?: (value: string, option?: AutoCompleteOption) => void;
@@ -87,6 +95,8 @@ export const AutoComplete = React.forwardRef<HTMLInputElement, AutoCompleteProps
       onFocus,
       onBlur,
       onKeyDown,
+      style,
+      theme,
       ...rest
     },
     ref
@@ -114,6 +124,10 @@ export const AutoComplete = React.forwardRef<HTMLInputElement, AutoCompleteProps
       matchTriggerWidth,
       panelHeight: Math.min(filtered.length * 36 + 12, 280),
     });
+    const [themeRootElement, themeRootRef] = useComponentThemeRootRef<HTMLDivElement>(
+      triggerRef,
+      { component: "AutoComplete", theme }
+    );
 
     useOverlayLayer({
       open: open && portalContainer != null,
@@ -201,80 +215,103 @@ export const AutoComplete = React.forwardRef<HTMLInputElement, AutoCompleteProps
       }
     };
 
-    const panel = open && portalContainer
-      ? createPortal(
-          <div
-            ref={panelRef}
-            id={listboxId}
-            role="listbox"
-            className={`autocomplete-panel ${dropdownClassName}`}
-            style={floatingStyle}
-            onMouseDown={(e) => e.preventDefault()}
-          >
-            {filtered.length === 0 ? (
-              <div className="autocomplete-empty">{notFoundContent}</div>
-            ) : (
-              filtered.map((o, i) => (
-                <button
-                  key={o.value}
-                  id={`${listboxId}-option-${i}`}
-                  type="button"
-                  role="option"
-                  aria-selected={i === active}
-                  disabled={o.disabled}
-                  className={`autocomplete-item ${i === active ? "active" : ""}`}
-                  onMouseEnter={() => setActive(i)}
-                  onClick={() => pick(o)}
-                >
-                  {o.label ?? o.value}
-                </button>
-              ))
-            )}
-          </div>,
-          portalContainer
-        )
-      : null;
-
     return (
-      <div ref={triggerRef} className={`autocomplete ${className}`}>
-        <Input
-          ref={ref}
-          {...rest}
-          id={id}
-          name={name}
-          size={size}
-          value={text}
-          placeholder={placeholder}
-          disabled={disabled}
-          allowClear={allowClear}
-          autoFocus={autoFocus}
-          onValueChange={handleInput}
-          onFocus={(event) => {
-            onFocus?.(event);
-            if (!disabled) setInnerOpen(true);
-          }}
-          onBlur={(event) => {
-            onBlur?.(event);
-            const ownerDocument = event.currentTarget.ownerDocument;
-            requestAnimationFrame(() => {
-              const activeElement = ownerDocument.activeElement;
-              if (!triggerRef.current?.contains(activeElement) && !panelRef.current?.contains(activeElement)) {
-                setInnerOpen(false);
-              }
-            });
-          }}
-          onKeyDown={(event) => {
-            onKeyDown?.(event);
-            if (!event.defaultPrevented) onKey(event);
-          }}
-          role="combobox"
-          aria-autocomplete="list"
-          aria-expanded={open}
-          aria-controls={open ? listboxId : undefined}
-          aria-activedescendant={open && filtered[active] ? `${listboxId}-option-${active}` : undefined}
-        />
-        {panel}
-      </div>
+      <ComponentThemeBoundary
+        component="AutoComplete"
+        cssPrefix={["auto-complete", "input"]}
+        theme={theme}
+        rootElement={themeRootElement}
+      >
+        {(themeState) => (
+          <div
+            ref={themeRootRef}
+            className={`autocomplete ${className}`}
+            {...themeState.rootDataAttributes}
+            style={mergeComponentRootStyleWithInstanceStyle(themeState.rootStyle, style)}
+          >
+            <InternalComponentThemePart components="Input">
+              <Input
+                ref={ref}
+                {...rest}
+                id={id}
+                name={name}
+                size={size}
+                value={text}
+                placeholder={placeholder}
+                disabled={disabled}
+                allowClear={allowClear}
+                autoFocus={autoFocus}
+                style={style}
+                onValueChange={handleInput}
+                onFocus={(event) => {
+                  onFocus?.(event);
+                  if (!disabled) setInnerOpen(true);
+                }}
+                onBlur={(event) => {
+                  onBlur?.(event);
+                  const ownerDocument = event.currentTarget.ownerDocument;
+                  requestAnimationFrame(() => {
+                    const activeElement = ownerDocument.activeElement;
+                    if (!triggerRef.current?.contains(activeElement) && !panelRef.current?.contains(activeElement)) {
+                      setInnerOpen(false);
+                    }
+                  });
+                }}
+                onKeyDown={(event) => {
+                  onKeyDown?.(event);
+                  if (!event.defaultPrevented) onKey(event);
+                }}
+                role="combobox"
+                aria-autocomplete="list"
+                aria-expanded={open}
+                aria-controls={open ? listboxId : undefined}
+                aria-activedescendant={open && filtered[active] ? `${listboxId}-option-${active}` : undefined}
+              />
+            </InternalComponentThemePart>
+            {open && portalContainer
+              ? createPortal(
+                  <div
+                    ref={panelRef}
+                    id={listboxId}
+                    role="listbox"
+                    className={`autocomplete-panel ${dropdownClassName}`}
+                    {...themeState.portalDataAttributes}
+                    style={{
+                      ...floatingStyle,
+                      ...themeState.portalStyle,
+                      ...themeState.styles.popup,
+                    }}
+                    onMouseDown={(e) => e.preventDefault()}
+                  >
+                    {filtered.length === 0 ? (
+                      <div className="autocomplete-empty" style={themeState.styles.empty}>
+                        {notFoundContent}
+                      </div>
+                    ) : (
+                      filtered.map((o, i) => (
+                        <button
+                          key={o.value}
+                          id={`${listboxId}-option-${i}`}
+                          type="button"
+                          role="option"
+                          aria-selected={i === active}
+                          disabled={o.disabled}
+                          className={`autocomplete-item ${i === active ? "active" : ""}`}
+                          style={themeState.styles.option}
+                          onMouseEnter={() => setActive(i)}
+                          onClick={() => pick(o)}
+                        >
+                          {o.label ?? o.value}
+                        </button>
+                      ))
+                    )}
+                  </div>,
+                  portalContainer
+                )
+              : null}
+          </div>
+        )}
+      </ComponentThemeBoundary>
     );
   }
 );

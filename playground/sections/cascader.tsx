@@ -31,19 +31,25 @@ const ASSET_OPTIONS: CascaderOption[] = [
   {
     value: "workspace",
     label: "Lumina 工作区",
+    text: "Lumina 工作区 团队共享空间",
+    ariaLabel: "Lumina 工作区",
     children: [
       {
         value: "design",
         label: "设计资产",
+        text: "设计资产 源文件 规范",
+        ariaLabel: "设计资产",
         children: [
-          { value: "components", label: "组件素材" },
-          { value: "guidelines", label: "规范文档" },
+          { value: "components", label: "组件素材", text: "组件素材 截图 封面", ariaLabel: "组件素材" },
+          { value: "guidelines", label: "规范文档", text: "规范文档 品牌 交互", ariaLabel: "规范文档" },
         ],
       },
       {
         value: "marketing",
         label: "市场素材",
-        children: [{ value: "campaign", label: "夏季活动" }],
+        text: "市场素材 活动",
+        ariaLabel: "市场素材",
+        children: [{ value: "campaign", label: "夏季活动", text: "夏季推广活动", ariaLabel: "夏季活动" }],
       },
     ],
   },
@@ -219,6 +225,8 @@ const SectionCascader: React.FC<SectionCtx> = () => {
           rows: [
             { prop: "options", description: "层级选项树", type: "CascaderOption[]", required: true },
             { prop: "options[].icon", description: "选项前置图标,可传内置图标名或自定义节点", type: "IconName | ReactNode" },
+            { prop: "options[].text", description: "复杂 label 的独立默认搜索文本", type: "string" },
+            { prop: "options[].ariaLabel", description: "复杂节点或 optionRender 的独立可访问名称", type: "string" },
             { prop: "value / defaultValue", description: "受控/初始路径", type: "string[]" },
             { prop: "onChange", description: "提交路径时触发，同时返回对应选项对象", type: "(path: string[], selectedOptions?: CascaderOption[]) => void" },
             { prop: "placeholder", description: "占位文案", type: "string" },

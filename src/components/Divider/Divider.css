@@ -1,10 +1,10 @@
 /* ============ Divider ============ */
 .divider {
   height: 1px;
-  background: var(--divider);
+  background: var(--lmn-divider-divider, var(--divider));
   margin: var(--gap-4) 0;
   border-radius: 999px;
-  box-shadow: 0 1px 0 var(--shadow-light);
+  box-shadow: 0 1px 0 var(--lmn-divider-shadow-light, var(--shadow-light));
 }
 .divider.vertical {
   width: 1px;
@@ -15,7 +15,7 @@
 .divider.sunken {
   background: transparent;
   height: 2px;
-  box-shadow: var(--neu-shadow-inset);
+  box-shadow: var(--lmn-divider-neu-shadow-inset, var(--neu-shadow-inset));
 }
 .divider.sunken.vertical {
   width: 2px;
@@ -23,27 +23,27 @@
 }
 .divider.sunken:has(.divider-label) { background: transparent; box-shadow: none; }
 .divider.sunken:has(.divider-label)::before,
-.divider.sunken:has(.divider-label)::after { height: 2px; background: transparent; box-shadow: var(--neu-shadow-inset); }
+.divider.sunken:has(.divider-label)::after { height: 2px; background: transparent; box-shadow: var(--lmn-divider-neu-shadow-inset, var(--neu-shadow-inset)); }
 
 /* ---- Dashed variant ---- */
 .divider.dashed {
   background: transparent;
   box-shadow: none;
-  border-top: 1px dashed var(--divider);
+  border-top: 1px dashed var(--lmn-divider-divider, var(--divider));
   border-radius: 0;
   height: 0;
 }
 .divider.dashed.vertical {
   width: 0;
   border-top: none;
-  border-left: 1px dashed var(--divider);
+  border-left: 1px dashed var(--lmn-divider-divider, var(--divider));
 }
 .divider.dashed:has(.divider-label) { border-top: none; }
 .divider.dashed:has(.divider-label)::before,
 .divider.dashed:has(.divider-label)::after {
   background: transparent;
   box-shadow: none;
-  border-top: 1px dashed var(--divider);
+  border-top: 1px dashed var(--lmn-divider-divider, var(--divider));
   height: 0;
   border-radius: 0;
 }
@@ -51,7 +51,7 @@
 .divider-label {
   display: flex; align-items: center; gap: 12px;
   height: auto; background: transparent; box-shadow: none;
-  font-size: 11px; color: var(--fg-subtle);
+  font-size: 11px; color: var(--lmn-divider-fg-subtle, var(--fg-subtle));
   text-transform: uppercase; letter-spacing: 0.1em;
 }
 .divider:has(.divider-label) {
@@ -67,9 +67,9 @@
   content: "";
   flex: 1;
   height: 1px;
-  background: var(--divider);
+  background: var(--lmn-divider-divider, var(--divider));
   border-radius: 999px;
-  box-shadow: 0 1px 0 var(--shadow-light);
+  box-shadow: 0 1px 0 var(--lmn-divider-shadow-light, var(--shadow-light));
 }
 
 /* ---- Label orientation ---- */

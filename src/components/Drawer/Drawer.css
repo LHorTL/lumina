@@ -13,16 +13,16 @@
 
 .drawer {
   position: fixed;
-  background: var(--bg);
+  background: var(--lmn-drawer-bg, var(--bg));
   padding: var(--gap-5);
   z-index: 151;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  --overlay-shadow-safe-area: calc(var(--shadow-offset) + var(--shadow-blur));
-  --drawer-shadow-offset: calc(var(--shadow-offset) * 4 * var(--shadow-float-scale));
-  --drawer-shadow-blur: calc(var(--shadow-blur) * 3.75 * var(--shadow-float-scale));
-  --drawer-shadow-spread: calc(var(--shadow-offset) * -3.3 * var(--shadow-float-scale));
+  --overlay-shadow-safe-area: calc(var(--lmn-drawer-shadow-offset, var(--shadow-offset)) + var(--lmn-drawer-shadow-blur, var(--shadow-blur)));
+  --drawer-shadow-offset: calc(var(--lmn-drawer-shadow-offset, var(--shadow-offset)) * 4 * var(--shadow-float-scale));
+  --drawer-shadow-blur: calc(var(--lmn-drawer-shadow-blur, var(--shadow-blur)) * 3.75 * var(--shadow-float-scale));
+  --drawer-shadow-spread: calc(var(--lmn-drawer-shadow-offset, var(--shadow-offset)) * -3.3 * var(--shadow-float-scale));
 }
 .drawer.hidden {
   display: none;
@@ -32,25 +32,25 @@
   top: 0; right: 0; bottom: 0;
   width: min(420px, 92vw);
   animation: drawerInRight var(--dur-slow) var(--ease);
-  box-shadow: calc(var(--drawer-shadow-offset) * -1) 0 var(--drawer-shadow-blur) var(--drawer-shadow-spread) var(--shadow-dark);
+  box-shadow: calc(var(--drawer-shadow-offset) * -1) 0 var(--drawer-shadow-blur) var(--drawer-shadow-spread) var(--lmn-drawer-shadow-dark, var(--shadow-dark));
 }
 .drawer.left {
   top: 0; left: 0; bottom: 0;
   width: min(420px, 92vw);
   animation: drawerInLeft var(--dur-slow) var(--ease);
-  box-shadow: var(--drawer-shadow-offset) 0 var(--drawer-shadow-blur) var(--drawer-shadow-spread) var(--shadow-dark);
+  box-shadow: var(--drawer-shadow-offset) 0 var(--drawer-shadow-blur) var(--drawer-shadow-spread) var(--lmn-drawer-shadow-dark, var(--shadow-dark));
 }
 .drawer.top {
   top: 0; left: 0; right: 0;
   height: min(320px, 80vh);
   animation: drawerInTop var(--dur-slow) var(--ease);
-  box-shadow: 0 var(--drawer-shadow-offset) var(--drawer-shadow-blur) var(--drawer-shadow-spread) var(--shadow-dark);
+  box-shadow: 0 var(--drawer-shadow-offset) var(--drawer-shadow-blur) var(--drawer-shadow-spread) var(--lmn-drawer-shadow-dark, var(--shadow-dark));
 }
 .drawer.bottom {
   bottom: 0; left: 0; right: 0;
   height: min(320px, 80vh);
   animation: drawerInBottom var(--dur-slow) var(--ease);
-  box-shadow: 0 calc(var(--drawer-shadow-offset) * -1) var(--drawer-shadow-blur) var(--drawer-shadow-spread) var(--shadow-dark);
+  box-shadow: 0 calc(var(--drawer-shadow-offset) * -1) var(--drawer-shadow-blur) var(--drawer-shadow-spread) var(--lmn-drawer-shadow-dark, var(--shadow-dark));
 }
 
 @keyframes drawerInRight  { from { transform: translateX( 20px); opacity: 0; } }
@@ -64,7 +64,7 @@
   justify-content: space-between;
   gap: var(--gap-3);
   padding-bottom: var(--gap-4);
-  border-bottom: 1px solid var(--divider);
+  border-bottom: 1px solid var(--lmn-drawer-divider, var(--divider));
 }
 .drawer-head-right {
   display: inline-flex;
@@ -82,14 +82,14 @@
   border-radius: var(--r-sm);
   display: grid;
   place-items: center;
-  color: var(--fg-subtle);
+  color: var(--lmn-drawer-fg-subtle, var(--fg-subtle));
   cursor: pointer;
   transition: all var(--dur-fast) var(--ease);
 }
 .drawer-close:hover {
-  color: var(--fg);
-  background: var(--bg);
-  box-shadow: var(--neu-shadow-subtle);
+  color: var(--lmn-drawer-fg, var(--fg));
+  background: var(--lmn-drawer-bg, var(--bg));
+  box-shadow: var(--lmn-drawer-neu-shadow-subtle, var(--neu-shadow-subtle));
 }
 .drawer-body {
   flex: 1;
@@ -113,5 +113,5 @@
   gap: 10px;
   justify-content: flex-end;
   padding-top: var(--gap-4);
-  border-top: 1px solid var(--divider);
+  border-top: 1px solid var(--lmn-drawer-divider, var(--divider));
 }

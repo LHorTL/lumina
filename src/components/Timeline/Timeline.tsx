@@ -3,6 +3,11 @@ import "../../styles/shared.css";
 import "./Timeline.css";
 import * as React from "react";
 import { Spin } from "../Spin";
+import {
+  InternalComponentThemePart,
+  withComponentTheme,
+  type ComponentThemeProps,
+} from "../Theme/ComponentTheme";
 
 export interface TimelineItemConfig {
   /** Unique key for the item */
@@ -34,7 +39,8 @@ export interface TimelineItemConfig {
 }
 
 export interface TimelineProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, "children"> {
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "children">,
+    ComponentThemeProps {
   /** Timeline items */
   items: TimelineItemConfig[];
   /**
@@ -78,7 +84,7 @@ export interface TimelineProps
  * @example
  * <Timeline items={[{ children: "Created" }, { children: "In Progress" }]} pending />
  */
-export const Timeline = React.forwardRef<HTMLDivElement, TimelineProps>(
+const TimelineBase = React.forwardRef<HTMLDivElement, TimelineProps>(
   (
     {
       items,
@@ -164,7 +170,13 @@ export const Timeline = React.forwardRef<HTMLDivElement, TimelineProps>(
     );
   }
 );
-Timeline.displayName = "Timeline";
+TimelineBase.displayName = "Timeline";
+
+export const Timeline = withComponentTheme(
+  TimelineBase,
+  "Timeline",
+  ["timeline", "spin"]
+);
 
 function getPosition(
   mode: "left" | "right" | "alternate",
@@ -248,7 +260,11 @@ const TimelineItem: React.FC<TimelineItemInternalProps> = ({
       </div>
       <div className="timeline-item-head">
         <div className={dotCls} style={{ ...dotAlignStyle, ...dotStyle, ...item.dotStyle }}>
-          {item.dot ?? (isPending && <Spin size={14} />)}
+          {item.dot ?? (isPending && (
+            <InternalComponentThemePart components="Spin">
+              <Spin size={14} />
+            </InternalComponentThemePart>
+          ))}
         </div>
         {!isLast && <div className="timeline-item-tail" />}
       </div>

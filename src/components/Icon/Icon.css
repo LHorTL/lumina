@@ -2,6 +2,11 @@
   animation: spin 0.9s linear infinite;
 }
 
+svg[data-lumina-icon-color],
+.named-icon[data-lumina-icon-color] {
+  color: var(--lmn-icon-fg, var(--fg));
+}
+
 @media (prefers-reduced-motion: reduce) {
   .named-icon.spinning > svg { animation: none; }
 }

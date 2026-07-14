@@ -7,6 +7,11 @@ import { Icon, type IconName } from "../Icon";
 import { useFloating } from "../../utils/useFloating";
 import { usePortalContainer } from "../../utils/portal";
 import { useOverlayLayer } from "../../utils/overlayStack";
+import {
+  useComponentPortalTheme,
+  withComponentTheme,
+  type ComponentThemeProps,
+} from "../Theme/ComponentTheme";
 
 /* ============================================================================
  * Shared types
@@ -71,7 +76,7 @@ export interface EllipsisConfig {
   suffix?: string;
 }
 
-export interface BaseTypographyProps {
+export interface BaseTypographyProps extends ComponentThemeProps {
   /** Semantic color. */
   type?: TypographyType;
   /** Render disabled (muted + not selectable). */
@@ -189,6 +194,13 @@ const EllipsisTooltip = React.forwardRef<
   const [open, setOpen] = React.useState(false);
   const tooltipId = React.useId();
   const portalContainer = usePortalContainer();
+  const portalTheme = useComponentPortalTheme([
+    "Typography",
+    "Title",
+    "Text",
+    "Paragraph",
+    "Link",
+  ]);
   const openTimerRef = React.useRef<number | undefined>();
   const closeTimerRef = React.useRef<number | undefined>();
   const childRef = (children as React.ReactElement & { ref?: React.Ref<HTMLElement> }).ref;
@@ -308,7 +320,8 @@ const EllipsisTooltip = React.forwardRef<
             id={tooltipId}
             ref={floatingRef}
             className={`typo-ellipsis-tooltip ${placement}`}
-            style={floatingStyle}
+            {...portalTheme.dataAttributes}
+            style={{ ...floatingStyle, ...portalTheme.style, ...portalTheme.styles.popup }}
             role="tooltip"
             onMouseEnter={show}
             onMouseMove={show}
@@ -788,7 +801,7 @@ export interface TitleProps
  * @example
  * <Title level={2} copyable>章节标题</Title>
  */
-export const Title = React.forwardRef<HTMLElement, TitleProps>((props, ref) => {
+const TitleBase = React.forwardRef<HTMLElement, TitleProps>((props, ref) => {
   const { level = 1, ...rest } = props;
   const body = useTypographyBody({ ...rest, multilineEdit: false });
   const Tag = (`h${level}`) as "h1" | "h2" | "h3" | "h4" | "h5";
@@ -838,7 +851,9 @@ export const Title = React.forwardRef<HTMLElement, TitleProps>((props, ref) => {
     </EllipsisTooltip>
   ) : element;
 });
-Title.displayName = "Typography.Title";
+TitleBase.displayName = "Typography.Title";
+
+export const Title = withComponentTheme(TitleBase, "Title", "typography");
 
 /* ============================================================================
  * Text — inline span
@@ -859,7 +874,7 @@ export interface TextProps
  * <Text code>npm install</Text>
  * <Text copyable>可复制内容</Text>
  */
-export const Text = React.forwardRef<HTMLElement, TextProps>((props, ref) => {
+const TextBase = React.forwardRef<HTMLElement, TextProps>((props, ref) => {
   const { as = "span", ...rest } = props;
   const body = useTypographyBody({ ...rest, multilineEdit: false });
   const Tag = as as "span";
@@ -909,7 +924,9 @@ export const Text = React.forwardRef<HTMLElement, TextProps>((props, ref) => {
     </EllipsisTooltip>
   ) : element;
 });
-Text.displayName = "Typography.Text";
+TextBase.displayName = "Typography.Text";
+
+export const Text = withComponentTheme(TextBase, "Text", "typography");
 
 /* ============================================================================
  * Paragraph — block <p>
@@ -925,7 +942,7 @@ export interface ParagraphProps
  * @example
  * <Paragraph ellipsis={{ rows: 3, expandable: true }}>{long}</Paragraph>
  */
-export const Paragraph = React.forwardRef<HTMLParagraphElement, ParagraphProps>(
+const ParagraphBase = React.forwardRef<HTMLParagraphElement, ParagraphProps>(
   (props, ref) => {
     const body = useTypographyBody({ ...props, multilineEdit: true });
     const nativeProps = getNativeTypographyProps(props as ParagraphProps & React.HTMLAttributes<HTMLElement>);
@@ -974,7 +991,13 @@ export const Paragraph = React.forwardRef<HTMLParagraphElement, ParagraphProps>(
     ) : element;
   }
 );
-Paragraph.displayName = "Typography.Paragraph";
+ParagraphBase.displayName = "Typography.Paragraph";
+
+export const Paragraph = withComponentTheme(
+  ParagraphBase,
+  "Paragraph",
+  "typography"
+);
 
 /* ============================================================================
  * Link — anchor
@@ -1000,7 +1023,7 @@ export interface LinkProps
  * @example
  * <Link href="https://example.com" external>外部链接</Link>
  */
-export const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(
+const LinkBase = React.forwardRef<HTMLAnchorElement, LinkProps>(
   (props, ref) => {
     const {
       type,
@@ -1161,13 +1184,17 @@ export const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(
     );
   }
 );
-Link.displayName = "Typography.Link";
+LinkBase.displayName = "Typography.Link";
+
+export const Link = withComponentTheme(LinkBase, "Link", "typography");
 
 /* ============================================================================
  * Typography wrapper (article-style block)
  * ========================================================================== */
 
-export interface TypographyProps extends React.HTMLAttributes<HTMLElement> {
+export interface TypographyProps
+  extends React.HTMLAttributes<HTMLElement>,
+    ComponentThemeProps {
   children?: React.ReactNode;
 }
 
@@ -1191,7 +1218,7 @@ interface TypographyComponent
  *   <Typography.Paragraph>段落…</Typography.Paragraph>
  * </Typography>
  */
-const TypographyBase = React.forwardRef<HTMLElement, TypographyProps>(
+const TypographyRoot = React.forwardRef<HTMLElement, TypographyProps>(
   ({ className = "", children, ...rest }, ref) => (
     <article
       ref={ref}
@@ -1201,13 +1228,17 @@ const TypographyBase = React.forwardRef<HTMLElement, TypographyProps>(
       {children}
     </article>
   )
-) as unknown as TypographyComponent;
+);
+TypographyRoot.displayName = "Typography";
 
-TypographyBase.Title = Title;
-TypographyBase.Text = Text;
-TypographyBase.Paragraph = Paragraph;
-TypographyBase.Link = Link;
-(TypographyBase as React.ForwardRefExoticComponent<unknown>).displayName =
-  "Typography";
+const ThemedTypography = withComponentTheme(
+  TypographyRoot,
+  "Typography",
+  "typography"
+);
 
-export const Typography = TypographyBase;
+export const Typography = ThemedTypography as TypographyComponent;
+Typography.Title = Title;
+Typography.Text = Text;
+Typography.Paragraph = Paragraph;
+Typography.Link = Link;

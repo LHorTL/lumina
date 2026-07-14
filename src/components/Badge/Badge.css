@@ -7,16 +7,16 @@
   border-radius: 999px;
   font-size: 10px;
   font-weight: 700;
-  background: var(--danger);
-  color: var(--bg);
-  box-shadow: 0 1px 4px color-mix(in oklch, var(--shadow-dark) 35%, transparent);
+  background: var(--lmn-badge-danger, var(--danger));
+  color: var(--lmn-badge-bg, var(--bg));
+  box-shadow: 0 1px 4px color-mix(in oklch, var(--lmn-badge-shadow-dark, var(--shadow-dark)) 35%, transparent);
   font-variant-numeric: tabular-nums;
 }
 .badge.dot { min-width: 10px; height: 10px; padding: 0; }
-.badge.accent  { background: var(--accent);  box-shadow: 0 1px 4px var(--accent-glow); }
-.badge.info    { background: var(--info);    box-shadow: 0 1px 4px color-mix(in oklch, var(--info) 35%, transparent); }
-.badge.success { background: var(--success); box-shadow: 0 1px 4px color-mix(in oklch, var(--success) 35%, transparent); }
-.badge.warning { background: var(--warning); box-shadow: 0 1px 4px color-mix(in oklch, var(--warning) 35%, transparent); }
-.badge.neutral { background: var(--fg-muted); box-shadow: 0 1px 4px color-mix(in oklch, var(--shadow-dark) 35%, transparent); }
+.badge.accent  { background: var(--lmn-badge-accent, var(--accent));  box-shadow: 0 1px 4px var(--lmn-badge-accent-glow, var(--accent-glow)); }
+.badge.info    { background: var(--lmn-badge-info, var(--info));    box-shadow: 0 1px 4px color-mix(in oklch, var(--lmn-badge-info, var(--info)) 35%, transparent); }
+.badge.success { background: var(--lmn-badge-success, var(--success)); box-shadow: 0 1px 4px color-mix(in oklch, var(--lmn-badge-success, var(--success)) 35%, transparent); }
+.badge.warning { background: var(--lmn-badge-warning, var(--warning)); box-shadow: 0 1px 4px color-mix(in oklch, var(--lmn-badge-warning, var(--warning)) 35%, transparent); }
+.badge.neutral { background: var(--lmn-badge-fg-muted, var(--fg-muted)); box-shadow: 0 1px 4px color-mix(in oklch, var(--lmn-badge-shadow-dark, var(--shadow-dark)) 35%, transparent); }
 .badge-wrap { position: relative; display: inline-block; }
 .badge-wrap > .badge { position: absolute; top: -4px; right: -4px; }

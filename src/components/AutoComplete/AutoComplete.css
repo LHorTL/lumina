@@ -7,9 +7,9 @@
 
 .autocomplete-panel {
   z-index: 1500;
-  background: var(--bg);
+  background: var(--lmn-auto-complete-bg, var(--bg));
   border-radius: var(--r-md);
-  box-shadow: var(--neu-shadow-float);
+  box-shadow: var(--lmn-auto-complete-neu-shadow-float, var(--neu-shadow-float));
   padding: 6px;
   max-height: 280px;
   overflow-y: auto;
@@ -27,7 +27,7 @@
   border: none;
   background: transparent;
   box-shadow: none;
-  color: var(--fg);
+  color: var(--lmn-auto-complete-fg, var(--fg));
   font: inherit;
   font-size: 13px;
   text-align: left;
@@ -37,18 +37,18 @@
     box-shadow var(--dur-fast) var(--ease);
 }
 .autocomplete-item:disabled {
-  color: var(--fg-subtle);
+  color: var(--lmn-auto-complete-fg-subtle, var(--fg-subtle));
   cursor: not-allowed;
 }
 .autocomplete-item.active:not(:disabled) {
-  background: var(--bg);
-  color: var(--accent-ink);
-  box-shadow: var(--neu-shadow-inset);
+  background: var(--lmn-auto-complete-bg, var(--bg));
+  color: var(--lmn-auto-complete-accent-ink, var(--accent-ink));
+  box-shadow: var(--lmn-auto-complete-neu-shadow-inset, var(--neu-shadow-inset));
 }
 
 .autocomplete-empty {
   padding: 16px 12px;
   text-align: center;
-  color: var(--fg-subtle);
+  color: var(--lmn-auto-complete-fg-subtle, var(--fg-subtle));
   font-size: 13px;
 }

@@ -62,8 +62,8 @@ describe("表单与选择器回归", () => {
         listHeight={420}
         popupStyle={{ minWidth: 480 }}
         options={[
-          { value: "pro", label: "专业方案", text: "专业方案" },
-          { value: "team", label: "团队方案", text: "团队方案" },
+          { value: "pro", label: "专业方案", text: "专业方案", ariaLabel: "专业方案可访问名称" },
+          { value: "team", label: "团队方案", text: "团队方案", ariaLabel: "团队方案可访问名称" },
         ]}
         optionRender={(option) => <span data-testid={`option-${option.value}`}>复杂内容 · {option.label}</span>}
         selectedRender={(option) => <span data-testid="selected-plan">已选：{option.label}</span>}
@@ -74,7 +74,7 @@ describe("表单与选择器回归", () => {
     expect(screen.getByTestId("option-pro").textContent).toBe("复杂内容 · 专业方案");
     expect(document.querySelector<HTMLElement>(".menu-options")?.style.maxHeight).toBe("420px");
     expect(document.querySelector<HTMLElement>(".menu")?.style.minWidth).toBe("480px");
-    fireEvent.click(screen.getByRole("option", { name: /团队方案/ }));
+    fireEvent.click(screen.getByRole("option", { name: "团队方案可访问名称" }));
     expect(screen.getByTestId("selected-plan").textContent).toBe("已选：团队方案");
   });
 
@@ -118,7 +118,8 @@ describe("表单与选择器回归", () => {
           {
             value: "root",
             label: "根节点",
-            children: [{ value: "leaf", label: "叶子节点" }],
+            ariaLabel: "根节点可访问名称",
+            children: [{ value: "leaf", label: "叶子节点", ariaLabel: "叶子节点可访问名称" }],
           },
         ]}
         optionRender={(option, info) => (
@@ -135,6 +136,8 @@ describe("表单与选择器回归", () => {
     const panel = screen.getByRole("dialog", { name: "级联选择" });
     expect(panel.style.getPropertyValue("--cascader-list-height")).toBe("360px");
     expect(panel.style.minWidth).toBe("640px");
+    expect(screen.getByRole("option", { name: "根节点可访问名称" })).toBeTruthy();
+    expect(screen.getByRole("option", { name: "叶子节点可访问名称" })).toBeTruthy();
     expect(screen.getByTestId("cascader-option-root").textContent).toBe("0 · 根节点");
     expect(screen.getByTestId("cascader-option-leaf").textContent).toBe("1 · 叶子节点");
   });

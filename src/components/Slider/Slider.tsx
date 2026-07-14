@@ -2,12 +2,15 @@ import "../../styles/tokens.css";
 import "../../styles/shared.css";
 import "./Slider.css";
 import * as React from "react";
+import { withComponentTheme, type ComponentThemeProps } from "../Theme/ComponentTheme";
 
 export type SliderRangeValue = [number, number];
 export type SliderValue = number | SliderRangeValue;
 
 /** Slider 单值与区间模式共享的基础属性。 */
-export interface SliderBaseProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange" | "defaultValue"> {
+export interface SliderBaseProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange" | "defaultValue">,
+    ComponentThemeProps {
   min?: number;
   max?: number;
   step?: number;
@@ -58,7 +61,7 @@ function lerpColor(colors: string[], t: number): string {
 /** `Slider` — neumorphic range input with grooved track.
  * @example <Slider defaultValue={40} showValue />
  */
-export const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
+const SliderBase = React.forwardRef<HTMLDivElement, SliderProps>(
   (props, ref) => {
     const {
       min: minProp = 0,
@@ -336,3 +339,7 @@ export const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
     );
   }
 );
+
+SliderBase.displayName = "Slider";
+
+export const Slider = withComponentTheme(SliderBase, "Slider", "slider");

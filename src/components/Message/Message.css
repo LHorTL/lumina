@@ -13,33 +13,33 @@
 .message-container.bottom-left  { bottom: 20px; left: 20px; }
 .message-container.top-center   { top: 56px; left: 50%; transform: translateX(-50%); align-items: center; }
 .message {
-  background: var(--bg);
+  background: var(--lmn-message-bg, var(--bg));
   border-radius: var(--r-md);
-  box-shadow: var(--neu-shadow-float);
+  box-shadow: var(--lmn-message-neu-shadow-float, var(--neu-shadow-float));
   padding: 12px 16px;
   min-width: 240px;
   display: flex; align-items: center; gap: 10px;
   font-size: 13px;
   pointer-events: auto;
   animation: messageIn var(--dur-slow) var(--ease);
-  border-left: 3px solid var(--accent);
+  border-left: 3px solid var(--lmn-message-accent, var(--accent));
 }
-.message.success { border-color: var(--success); }
-.message.warning { border-color: var(--warning); }
-.message.error   { border-color: var(--danger); }
-.message .message-icon { color: var(--accent); flex-shrink: 0; }
-.message.success .message-icon { color: var(--success); }
-.message.warning .message-icon { color: var(--warning); }
-.message.error   .message-icon { color: var(--danger); }
+.message.success { border-color: var(--lmn-message-success, var(--success)); }
+.message.warning { border-color: var(--lmn-message-warning, var(--warning)); }
+.message.error   { border-color: var(--lmn-message-danger, var(--danger)); }
+.message .message-icon { color: var(--lmn-message-accent, var(--accent)); flex-shrink: 0; }
+.message.success .message-icon { color: var(--lmn-message-success, var(--success)); }
+.message.warning .message-icon { color: var(--lmn-message-warning, var(--warning)); }
+.message.error   .message-icon { color: var(--lmn-message-danger, var(--danger)); }
 .message-body { flex: 1; min-width: 0; }
 .message-title { font-weight: 600; margin-bottom: 2px; }
-.message-content { color: var(--fg-muted); font-size: 12px; }
+.message-content { color: var(--lmn-message-fg-muted, var(--fg-muted)); font-size: 12px; }
 .message-close {
   background: transparent; border: none;
-  color: var(--fg-subtle); cursor: pointer;
+  color: var(--lmn-message-fg-subtle, var(--fg-subtle)); cursor: pointer;
   padding: 0 2px; font-family: inherit;
 }
-.message-close:hover { color: var(--fg); }
+.message-close:hover { color: var(--lmn-message-fg, var(--fg)); }
 .message.leaving { animation: messageOut var(--dur) var(--ease) forwards; }
 @keyframes messageIn  { from { opacity: 0; transform: translateX(20px); } }
 @keyframes messageOut { to   { opacity: 0; transform: translateX(20px); } }

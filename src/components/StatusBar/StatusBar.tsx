@@ -2,8 +2,11 @@ import "../../styles/tokens.css";
 import "../../styles/shared.css";
 import "./StatusBar.css";
 import * as React from "react";
+import { withComponentTheme, type ComponentThemeProps } from "../Theme/ComponentTheme";
 
-export interface StatusBarItemProps extends Omit<React.HTMLAttributes<HTMLElement>, "children"> {
+export interface StatusBarItemProps
+  extends Omit<React.HTMLAttributes<HTMLElement>, "children">,
+    ComponentThemeProps {
   /** Optional leading node (usually an `<Icon />`). */
   icon?: React.ReactNode;
   /** Visual tone — shifts color only. */
@@ -14,7 +17,7 @@ export interface StatusBarItemProps extends Omit<React.HTMLAttributes<HTMLElemen
 }
 
 /** `StatusBar.Item` — one inline slot. Put icon + text inside. */
-export const StatusBarItem = React.forwardRef<HTMLElement, StatusBarItemProps>(({
+const StatusBarItemBase = React.forwardRef<HTMLElement, StatusBarItemProps>(({
   icon,
   tone = "default",
   onClick,
@@ -48,9 +51,17 @@ export const StatusBarItem = React.forwardRef<HTMLElement, StatusBarItemProps>((
     </div>
   );
 });
-StatusBarItem.displayName = "StatusBarItem";
+StatusBarItemBase.displayName = "StatusBarItem";
 
-export interface StatusBarProps extends React.HTMLAttributes<HTMLDivElement> {
+export const StatusBarItem = withComponentTheme(
+  StatusBarItemBase,
+  "StatusBarItem",
+  "status-bar"
+);
+
+export interface StatusBarProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    ComponentThemeProps {
   /** Left-aligned slot. */
   left?: React.ReactNode;
   /** Center slot — absolutely positioned, stays centered regardless of side widths. */
@@ -89,6 +100,10 @@ const StatusBarBase = React.forwardRef<HTMLDivElement, StatusBarProps>(({
 ));
 StatusBarBase.displayName = "StatusBar";
 
-export const StatusBar = StatusBarBase as typeof StatusBarBase & { Item: typeof StatusBarItem };
+const ThemedStatusBar = withComponentTheme(StatusBarBase, "StatusBar", "status-bar");
+
+export const StatusBar = ThemedStatusBar as typeof ThemedStatusBar & {
+  Item: typeof StatusBarItem;
+};
 
 StatusBar.Item = StatusBarItem;

@@ -1,8 +1,8 @@
 /* ============ TablePro ============ */
 .table-card {
   border-radius: var(--r-lg);
-  background: var(--bg);
-  box-shadow: var(--neu-shadow-control);
+  background: var(--lmn-table-pro-bg, var(--bg));
+  box-shadow: var(--lmn-table-pro-neu-shadow-control, var(--neu-shadow-control));
   overflow: hidden;
 }
 .table-card .table-wrap { background: transparent; box-shadow: none; border-radius: 0; }
@@ -10,7 +10,7 @@
 .table-card .table-pagination {
   margin-top: 0;
   padding: 6px 16px;
-  border-top: 1px solid var(--divider);
+  border-top: 1px solid var(--lmn-table-pro-divider, var(--divider));
   background: transparent;
 }
 .table-toolbar {
@@ -18,7 +18,7 @@
   align-items: center;
   gap: var(--gap-3);
   padding: 14px 16px;
-  border-bottom: 1px solid var(--divider);
+  border-bottom: 1px solid var(--lmn-table-pro-divider, var(--divider));
 }
 .table-toolbar .table-title {
   font-size: 14px;
@@ -40,6 +40,6 @@
 }
 .table-footer {
   padding: 10px 16px;
-  border-top: 1px solid var(--divider);
+  border-top: 1px solid var(--lmn-table-pro-divider, var(--divider));
   background: transparent;
 }

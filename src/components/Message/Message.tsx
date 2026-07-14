@@ -7,6 +7,11 @@ import { createRoot } from "react-dom/client";
 import { Icon } from "../Icon";
 import { usePortalContainer } from "../../utils/portal";
 import { useOverlayZIndex } from "../../utils/overlayStack";
+import {
+  useComponentPortalTheme,
+  withComponentTheme,
+  type ComponentThemeProps,
+} from "../Theme/ComponentTheme";
 
 export type MessageType = "info" | "success" | "warning" | "error";
 
@@ -207,13 +212,16 @@ export const message: MessageApi = {
   },
 };
 
-export interface MessageContainerProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface MessageContainerProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    ComponentThemeProps {
   placement?: "top-right" | "top-left" | "bottom-right" | "bottom-left" | "top-center";
 }
 
 /** `MessageContainer` — optional app-root mount point for `message.*` calls. */
-export const MessageContainer = React.forwardRef<HTMLDivElement, MessageContainerProps>(({ placement = "top-right", className = "", style, ...rest }, ref) => {
+const MessageContainerBase = React.forwardRef<HTMLDivElement, MessageContainerProps>(({ placement = "top-right", className = "", style, ...rest }, ref) => {
   const portalContainer = usePortalContainer();
+  const portalTheme = useComponentPortalTheme("MessageContainer");
   const [list, setList] = React.useState<ListenerState>(items);
   const explicitZIndex = typeof style?.zIndex === "number" ? style.zIndex : undefined;
   const overlayZIndex = useOverlayZIndex(list.length > 0, explicitZIndex);
@@ -228,7 +236,13 @@ export const MessageContainer = React.forwardRef<HTMLDivElement, MessageContaine
     <div
       ref={ref}
       className={`message-container ${placement} ${className}`}
-      style={{ ...style, zIndex: style?.zIndex ?? overlayZIndex }}
+      {...portalTheme.dataAttributes}
+      style={{
+        ...portalTheme.style,
+        ...portalTheme.styles.root,
+        ...style,
+        zIndex: style?.zIndex ?? overlayZIndex,
+      }}
       {...rest}
     >
       {list.map((t) => {
@@ -255,7 +269,14 @@ export const MessageContainer = React.forwardRef<HTMLDivElement, MessageContaine
     portalContainer
   );
 });
-MessageContainer.displayName = "MessageContainer";
+MessageContainerBase.displayName = "MessageContainer";
+
+export const MessageContainer = withComponentTheme(
+  MessageContainerBase,
+  "MessageContainer",
+  "message",
+  { portalOnly: true }
+);
 
 export type ToastType = MessageType;
 export type ToastItem = MessageItem;

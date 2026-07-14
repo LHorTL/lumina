@@ -59,6 +59,7 @@ optionRender 承载多行菜单内容；selectedRender 提供适合固定高度�
 
 ```tsx
 <Select
+  aria-label="订阅套餐"
   value={plan}
   onChange={setPlan}
   options={plans}
@@ -134,6 +135,8 @@ loading 时显示 spinner,emptyContent 自定义空态。
 | --- | --- | --- | --- |
 | value \* | `T` | — | 值 |
 | label | `ReactNode` | — | 显示 |
+| text | `string` | — | 复杂 label 的独立搜索文本 |
+| ariaLabel | `string` | — | 复杂选项或 optionRender 的独立可访问名称 |
 | icon | `IconName | ReactNode` | — | 前置图标,可传内置图标名或自定义节点 |
 | description | `ReactNode` | — | 次要描述 |
 | disabled | `boolean` | `false` | 禁用项 |

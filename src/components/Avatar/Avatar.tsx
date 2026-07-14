@@ -2,8 +2,11 @@ import "../../styles/tokens.css";
 import "../../styles/shared.css";
 import "./Avatar.css";
 import * as React from "react";
+import { withComponentTheme, type ComponentThemeProps } from "../Theme/ComponentTheme";
 
-export interface AvatarProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "children"> {
+export interface AvatarProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "children">,
+    ComponentThemeProps {
   src?: string;
   /** 主图片失败后的备用图片地址。 */
   fallbackSrc?: string;
@@ -28,7 +31,7 @@ const AVATAR_STATUS_LABELS: Record<NonNullable<AvatarProps["status"]>, string> =
 };
 
 /** `Avatar` — user image or initials chip. */
-export const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(({
+const AvatarBase = React.forwardRef<HTMLDivElement, AvatarProps>(({
   src,
   fallbackSrc,
   alt = "",
@@ -83,4 +86,6 @@ export const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(({
     </div>
   );
 });
-Avatar.displayName = "Avatar";
+AvatarBase.displayName = "Avatar";
+
+export const Avatar = withComponentTheme(AvatarBase, "Avatar", "avatar");

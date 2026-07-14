@@ -3,6 +3,7 @@ import "../../styles/shared.css";
 import "./TablePro.css";
 import * as React from "react";
 import { Table, type TableProps } from "../Table";
+import { InternalComponentThemePart, withComponentTheme } from "../Theme/ComponentTheme";
 
 export interface TableProProps<Row = any>
   extends Omit<TableProps<Row>, "title" | "className" | "style"> {
@@ -80,35 +81,44 @@ const TableProInner = <Row extends Record<string, any> = any>({
           {actions && <div className="table-toolbar-actions">{actions}</div>}
         </div>
       )}
-      <Table
-        columns={columns}
-        data={data}
-        rowKey={rowKey}
-        variant={variant}
-        hoverable={hoverable}
-        striped={striped}
-        sortKey={sortKey}
-        sortDir={sortDir}
-        onSort={onSort}
-        onChange={onChange}
-        rowSelection={rowSelection}
-        selectable={selectable}
-        selected={selected}
-        onSelect={onSelect}
-        expandable={expandable}
-        pagination={pagination}
-        scroll={scroll}
-        tableProps={tableProps}
-        caption={caption}
-        onRowClick={onRowClick}
-        empty={empty}
-        className={innerTableClassName}
-        style={tableStyle}
-      />
+      <InternalComponentThemePart components="Table">
+        <Table
+          columns={columns}
+          data={data}
+          rowKey={rowKey}
+          variant={variant}
+          hoverable={hoverable}
+          striped={striped}
+          sortKey={sortKey}
+          sortDir={sortDir}
+          onSort={onSort}
+          onChange={onChange}
+          rowSelection={rowSelection}
+          selectable={selectable}
+          selected={selected}
+          onSelect={onSelect}
+          expandable={expandable}
+          pagination={pagination}
+          scroll={scroll}
+          tableProps={tableProps}
+          caption={caption}
+          onRowClick={onRowClick}
+          empty={empty}
+          className={innerTableClassName}
+          style={tableStyle}
+        />
+      </InternalComponentThemePart>
       {footer && <div className="table-footer">{footer}</div>}
     </div>
   );
 };
 
-export const TablePro = React.forwardRef(TableProInner) as TableProComponent;
-(TablePro as any).displayName = "TablePro";
+const TableProBase = React.forwardRef(TableProInner) as TableProComponent;
+(TableProBase as any).displayName = "TablePro";
+export const TablePro = withComponentTheme(
+  TableProBase as React.ForwardRefExoticComponent<
+    TableProProps & React.RefAttributes<HTMLDivElement>
+  >,
+  "TablePro",
+  ["table-pro", "table", "button", "checkbox", "pagination", "select", "input"]
+) as TableProComponent;

@@ -216,6 +216,7 @@ const SectionSelect: React.FC<SectionCtx> = () => {
           span: 2,
           description: "optionRender 承载多行菜单内容；selectedRender 提供适合固定高度触发器的紧凑版本。listHeight 和 popupStyle 可调整浮层尺寸。",
           code: `<Select
+  aria-label="订阅套餐"
   value={plan}
   onChange={setPlan}
   options={plans}
@@ -227,12 +228,13 @@ const SectionSelect: React.FC<SectionCtx> = () => {
           render: () => (
             <Field label="订阅套餐" hint="菜单使用完整信息，选中后只保留名称与价格。">
               <Select
+                aria-label="订阅套餐"
                 value={plan}
                 onChange={setPlan}
                 options={[
-                  { value: "personal", label: "个人版", text: "个人版 免费 个人项目" },
-                  { value: "pro", label: "专业版", text: "专业版 高级主题" },
-                  { value: "team", label: "团队版", text: "团队版 权限 审计" },
+                  { value: "personal", label: "个人版", text: "个人版 免费 个人项目", ariaLabel: "个人版套餐" },
+                  { value: "pro", label: "专业版", text: "专业版 高级主题", ariaLabel: "专业版套餐" },
+                  { value: "team", label: "团队版", text: "团队版 权限 审计", ariaLabel: "团队版套餐" },
                 ]}
                 optionRender={renderPlanOption}
                 selectedRender={renderPlanSelected}
@@ -361,6 +363,8 @@ const SectionSelect: React.FC<SectionCtx> = () => {
           rows: [
             { prop: "value", description: "值", type: "T", required: true },
             { prop: "label", description: "显示", type: "ReactNode" },
+            { prop: "text", description: "复杂 label 的独立搜索文本", type: "string" },
+            { prop: "ariaLabel", description: "复杂选项或 optionRender 的独立可访问名称", type: "string" },
             { prop: "icon", description: "前置图标,可传内置图标名或自定义节点", type: "IconName | ReactNode" },
             { prop: "description", description: "次要描述", type: "ReactNode" },
             { prop: "disabled", description: "禁用项", type: "boolean", default: "false" },

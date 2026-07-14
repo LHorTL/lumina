@@ -2,6 +2,11 @@ import "../../styles/tokens.css";
 import "../../styles/shared.css";
 import "./Radio.css";
 import * as React from "react";
+import {
+  withComponentTheme,
+  withInternalComponentThemePart,
+  type ComponentThemeProps,
+} from "../Theme/ComponentTheme";
 
 /** 同一文档和 name 下，非受控 Radio 用于同步原生互斥状态的监听器。 */
 type RadioGroupSyncListener = (selected: HTMLInputElement) => void;
@@ -32,7 +37,8 @@ function notifyUncontrolledRadioGroup(input: HTMLInputElement, name: string): vo
 }
 
 export interface RadioProps
-  extends Omit<React.LabelHTMLAttributes<HTMLLabelElement>, "onChange" | "children" | "id"> {
+  extends Omit<React.LabelHTMLAttributes<HTMLLabelElement>, "onChange" | "children" | "id">,
+    ComponentThemeProps {
   checked?: boolean;
   defaultChecked?: boolean;
   onChange?: (checked: boolean) => void;
@@ -128,6 +134,11 @@ const RadioRoot = React.forwardRef<HTMLLabelElement, RadioProps>(({
 });
 RadioRoot.displayName = "Radio";
 
+const ThemedRadio = withComponentTheme(RadioRoot, "Radio", "radio");
+
+/** RadioGroup 内部生成的 Radio 继续使用分组自身主题。 */
+const InternalRadio = withInternalComponentThemePart(ThemedRadio, "Radio");
+
 export interface RadioOption<T extends string | number = string> {
   value: T;
   label: React.ReactNode;
@@ -135,7 +146,8 @@ export interface RadioOption<T extends string | number = string> {
 }
 
 export interface RadioGroupProps<T extends string | number = string>
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange" | "defaultValue"> {
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange" | "defaultValue">,
+    ComponentThemeProps {
   options: RadioOption<T>[];
   value?: T;
   defaultValue?: T;
@@ -269,7 +281,7 @@ const RadioGroupInner = <T extends string | number = string>({
         />
       )}
       {options.map((opt) => (
-        <RadioRoot
+        <InternalRadio
           key={String(opt.value)}
           label={opt.label}
           checked={current === opt.value}
@@ -287,8 +299,15 @@ const RadioGroupInner = <T extends string | number = string>({
 };
 
 /** `RadioGroup` — mutually exclusive options. */
-export const RadioGroup = React.forwardRef(RadioGroupInner) as RadioGroupComponent;
-(RadioGroup as any).displayName = "RadioGroup";
+const RadioGroupBase = React.forwardRef(RadioGroupInner) as RadioGroupComponent;
+(RadioGroupBase as any).displayName = "RadioGroup";
+export const RadioGroup = withComponentTheme(
+  RadioGroupBase as React.ForwardRefExoticComponent<
+    RadioGroupProps & React.RefAttributes<HTMLDivElement>
+  >,
+  "RadioGroup",
+  "radio"
+) as RadioGroupComponent;
 
-export const Radio = RadioRoot as typeof RadioRoot & { Group: typeof RadioGroup };
+export const Radio = ThemedRadio as typeof ThemedRadio & { Group: typeof RadioGroup };
 Radio.Group = RadioGroup;

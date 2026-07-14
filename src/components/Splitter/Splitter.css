@@ -39,16 +39,16 @@
 }
 .splitter-handle:hover,
 .splitter.dragging > .splitter-handle {
-  background: var(--accent-soft);
+  background: var(--lmn-splitter-accent-soft, var(--accent-soft));
 }
 .splitter-handle:focus-visible {
-  box-shadow: inset 0 0 0 2px var(--accent-glow);
+  box-shadow: inset 0 0 0 2px var(--lmn-splitter-accent-glow, var(--accent-glow));
   border-radius: var(--r-xs);
 }
 
 .splitter-handle-grip {
   display: block;
-  background: var(--divider);
+  background: var(--lmn-splitter-divider, var(--divider));
   border-radius: 999px;
   transition: background var(--dur-fast) var(--ease);
 }
@@ -62,5 +62,5 @@
 }
 .splitter-handle:hover > .splitter-handle-grip,
 .splitter.dragging > .splitter-handle > .splitter-handle-grip {
-  background: var(--accent);
+  background: var(--lmn-splitter-accent, var(--accent));
 }

@@ -2,8 +2,9 @@ import "../../styles/tokens.css";
 import "../../styles/shared.css";
 import "./Progress.css";
 import * as React from "react";
+import { withComponentTheme, type ComponentThemeProps } from "../Theme/ComponentTheme";
 
-export interface ProgressProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface ProgressProps extends React.HTMLAttributes<HTMLDivElement>, ComponentThemeProps {
   /** 0–100 */
   value: number;
   max?: number;
@@ -19,7 +20,7 @@ export interface ProgressProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 /** `Progress` — horizontal progress bar with neumorphic track. */
-export const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(({
+const ProgressBase = React.forwardRef<HTMLDivElement, ProgressProps>(({
   value,
   max = 100,
   label,
@@ -69,4 +70,6 @@ export const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(({
     </div>
   );
 });
-Progress.displayName = "Progress";
+ProgressBase.displayName = "Progress";
+
+export const Progress = withComponentTheme(ProgressBase, "Progress", "progress");

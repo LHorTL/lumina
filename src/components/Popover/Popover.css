@@ -1,10 +1,10 @@
 /* ============ Popover ============ */
 .popover {
   z-index: 1000;
-  background: var(--bg);
+  background: var(--lmn-popover-bg, var(--bg));
   border-radius: var(--r-md);
   min-width: 220px;
-  box-shadow: var(--neu-shadow-float);
+  box-shadow: var(--lmn-popover-neu-shadow-float, var(--neu-shadow-float));
   position: relative;
 }
 
@@ -35,14 +35,14 @@
 .popover-title {
   font-weight: 600;
   font-size: 14px;
-  color: var(--fg);
+  color: var(--lmn-popover-fg, var(--fg));
 }
 
 .popover-close {
   all: unset;
   cursor: pointer;
   font-size: 16px;
-  color: var(--fg-muted);
+  color: var(--lmn-popover-fg-muted, var(--fg-muted));
   line-height: 1;
   padding: 2px 4px;
   border-radius: var(--r-xs);
@@ -50,7 +50,7 @@
   margin-left: auto;
 }
 .popover-close:hover {
-  color: var(--fg);
+  color: var(--lmn-popover-fg, var(--fg));
 }
 
 /* ---- Body ---- */
@@ -67,8 +67,8 @@
   position: absolute;
   width: 10px;
   height: 10px;
-  background: var(--bg);
-  box-shadow: 2px 2px 4px rgba(163, 177, 198, 0.2);
+  background: var(--lmn-popover-bg, var(--bg));
+  box-shadow: 2px 2px 4px color-mix(in oklch, var(--lmn-popover-shadow-dark, var(--shadow-dark)) 36%, transparent);
   transform: rotate(45deg);
   pointer-events: none;
 }
@@ -77,26 +77,26 @@
   top: -5px;
   left: 50%;
   margin-left: -5px;
-  box-shadow: -2px -2px 4px rgba(163, 177, 198, 0.2);
+  box-shadow: -2px -2px 4px color-mix(in oklch, var(--lmn-popover-shadow-dark, var(--shadow-dark)) 36%, transparent);
 }
 
 .popover-arrow-top {
   bottom: -5px;
   left: 50%;
   margin-left: -5px;
-  box-shadow: 2px 2px 4px rgba(163, 177, 198, 0.2);
+  box-shadow: 2px 2px 4px color-mix(in oklch, var(--lmn-popover-shadow-dark, var(--shadow-dark)) 36%, transparent);
 }
 
 .popover-arrow-left {
   right: -5px;
   top: 50%;
   margin-top: -5px;
-  box-shadow: 2px -2px 4px rgba(163, 177, 198, 0.2);
+  box-shadow: 2px -2px 4px color-mix(in oklch, var(--lmn-popover-shadow-dark, var(--shadow-dark)) 36%, transparent);
 }
 
 .popover-arrow-right {
   left: -5px;
   top: 50%;
   margin-top: -5px;
-  box-shadow: -2px 2px 4px rgba(163, 177, 198, 0.2);
+  box-shadow: -2px 2px 4px color-mix(in oklch, var(--lmn-popover-shadow-dark, var(--shadow-dark)) 36%, transparent);
 }

@@ -8,6 +8,12 @@ import { Icon } from "../Icon";
 import { Button, type ButtonProps } from "../Button";
 import { OverlayZIndexProvider, useOverlayLayer, useOverlayZIndex } from "../../utils/overlayStack";
 import { usePortalContainer } from "../../utils/portal";
+import {
+  InternalComponentThemePart,
+  useComponentPortalTheme,
+  withComponentTheme,
+  type ComponentThemeProps,
+} from "../Theme/ComponentTheme";
 
 /** 弹窗正文允许透传的 data-* 属性。 */
 type DataAttributes = {
@@ -24,7 +30,8 @@ type ModalBodyProps = Omit<
 export type ModalBodyInset = "safe" | "none";
 
 export interface ModalProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, "title" | "children" | "onClose"> {
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "title" | "children" | "onClose">,
+    ComponentThemeProps {
   /** Whether the modal is visible. */
   open: boolean;
   /** Fired by mask click / close button / Esc. Also the fallback for cancel. */
@@ -134,41 +141,44 @@ export type ModalComponent =
 const ANIM_MS = 280;
 
 /** `Modal` — centered dialog with mask. Renders into `document.body`. */
-const ModalBase = React.forwardRef<HTMLDivElement, ModalProps>(({
-  open,
-  onClose,
-  onCancel,
-  onOk,
-  title,
-  description,
-  footer,
-  children,
-  width = 440,
-  closable = true,
-  closeIcon,
-  maskClosable = true,
-  maskClassName = "",
-  maskStyle,
-  escClosable = true,
-  okText = "确定",
-  cancelText = "取消",
-  okButtonProps,
-  cancelButtonProps,
-  confirmLoading,
-  bodyClassName = "",
-  bodyStyle,
-  bodyProps,
-  bodyOverflow,
-  bodyInset = "safe",
-  destroyOnClose = false,
-  afterOpenChange,
-  zIndex,
-  className = "",
-  style,
-  onClick,
-  ...rest
-}, ref) => {
+const ModalBase = React.forwardRef<HTMLDivElement, ModalProps>((props, ref) => {
+  const hasExplicitWidth = props.width !== undefined;
+  const {
+    open,
+    onClose,
+    onCancel,
+    onOk,
+    title,
+    description,
+    footer,
+    children,
+    width = 440,
+    closable = true,
+    closeIcon,
+    maskClosable = true,
+    maskClassName = "",
+    maskStyle,
+    escClosable = true,
+    okText = "确定",
+    cancelText = "取消",
+    okButtonProps,
+    cancelButtonProps,
+    confirmLoading,
+    bodyClassName = "",
+    bodyStyle,
+    bodyProps,
+    bodyOverflow,
+    bodyInset = "safe",
+    destroyOnClose = false,
+    afterOpenChange,
+    zIndex,
+    className = "",
+    style,
+    onClick,
+    ...rest
+  } = props;
   const portalContainer = usePortalContainer();
+  const portalTheme = useComponentPortalTheme("Modal");
   const panelRef = React.useRef<HTMLDivElement | null>(null);
   const titleId = React.useId();
   const descriptionId = React.useId();
@@ -217,11 +227,22 @@ const ModalBase = React.forwardRef<HTMLDivElement, ModalProps>(({
   if (!hasOpenedOnce) return null;
   if (!open && destroyOnClose) return null;
 
-  const overlayStyle: React.CSSProperties = { ...maskStyle, zIndex: overlayZIndex };
-  const panelStyle: React.CSSProperties = { width, maxWidth: "92vw", ...style };
+  const overlayStyle: React.CSSProperties = {
+    ...portalTheme.styles.overlay,
+    ...maskStyle,
+    zIndex: overlayZIndex,
+  };
+  const panelStyle: React.CSSProperties = {
+    ...portalTheme.style,
+    width,
+    maxWidth: "92vw",
+    ...portalTheme.styles.popup,
+    ...(hasExplicitWidth ? { width } : null),
+    ...style,
+  };
 
   const defaultFooter = (
-    <>
+    <InternalComponentThemePart components="Button">
       <Button variant="ghost" onClick={handleCancel} {...cancelButtonProps}>
         {cancelText}
       </Button>
@@ -233,10 +254,12 @@ const ModalBase = React.forwardRef<HTMLDivElement, ModalProps>(({
       >
         {okText}
       </Button>
-    </>
+    </InternalComponentThemePart>
   );
   const modalBodyStyle: React.CSSProperties | undefined =
-    bodyOverflow == null ? bodyStyle : { overflow: bodyOverflow, ...bodyStyle };
+    bodyOverflow == null
+      ? { ...portalTheme.styles.body, ...bodyStyle }
+      : { ...portalTheme.styles.body, overflow: bodyOverflow, ...bodyStyle };
 
   return ReactDOM.createPortal(
     <OverlayZIndexProvider zIndex={overlayZIndex}>
@@ -262,6 +285,7 @@ const ModalBase = React.forwardRef<HTMLDivElement, ModalProps>(({
           aria-labelledby={title ? titleId : undefined}
           aria-describedby={description ? descriptionId : undefined}
           tabIndex={-1}
+          {...portalTheme.dataAttributes}
           {...rest}
         >
           {(title || description || closable) && (
@@ -301,6 +325,13 @@ const ModalBase = React.forwardRef<HTMLDivElement, ModalProps>(({
   );
 });
 ModalBase.displayName = "Modal";
+
+const ThemedModalBase = withComponentTheme(
+  ModalBase,
+  "Modal",
+  ["modal", "button"],
+  { portalOnly: true }
+);
 
 const staticHandles = new Set<ModalStaticHandle>();
 
@@ -373,7 +404,7 @@ const StaticModalHost: React.FC<StaticModalHostProps> = ({
     footer !== undefined ? (
       footer
     ) : okCancel ? (
-      <>
+      <InternalComponentThemePart components="Button">
         <Button variant="ghost" onClick={close} {...cancelButtonProps}>
           {cancelText}
         </Button>
@@ -385,20 +416,22 @@ const StaticModalHost: React.FC<StaticModalHostProps> = ({
         >
           {okText}
         </Button>
-      </>
+      </InternalComponentThemePart>
     ) : (
-      <Button
-        variant={okVariant}
-        loading={loading || confirmLoading}
-        onClick={handleOk}
-        {...okButtonProps}
-      >
-        {okText}
-      </Button>
+      <InternalComponentThemePart components="Button">
+        <Button
+          variant={okVariant}
+          loading={loading || confirmLoading}
+          onClick={handleOk}
+          {...okButtonProps}
+        >
+          {okText}
+        </Button>
+      </InternalComponentThemePart>
     );
 
   return (
-    <ModalBase
+    <ThemedModalBase
       {...modalProps}
       open={open}
       onClose={close}
@@ -417,7 +450,7 @@ const StaticModalHost: React.FC<StaticModalHostProps> = ({
         )}
         <div className="modal-static-content">{content ?? children}</div>
       </div>
-    </ModalBase>
+    </ThemedModalBase>
   );
 };
 
@@ -473,7 +506,7 @@ const createStaticModal = (
   return handle;
 };
 
-export const Modal = ModalBase as ModalComponent;
+export const Modal = ThemedModalBase as ModalComponent;
 Modal.confirm = (config) => createStaticModal("confirm", config);
 Modal.info = (config) => createStaticModal("info", config);
 Modal.success = (config) => createStaticModal("success", config);

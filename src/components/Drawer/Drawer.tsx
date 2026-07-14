@@ -6,6 +6,11 @@ import ReactDOM from "react-dom";
 import { Icon } from "../Icon";
 import { OverlayZIndexProvider, useOverlayLayer, useOverlayZIndex } from "../../utils/overlayStack";
 import { usePortalContainer } from "../../utils/portal";
+import {
+  useComponentPortalTheme,
+  withComponentTheme,
+  type ComponentThemeProps,
+} from "../Theme/ComponentTheme";
 
 /** 抽屉正文允许透传的 data-* 属性。 */
 type DataAttributes = {
@@ -23,7 +28,8 @@ type DrawerBodyProps = Omit<
 export type DrawerBodyInset = "safe" | "none";
 
 export interface DrawerProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, "title" | "children" | "onClose"> {
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "title" | "children" | "onClose">,
+    ComponentThemeProps {
   /** Whether the drawer is visible. */
   open: boolean;
   /** Close callback (triggered by mask click / close button / Esc). */
@@ -84,36 +90,39 @@ export interface DrawerProps
 const ANIM_MS = 280;
 
 /** `Drawer` — slide-in panel from an edge. */
-export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(({
-  open,
-  onClose,
-  placement = "right",
-  size = 380,
-  title,
-  extra,
-  footer,
-  children,
-  bodyClassName = "",
-  bodyStyle,
-  bodyProps,
-  bodyOverflow,
-  bodyInset = "safe",
-  mask = true,
-  maskClosable = true,
-  maskClassName = "",
-  maskStyle,
-  keyboard = true,
-  closable = true,
-  closeIcon,
-  destroyOnClose = false,
-  afterOpenChange,
-  zIndex,
-  className = "",
-  style,
-  onClick,
-  ...rest
-}, ref) => {
+const DrawerBase = React.forwardRef<HTMLDivElement, DrawerProps>((props, ref) => {
+  const hasExplicitSize = props.size !== undefined;
+  const {
+    open,
+    onClose,
+    placement = "right",
+    size = 380,
+    title,
+    extra,
+    footer,
+    children,
+    bodyClassName = "",
+    bodyStyle,
+    bodyProps,
+    bodyOverflow,
+    bodyInset = "safe",
+    mask = true,
+    maskClosable = true,
+    maskClassName = "",
+    maskStyle,
+    keyboard = true,
+    closable = true,
+    closeIcon,
+    destroyOnClose = false,
+    afterOpenChange,
+    zIndex,
+    className = "",
+    style,
+    onClick,
+    ...rest
+  } = props;
   const portalContainer = usePortalContainer();
+  const portalTheme = useComponentPortalTheme("Drawer");
   const panelRef = React.useRef<HTMLDivElement | null>(null);
   const titleId = React.useId();
   const panelZIndex = useOverlayZIndex(open, zIndex);
@@ -157,14 +166,29 @@ export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(({
   if (!open && destroyOnClose) return null;
 
   const isV = placement === "left" || placement === "right";
-  const panelStyle: React.CSSProperties = isV
-    ? { width: size, maxWidth: "92vw" }
-    : { height: size, maxHeight: "80vh" };
+  const panelStyle: React.CSSProperties = {
+    ...portalTheme.style,
+    ...(isV
+      ? { width: size, maxWidth: "92vw" }
+      : { height: size, maxHeight: "80vh" }),
+    ...portalTheme.styles.popup,
+    ...(hasExplicitSize
+      ? isV
+        ? { width: size }
+        : { height: size }
+      : null),
+  };
   Object.assign(panelStyle, style);
   panelStyle.zIndex = panelZIndex;
-  const overlayStyle: React.CSSProperties = { ...maskStyle, zIndex: panelZIndex - 1 };
+  const overlayStyle: React.CSSProperties = {
+    ...portalTheme.styles.overlay,
+    ...maskStyle,
+    zIndex: panelZIndex - 1,
+  };
   const drawerBodyStyle: React.CSSProperties | undefined =
-    bodyOverflow == null ? bodyStyle : { overflow: bodyOverflow, ...bodyStyle };
+    bodyOverflow == null
+      ? { ...portalTheme.styles.body, ...bodyStyle }
+      : { ...portalTheme.styles.body, overflow: bodyOverflow, ...bodyStyle };
 
   return ReactDOM.createPortal(
     <OverlayZIndexProvider zIndex={panelZIndex}>
@@ -191,6 +215,7 @@ export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(({
           aria-modal={mask || undefined}
           aria-labelledby={title ? titleId : undefined}
           tabIndex={-1}
+          {...portalTheme.dataAttributes}
           {...rest}
         >
           {(title || extra || closable) && (
@@ -227,4 +252,11 @@ export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(({
     portalContainer
   );
 });
-Drawer.displayName = "Drawer";
+DrawerBase.displayName = "Drawer";
+
+export const Drawer = withComponentTheme(
+  DrawerBase,
+  "Drawer",
+  "drawer",
+  { portalOnly: true }
+);

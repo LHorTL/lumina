@@ -4,9 +4,16 @@ import "./Textarea.css";
 import * as React from "react";
 import { Icon } from "../Icon";
 import { createValueOverrideTarget } from "../../utils/inputEvents";
+import {
+  ComponentThemeBoundary,
+  mergeComponentRootStyleWithInstanceStyle,
+  useComponentThemeRootRef,
+  type ComponentThemeProps,
+} from "../Theme/ComponentTheme";
 
 export interface TextareaProps
-  extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, "onChange" | "value" | "defaultValue"> {
+  extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, "onChange" | "value" | "defaultValue">,
+    ComponentThemeProps {
   value?: string;
   defaultValue?: string;
   /** Native textarea change event. */
@@ -26,7 +33,7 @@ export interface TextareaProps
 /**
  * `Textarea` — multi-line text input with a neumorphic groove.
  */
-export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
+const TextareaBase = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
   (
     {
       value,
@@ -38,11 +45,17 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       maxLength,
       showCount,
       className = "",
+      theme,
+      style,
       ...rest
     },
     ref
   ) => {
     const [inner, setInner] = React.useState(defaultValue ?? "");
+    const [themeRootElement, themeRootRef] = useComponentThemeRootRef<HTMLDivElement>(
+      undefined,
+      { component: "Textarea", theme }
+    );
     const textareaRef = React.useRef<HTMLTextAreaElement | null>(null);
     const isControlled = value !== undefined;
     const currentValue = isControlled ? value : inner;
@@ -81,43 +94,69 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     const showClear = !!allowClear && !!currentValue && !disabled;
     const count = currentValue ? currentValue.length : 0;
 
-    const field = (
-      <div className="textarea-wrap">
-        <textarea
-          ref={setTextareaRef}
-          className={cls}
-          value={isControlled ? value : undefined}
-          defaultValue={isControlled ? undefined : defaultValue}
-          onChange={handleChange}
-          maxLength={maxLength}
-          {...rest}
-        />
-        {showClear && (
-          <button
-            type="button"
-            className="textarea-clear"
-            role="button"
-            aria-label="Clear"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={handleClear}
-          >
-            <Icon name="x" size={12} />
-          </button>
-        )}
-      </div>
-    );
-
-    if (!showCount) return field;
-
     return (
-      <div className="textarea-shell">
-        {field}
-        <div className="textarea-count">
-          {maxLength != null ? `${count} / ${maxLength}` : `${count}`}
-        </div>
-      </div>
+      <ComponentThemeBoundary
+        component="Textarea"
+        cssPrefix="textarea"
+        theme={theme}
+        rootElement={themeRootElement}
+      >
+        {(themeState) => {
+          const mergedRootStyle = mergeComponentRootStyleWithInstanceStyle(
+            themeState.rootStyle,
+            style
+          );
+          const field = (
+            <div
+              ref={showCount ? undefined : themeRootRef}
+              className="textarea-wrap"
+              {...(!showCount ? themeState.rootDataAttributes : null)}
+              style={showCount ? themeState.styles.control : mergedRootStyle}
+            >
+              <textarea
+                ref={setTextareaRef}
+                className={cls}
+                value={isControlled ? value : undefined}
+                defaultValue={isControlled ? undefined : defaultValue}
+                onChange={handleChange}
+                maxLength={maxLength}
+                {...rest}
+                style={{ ...themeState.styles.input, ...style }}
+              />
+              {showClear && (
+                <button
+                  type="button"
+                  className="textarea-clear"
+                  role="button"
+                  aria-label="Clear"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={handleClear}
+                >
+                  <Icon name="x" size={12} />
+                </button>
+              )}
+            </div>
+          );
+
+          if (!showCount) return field;
+          return (
+            <div
+              ref={themeRootRef}
+              className="textarea-shell"
+              {...themeState.rootDataAttributes}
+              style={mergedRootStyle}
+            >
+              {field}
+              <div className="textarea-count" style={themeState.styles.count}>
+                {maxLength != null ? `${count} / ${maxLength}` : `${count}`}
+              </div>
+            </div>
+          );
+        }}
+      </ComponentThemeBoundary>
     );
   }
 );
-Textarea.displayName = "Textarea";
+TextareaBase.displayName = "Textarea";
+export const Textarea = TextareaBase;
 export const TextArea = Textarea;

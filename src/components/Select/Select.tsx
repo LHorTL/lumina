@@ -9,12 +9,20 @@ import { Tag } from "../Tag";
 import { useFloating } from "../../utils/useFloating";
 import { usePortalContainer } from "../../utils/portal";
 import { useOverlayLayer } from "../../utils/overlayStack";
+import {
+  InternalComponentThemePart,
+  useComponentPortalTheme,
+  withComponentTheme,
+  type ComponentThemeProps,
+} from "../Theme/ComponentTheme";
 
 export interface SelectOption<T extends string | number = string> {
   value: T;
   label: React.ReactNode;
   /** Searchable text — used by default filter when `label` isn't a string. */
   text?: string;
+  /** 复杂标签或 optionRender 使用的独立可访问名称。 */
+  ariaLabel?: string;
   /** Secondary line shown beneath the label. */
   description?: React.ReactNode;
   /** Leading icon. Accepts a built-in icon name or custom React node. */
@@ -62,7 +70,8 @@ const isGroup = <T extends string | number>(
 ): it is SelectOptionGroup<T> => Array.isArray((it as SelectOptionGroup<T>).options);
 
 interface BaseSelectProps<T extends string | number = string>
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange" | "defaultValue"> {
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange" | "defaultValue">,
+    ComponentThemeProps {
   /** Flat or mixed (groups + options) item list. */
   options: SelectItem<T>[];
   placeholder?: string;
@@ -150,6 +159,17 @@ const defaultFilter = <T extends string | number>(
   return txt.toLowerCase().includes(q);
 };
 
+/** 为复杂 Select 选项返回稳定的读屏名称。 */
+const getOptionAriaLabel = <T extends string | number>(
+  option: SelectOption<T>
+): string | undefined => {
+  if (option.ariaLabel) return option.ariaLabel;
+  if (typeof option.label === "string" || typeof option.label === "number") {
+    return undefined;
+  }
+  return option.text ?? String(option.value);
+};
+
 type SelectComponent = {
   <T extends string | number = string>(props: SingleSelectProps<T> & React.RefAttributes<HTMLDivElement>): React.ReactElement;
   <T extends string | number = string>(props: MultiSelectProps<T> & React.RefAttributes<HTMLDivElement>): React.ReactElement;
@@ -209,7 +229,6 @@ const SelectInner = <T extends string | number = string>(
   const mergedClearIcon = typeof allowClear === "object" ? allowClear.clearIcon : undefined;
   const mergedSearchable = searchable ?? !!showSearch;
   const mergedListHeight = Number.isFinite(listHeight) && listHeight > 0 ? listHeight : 260;
-  const hasCustomPopupWidth = popupStyle?.width != null || popupStyle?.minWidth != null || popupStyle?.maxWidth != null;
   const mergedMenuClassName = [menuClassName, popupClassName, dropdownClassName]
     .filter(Boolean)
     .join(" ");
@@ -228,6 +247,20 @@ const SelectInner = <T extends string | number = string>(
 
   const searchRef = React.useRef<HTMLInputElement>(null);
   const portalContainer = usePortalContainer();
+  const portalTheme = useComponentPortalTheme([
+    "Select",
+    "Pagination",
+    "Table",
+    "TablePro",
+  ]);
+  const themedPopupStyle = portalTheme.styles.popup;
+  const hasCustomPopupWidth = [themedPopupStyle, popupStyle].some(
+    (styleValue) =>
+      styleValue?.width != null ||
+      styleValue?.minWidth != null ||
+      styleValue?.maxWidth != null
+  );
+  const resolvedPopupWidth = popupStyle?.width ?? themedPopupStyle?.width;
   const listboxId = React.useId();
 
   const openControlled = openProp !== undefined;
@@ -250,7 +283,7 @@ const SelectInner = <T extends string | number = string>(
     open,
     placement: "bottom",
     matchTriggerWidth: !hasCustomPopupWidth,
-    panelWidth: typeof popupStyle?.width === "number" ? popupStyle.width : 360,
+    panelWidth: typeof resolvedPopupWidth === "number" ? resolvedPopupWidth : 360,
     panelHeight: mergedListHeight + (mergedSearchable ? 58 : 12),
   });
 
@@ -433,25 +466,27 @@ const SelectInner = <T extends string | number = string>(
         return <span className="placeholder">{placeholder}</span>;
       }
       return (
-        <span className="select-tags">
-          {shown.map((o) => (
-            <Tag
-              key={String(o.value)}
-              tone="accent"
-              removable={!disabled}
-              onRemove={() => {
-                const cur = multiValue ?? [];
-                const next = cur.filter((v) => v !== o.value);
-                if (!multiControlled) setInnerMulti(next);
-                (props as MultiSelectProps<T>).onChange?.(next);
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {selectedRender?.(o, { value: o.value, multiple: true }) ?? o.label}
-            </Tag>
-          ))}
-          {overflow > 0 && <Tag tone="neutral">+{overflow}</Tag>}
-        </span>
+        <InternalComponentThemePart components="Tag">
+          <span className="select-tags">
+            {shown.map((o) => (
+              <Tag
+                key={String(o.value)}
+                tone="accent"
+                removable={!disabled}
+                onRemove={() => {
+                  const cur = multiValue ?? [];
+                  const next = cur.filter((v) => v !== o.value);
+                  if (!multiControlled) setInnerMulti(next);
+                  (props as MultiSelectProps<T>).onChange?.(next);
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {selectedRender?.(o, { value: o.value, multiple: true }) ?? o.label}
+              </Tag>
+            ))}
+            {overflow > 0 && <Tag tone="neutral">+{overflow}</Tag>}
+          </span>
+        </InternalComponentThemePart>
       );
     }
     const current = allFlat.find((o) => o.value === singleValue);
@@ -488,6 +523,7 @@ const SelectInner = <T extends string | number = string>(
         type="button"
         role="option"
         aria-selected={sel}
+        aria-label={getOptionAriaLabel(o)}
         disabled={o.disabled}
         className={`menu-item ${sel ? "active" : ""} ${active ? "highlight" : ""}`}
         onMouseEnter={() => setActiveIdx(idx)}
@@ -591,29 +627,37 @@ const SelectInner = <T extends string | number = string>(
             className={`menu ${mergedMenuClassName}`}
             role="listbox"
             aria-multiselectable={isMulti || undefined}
-            style={{ ...floatingStyle, ...popupStyle }}
+            {...portalTheme.dataAttributes}
+            style={{
+              ...floatingStyle,
+              ...portalTheme.style,
+              ...portalTheme.styles.popup,
+              ...popupStyle,
+            }}
           >
             {mergedSearchable && (
             <div className="menu-search">
-              <Input
-                ref={searchRef}
-                size="sm"
-                leadingIcon="search"
-                value={query}
-                placeholder="搜索..."
-                role="combobox"
-                aria-autocomplete="list"
-                aria-expanded={open}
-                aria-controls={listboxId}
-                aria-activedescendant={activeIdx >= 0 ? `${listboxId}-option-${activeIdx}` : undefined}
-                onValueChange={setQuery}
-                onKeyDown={(e) => {
-                  if (e.key === "Escape" || e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Enter") {
-                    e.preventDefault();
-                    onKeyDown(e);
-                  }
-                }}
-              />
+              <InternalComponentThemePart components="Input">
+                <Input
+                  ref={searchRef}
+                  size="sm"
+                  leadingIcon="search"
+                  value={query}
+                  placeholder="搜索..."
+                  role="combobox"
+                  aria-autocomplete="list"
+                  aria-expanded={open}
+                  aria-controls={listboxId}
+                  aria-activedescendant={activeIdx >= 0 ? `${listboxId}-option-${activeIdx}` : undefined}
+                  onValueChange={setQuery}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape" || e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Enter") {
+                      e.preventDefault();
+                      onKeyDown(e);
+                    }
+                  }}
+                />
+              </InternalComponentThemePart>
             </div>
           )}
           <div
@@ -655,5 +699,12 @@ const SelectInner = <T extends string | number = string>(
 };
 
 /** `Select` — neumorphic dropdown. Set `multiple` for tag-style multi-select. */
-export const Select = React.forwardRef(SelectInner) as SelectComponent;
-(Select as any).displayName = "Select";
+const SelectBase = React.forwardRef(SelectInner) as SelectComponent;
+(SelectBase as any).displayName = "Select";
+export const Select = withComponentTheme(
+  SelectBase as React.ForwardRefExoticComponent<
+    SelectProps & React.RefAttributes<HTMLDivElement>
+  >,
+  "Select",
+  ["select", "input", "tag"]
+) as SelectComponent;

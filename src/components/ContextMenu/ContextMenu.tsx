@@ -5,6 +5,11 @@ import * as React from "react";
 import ReactDOM from "react-dom";
 import { useOverlayLayer, useOverlayZIndex } from "../../utils/overlayStack";
 import { usePortalContainer } from "../../utils/portal";
+import {
+  useComponentPortalTheme,
+  withComponentTheme,
+  type ComponentThemeProps,
+} from "../Theme/ComponentTheme";
 
 export interface ContextMenuItem {
   key: string;
@@ -22,7 +27,8 @@ export interface ContextMenuItem {
 }
 
 export interface ContextMenuProps
-  extends Omit<React.HTMLAttributes<HTMLSpanElement>, "children"> {
+  extends Omit<React.HTMLAttributes<HTMLSpanElement>, "children">,
+    ComponentThemeProps {
   items: ContextMenuItem[];
   /**
    * Any content — right-click anywhere inside the trigger area opens the menu.
@@ -67,19 +73,22 @@ const KEYBOARD_TRIGGER_SELECTOR = [
  * </ContextMenu>
  * ```
  */
-export const ContextMenu = React.forwardRef<HTMLSpanElement, ContextMenuProps>(({
-  items,
-  children,
-  disabled,
-  minWidth = 180,
-  className = "",
-  style,
-  onContextMenu,
-  onKeyDown,
-  tabIndex,
-  ...rest
-}, ref) => {
+const ContextMenuBase = React.forwardRef<HTMLSpanElement, ContextMenuProps>((props, ref) => {
+  const hasExplicitMinWidth = props.minWidth !== undefined;
+  const {
+    items,
+    children,
+    disabled,
+    minWidth = 180,
+    className = "",
+    style,
+    onContextMenu,
+    onKeyDown,
+    tabIndex,
+    ...rest
+  } = props;
   const portalContainer = usePortalContainer();
+  const portalTheme = useComponentPortalTheme("ContextMenu");
   const [open, setOpen] = React.useState(false);
   const [pos, setPos] = React.useState<{ top: number; left: number }>({ top: 0, left: 0 });
   const [active, setActive] = React.useState(-1);
@@ -290,11 +299,15 @@ export const ContextMenu = React.forwardRef<HTMLSpanElement, ContextMenuProps>((
              aria-label="上下文菜单"
              tabIndex={-1}
              onKeyDown={handleMenuKeyDown}
+             {...portalTheme.dataAttributes}
              style={{
                position: "fixed",
                top: pos.top,
                left: pos.left,
+               ...portalTheme.style,
                minWidth,
+               ...portalTheme.styles.popup,
+               ...(hasExplicitMinWidth ? { minWidth } : null),
                zIndex: overlayZIndex,
              }}
             onContextMenu={(e) => e.preventDefault()}
@@ -336,4 +349,10 @@ export const ContextMenu = React.forwardRef<HTMLSpanElement, ContextMenuProps>((
     </>
   );
 });
-ContextMenu.displayName = "ContextMenu";
+ContextMenuBase.displayName = "ContextMenu";
+
+export const ContextMenu = withComponentTheme(
+  ContextMenuBase,
+  "ContextMenu",
+  "context-menu"
+);

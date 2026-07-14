@@ -20,7 +20,7 @@
 }
 
 .date-picker.open .input-wrap {
-  box-shadow: var(--neu-shadow-inset);
+  box-shadow: var(--lmn-date-picker-neu-shadow-inset, var(--neu-shadow-inset));
 }
 
 .date-picker-panel {
@@ -29,8 +29,8 @@
   width: 344px;
   padding: var(--gap-3);
   border-radius: var(--r-md);
-  background: var(--bg);
-  box-shadow: var(--neu-shadow-float);
+  background: var(--lmn-date-picker-bg, var(--bg));
+  box-shadow: var(--lmn-date-picker-neu-shadow-float, var(--neu-shadow-float));
   animation: menuIn var(--dur) var(--ease);
 }
 
@@ -51,7 +51,7 @@
   gap: var(--gap-2);
   margin-top: var(--gap-3);
   padding-top: var(--gap-3);
-  border-top: 1px solid var(--divider);
+  border-top: 1px solid var(--lmn-date-picker-divider, var(--divider));
 }
 
 .date-picker-footer-spacer {

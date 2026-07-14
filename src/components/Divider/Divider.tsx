@@ -2,8 +2,9 @@ import "../../styles/tokens.css";
 import "../../styles/shared.css";
 import "./Divider.css";
 import * as React from "react";
+import { withComponentTheme, type ComponentThemeProps } from "../Theme/ComponentTheme";
 
-export interface DividerProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface DividerProps extends React.HTMLAttributes<HTMLDivElement>, ComponentThemeProps {
   direction?: "horizontal" | "vertical";
   label?: React.ReactNode;
   /** Use recessed groove styling. */
@@ -18,7 +19,7 @@ export interface DividerProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 /** `Divider` — visual separator, horizontal or vertical. */
-export const Divider = React.forwardRef<HTMLDivElement, DividerProps>(({
+const DividerBase = React.forwardRef<HTMLDivElement, DividerProps>(({
   direction = "horizontal",
   label,
   sunken,
@@ -49,4 +50,6 @@ export const Divider = React.forwardRef<HTMLDivElement, DividerProps>(({
     </div>
   );
 });
-Divider.displayName = "Divider";
+DividerBase.displayName = "Divider";
+
+export const Divider = withComponentTheme(DividerBase, "Divider", "divider");

@@ -1,8 +1,11 @@
 import * as React from "react";
 import {
+  AimOutlined,
   Button,
+  Card,
   Input,
   Select,
+  Surface,
   Tag,
   Spin,
   ThemeProvider,
@@ -222,6 +225,75 @@ const ThemeScopeDemo: React.FC = () => (
   </div>
 );
 
+/** 展示同一页面中区域与组件实例使用不同表面色板。 */
+const ThemeMultiColorDemo: React.FC = () => (
+  <ThemeProvider target="scope" baseColor="#e7f0fa" as="section">
+    <ThemePreviewBox label="页面区域 · baseColor = #e7f0fa">
+      <Row gap={12}>
+        <Card
+          title="暖色卡片"
+          description="只改变这个 Card"
+          theme={{ baseColor: "#f5dfd4", colors: { fg: "#4d342b" } }}
+          style={{ flex: "1 1 220px" }}
+        >
+          页面仍保持蓝灰色板。
+        </Card>
+        <Card
+          title="薄荷卡片"
+          description="组件 theme 默认 scope=self"
+          theme={{ baseColor: "#dcefe5", accent: "mint" }}
+          style={{ flex: "1 1 220px" }}
+        >
+          相邻组件不会被串色。
+        </Card>
+      </Row>
+      <Row gap={12}>
+        <Select
+          theme={{ baseColor: "#eee3f8", accent: "violet" }}
+          defaultValue="violet"
+          options={[
+            { value: "violet", label: "紫色 Select（浮层同色）" },
+            { value: "page", label: "页面蓝灰色" },
+          ]}
+          style={{ width: 260 }}
+        />
+        <AimOutlined
+          aria-label="单独着色的具名图标"
+          size={28}
+          theme={{ colors: { fg: "#7357c8" } }}
+        />
+      </Row>
+    </ThemePreviewBox>
+  </ThemeProvider>
+);
+
+/** 展示容器按组件类型覆写颜色、token 和根插槽样式。 */
+const ThemeComponentOverridesDemo: React.FC = () => (
+  <Surface
+    baseColor="#f0ece6"
+    padding="lg"
+    components={{
+      Button: {
+        baseColor: "#dceaf8",
+        accent: "violet",
+        tokens: { hoverBackground: "#cbdff2" },
+        styles: { root: { borderRadius: 999 } },
+      },
+      Tag: {
+        baseColor: "#f4dfd8",
+        colors: { fgMuted: "#70483c" },
+      },
+    }}
+  >
+    <Row gap={10}>
+      <Button>容器内 Button</Button>
+      <Button variant="primary">主按钮</Button>
+      <Tag>容器内 Tag</Tag>
+      <Input placeholder="Input 未被定向覆盖" style={{ width: 210 }} />
+    </Row>
+  </Surface>
+);
+
 const SectionTheme: React.FC<SectionCtx> = () => (
   <DocPage
     whenToUse={
@@ -233,6 +305,8 @@ const SectionTheme: React.FC<SectionCtx> = () => (
         <ul className="doc-usecase-list">
           <li>想让整个应用能切深浅色/强调色</li>
           <li>想给某一块(推广卡片/对话框)单独换一套主题</li>
+          <li>想让同一页面中的区域、卡片、表单或浮层使用不同表面颜色</li>
+          <li>想在某个容器里只定向修改 Button / Select 等指定组件类型</li>
           <li>想把用户的偏好持久化(加 <code>storageKey</code>)</li>
           <li>想跟随系统主题(<code>mode="system"</code>)</li>
           <li>想暴露命名自定义模式(<code>mode="graphite"</code>)并一次套完整 token</li>
@@ -268,6 +342,56 @@ function Root() {
             <ThemePreviewControls />
           </ThemePreviewBox>
         ),
+      },
+      {
+        id: "multi-color",
+        title: "页面与组件多色组合",
+        description: "baseColor 会生成完整拟态色板；普通组件的 theme 默认只作用于自身，Portal 浮层会复制同一色板。",
+        span: 2,
+        code: `<ThemeProvider target="scope" baseColor="#e7f0fa">
+  <Card theme={{
+    baseColor: "#f5dfd4",
+    colors: { fg: "#4d342b" },
+  }}>
+    暖色卡片
+  </Card>
+
+  <Select
+    theme={{ baseColor: "#eee3f8", accent: "violet" }}
+    options={options}
+  />
+
+  <AimOutlined
+    theme={{ colors: { fg: "#7357c8" } }}
+    size={28}
+  />
+</ThemeProvider>`,
+        render: () => <ThemeMultiColorDemo />,
+      },
+      {
+        id: "component-overrides",
+        title: "容器内定向修改组件",
+        description: "components 按公共组件名称匹配后代实例，可分别覆盖派生色板、精确颜色、组件 token 与静态插槽样式。",
+        span: 2,
+        code: `<Surface
+  baseColor="#f0ece6"
+  components={{
+    Button: {
+      baseColor: "#dceaf8",
+      accent: "violet",
+      tokens: { hoverBackground: "#cbdff2" },
+      styles: { root: { borderRadius: 999 } },
+    },
+    Tag: {
+      colors: { fgMuted: "#70483c" },
+    },
+  }}
+>
+  <Button>只影响容器内 Button</Button>
+  <Tag>只影响容器内 Tag</Tag>
+  <Input placeholder="未配置，继续继承容器色板" />
+</Surface>`,
+        render: () => <ThemeComponentOverridesDemo />,
       },
       {
         id: "hook",
@@ -391,7 +515,10 @@ applyTheme(document.documentElement, {
         rows: [
           { prop: "mode", description: "深浅色模式或自定义模式名", type: "ThemeMode", default: `"light"` },
           { prop: "colorScheme", description: "自定义模式使用的 light/dark 基底", type: `"light" | "dark"`, default: `"light"` },
+          { prop: "baseColor", description: "表面基色；自动生成背景、文字、边框、阴影与默认强调色", type: "string" },
           { prop: "accent", description: "强调色,预设或自定义", type: "AccentKey | CustomAccentInput", default: `"sky"` },
+          { prop: "colors", description: "对派生色板做最终精确覆盖；未提供字段继续继承", type: "ThemeColorOverrides" },
+          { prop: "components", description: "按公共组件名定向覆盖容器内实例", type: "ComponentThemeOverrides" },
           { prop: "density", description: "密度", type: `"compact" | "comfortable" | "spacious"`, default: `"comfortable"` },
           { prop: "intensity", description: "阴影强度;ThemePanel 默认调节范围 0-20", type: "number", default: "5" },
           { prop: "radius", description: "圆角基准 px", type: "number", default: "20" },
@@ -407,6 +534,8 @@ applyTheme(document.documentElement, {
           { prop: "ThemePreset.label / description", description: "可选展示元信息;ThemePanel 会读取它作为卡片标题和说明", type: "string" },
           { prop: "target", description: "应用到根还是局部", type: `"root" | "scope"`, default: `"root"` },
           { prop: "as", description: "scope 模式的元素标签", type: "keyof JSX.IntrinsicElements", default: `"div"` },
+          { prop: "asChild", description: "scope 模式把主题直接合并到唯一子元素，不增加包装节点", type: "boolean", default: "false" },
+          { prop: "enabled", description: "关闭当前主题层但保留 Provider 与 DOM 拓扑，适合平滑切换局部主题", type: "boolean", default: "true" },
           { prop: "storageKey", description: "带版本号的 localStorage 持久化 key；同源多窗口会自动同步当前主题与自定义 themes", type: "string" },
           { prop: "onChange", description: "主题值变更回调", type: "(value: ThemeValue) => void" },
         ],
@@ -417,6 +546,7 @@ applyTheme(document.documentElement, {
           { prop: "mode", description: "请求的模式(保留 system)", type: "ThemeMode" },
           { prop: "resolvedMode", description: "解析后的具体模式;自定义模式保留名称", type: "ResolvedThemeMode" },
           { prop: "colorScheme", description: "当前 light/dark 基底", type: `"light" | "dark"` },
+          { prop: "baseColor / colors / components", description: "当前基色、精确颜色与组件类型覆盖", type: "-" },
           { prop: "accent", description: "预设 key 或 \"custom\"", type: "AccentKey | \"custom\"" },
           { prop: "accentPalette", description: "当前完整调色板", type: "AccentPalette" },
           { prop: "density / intensity / radius / font / tokens", description: "当前各维度状态", type: "-" },
@@ -424,9 +554,24 @@ applyTheme(document.documentElement, {
           { prop: "setMode(m)", description: "切换模式", type: "(m: ThemeMode) => void" },
           { prop: "toggleMode()", description: "light ⇄ dark 切换", type: "() => void" },
           { prop: "setAccent(a)", description: "切换强调色", type: "(a: AccentKey | CustomAccentInput) => void" },
+          { prop: "setBaseColor / setColors / setComponents", description: "更新多色主题与组件类型覆盖", type: "-" },
           { prop: "setDensity / setIntensity / setRadius / setFont / setTokens / setThemes", description: "对应字段的 setter", type: "-" },
           { prop: "update(cfg)", description: "浅合并多字段", type: "(cfg: Partial<ThemeConfig>) => void" },
           { prop: "reset()", description: "重置到初始 props", type: "() => void" },
+        ],
+      },
+      {
+        title: "组件 theme 与定向覆盖",
+        rows: [
+          { prop: "theme", description: "所有公共 UI 组件共享；强调色 key 或其他颜色字符串可直接简写", type: "ComponentTheme" },
+          { prop: "theme.scope", description: "self 只改当前组件；subtree 同时向业务后代传递完整色板", type: `"self" | "subtree"`, default: `"self"` },
+          { prop: "baseColor", description: "生成背景、文字、边框、阴影和默认强调色", type: "string" },
+          { prop: "colorScheme / accent / intensity", description: "控制深浅基底、强调色和拟态强度", type: "-" },
+          { prop: "colors", description: "精确覆盖 bg / fg / border / shadow / accent / semantic 等颜色槽", type: "ThemeColorOverrides" },
+          { prop: "tokens", description: "短键会写入组件前缀变量；以 -- 开头的键作为高级原始变量逃生口", type: "ThemeTokens" },
+          { prop: "components", description: "继续定向配置当前组件内部或 subtree 后代的组件类型", type: "ComponentThemeOverrides" },
+          { prop: "styles.root", description: "所有组件都支持真实视觉根节点；调用方 style 仍保持最高优先级", type: "CSSProperties" },
+          { prop: "styles.popup / overlay / body", description: "浮层、遮罩和正文等组件专用静态插槽；定位与用户 popupStyle 不会被覆盖", type: "CSSProperties" },
         ],
       },
     ]}
@@ -440,6 +585,6 @@ export default defineSection({
   label: "Theme 主题",
   eyebrow: "FOUNDATION",
   title: "Theme 主题",
-  desc: "ThemeProvider + useTheme,覆盖深浅色、自定义模式、强调色、密度、圆角、字体、阴影强度。",
+  desc: "ThemeProvider + 组件 theme，支持页面、区域、组件和 Portal 使用不同色板，并可按组件类型定向覆盖。",
   Component: SectionTheme,
 });

@@ -7,6 +7,12 @@ import { Button, IconButton } from "../Button";
 import { Icon } from "../Icon";
 import { usePortalContainer } from "../../utils/portal";
 import { OverlayZIndexProvider, useOverlayLayer, useOverlayZIndex } from "../../utils/overlayStack";
+import {
+  InternalComponentThemePart,
+  useComponentPortalTheme,
+  withComponentTheme,
+  type ComponentThemeProps,
+} from "../Theme/ComponentTheme";
 
 export type ImageVariant = "framed" | "raw" | "icon";
 export type ImagePreviewMode = "fit" | "actual";
@@ -22,7 +28,7 @@ export interface ImagePreviewToolbarRenderProps {
   close: () => void;
 }
 
-export interface ImageProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface ImageProps extends React.HTMLAttributes<HTMLDivElement>, ComponentThemeProps {
   src?: string;
   alt?: string;
   width?: number | string;
@@ -347,7 +353,7 @@ const readPreviewThemeBridge = (source: HTMLElement | null): PreviewThemeBridge 
  * <Image src={url} width={240} height={160} />
  * <Image variant="icon" src={iconUrl} width={48} height={48} preview={false} />
  */
-export const Image = React.forwardRef<HTMLDivElement, ImageProps>(({
+const ImageBase = React.forwardRef<HTMLDivElement, ImageProps>(({
   src,
   alt,
   width = 200,
@@ -384,6 +390,7 @@ export const Image = React.forwardRef<HTMLDivElement, ImageProps>(({
   const imageRef = React.useRef<HTMLImageElement>(null);
   const overlayRef = React.useRef<HTMLDivElement>(null);
   const portalContainer = usePortalContainer();
+  const portalTheme = useComponentPortalTheme(["Image", "ImageGrid"]);
   const explicitPreviewZIndex = typeof previewStyle?.zIndex === "number"
     ? previewStyle.zIndex
     : undefined;
@@ -648,6 +655,7 @@ export const Image = React.forwardRef<HTMLDivElement, ImageProps>(({
           <OverlayZIndexProvider zIndex={previewZIndex}>
             <div
             {...previewTheme.attrs}
+            {...portalTheme.dataAttributes}
             ref={overlayRef}
             role="dialog"
             aria-modal="true"
@@ -656,6 +664,8 @@ export const Image = React.forwardRef<HTMLDivElement, ImageProps>(({
             className={["image-preview-overlay", previewClassName].filter(Boolean).join(" ")}
             style={{
               ...previewTheme.style,
+              ...portalTheme.style,
+              ...portalTheme.styles.overlay,
               ...previewStyle,
               zIndex: previewStyle?.zIndex ?? previewZIndex,
             }}
@@ -672,62 +682,66 @@ export const Image = React.forwardRef<HTMLDivElement, ImageProps>(({
               aria-label="图片预览工具栏"
               onClick={(event) => event.stopPropagation()}
             >
-              <IconButton
-                icon="minus"
-                size="sm"
-                variant="ghost"
-                tip="缩小"
-                disabled={previewScale <= PREVIEW_MIN_SCALE}
-                onClick={zoomOut}
-              />
-              <span className="image-preview-scale" aria-live="polite">
-                {Math.round(previewScale * 100)}%
-              </span>
-              <IconButton
-                icon="plus"
-                size="sm"
-                variant="ghost"
-                tip="放大"
-                disabled={previewScale >= PREVIEW_MAX_SCALE}
-                onClick={zoomIn}
-              />
-              <Button
-                size="sm"
-                variant="ghost"
-                className="image-preview-ratio"
-                aria-label="适配窗口"
-                onClick={fitToWindow}
-              >
-                适配
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="image-preview-ratio"
-                aria-label="1:1"
-                onClick={actualSize}
-              >
-                1:1
-              </Button>
-              <IconButton
-                icon="reload"
-                size="sm"
-                variant="ghost"
-                tip="重置"
-                onClick={resetPreview}
-              />
+              <InternalComponentThemePart components={["IconButton", "Button"]}>
+                <IconButton
+                  icon="minus"
+                  size="sm"
+                  variant="ghost"
+                  tip="缩小"
+                  disabled={previewScale <= PREVIEW_MIN_SCALE}
+                  onClick={zoomOut}
+                />
+                <span className="image-preview-scale" aria-live="polite">
+                  {Math.round(previewScale * 100)}%
+                </span>
+                <IconButton
+                  icon="plus"
+                  size="sm"
+                  variant="ghost"
+                  tip="放大"
+                  disabled={previewScale >= PREVIEW_MAX_SCALE}
+                  onClick={zoomIn}
+                />
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="image-preview-ratio"
+                  aria-label="适配窗口"
+                  onClick={fitToWindow}
+                >
+                  适配
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="image-preview-ratio"
+                  aria-label="1:1"
+                  onClick={actualSize}
+                >
+                  1:1
+                </Button>
+                <IconButton
+                  icon="reload"
+                  size="sm"
+                  variant="ghost"
+                  tip="重置"
+                  onClick={resetPreview}
+                />
+              </InternalComponentThemePart>
               {renderPreviewToolbar && (
                 <span className="image-preview-toolbar-slot">
                   {renderPreviewToolbar(previewToolbarProps)}
                 </span>
               )}
-              <IconButton
-                icon="x"
-                size="sm"
-                variant="ghost"
-                tip="关闭"
-                onClick={closePreview}
-              />
+              <InternalComponentThemePart components="IconButton">
+                <IconButton
+                  icon="x"
+                  size="sm"
+                  variant="ghost"
+                  tip="关闭"
+                  onClick={closePreview}
+                />
+              </InternalComponentThemePart>
             </div>
             <img
               className="image-preview-img"
@@ -750,14 +764,22 @@ export const Image = React.forwardRef<HTMLDivElement, ImageProps>(({
     </>
   );
 });
-Image.displayName = "Image";
+ImageBase.displayName = "Image";
+
+export const Image = withComponentTheme(
+  ImageBase,
+  "Image",
+  ["image", "button"]
+);
 
 export interface ImageGridItem extends Omit<ImageProps, "children"> {
   src: string;
   alt?: string;
 }
 
-export interface ImageGridProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface ImageGridProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    ComponentThemeProps {
   images: ImageGridItem[];
   columns?: number;
   itemHeight?: number;
@@ -768,7 +790,7 @@ export interface ImageGridProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 /** `ImageGrid` — auto-fit grid of `Image` items. */
-export const ImageGrid = React.forwardRef<HTMLDivElement, ImageGridProps>(({
+const ImageGridBase = React.forwardRef<HTMLDivElement, ImageGridProps>(({
   images,
   columns,
   itemHeight = 130,
@@ -793,19 +815,26 @@ export const ImageGrid = React.forwardRef<HTMLDivElement, ImageGridProps>(({
     {...rest}
   >
     {images.map((img, i) => (
-      <Image
-        key={i}
-        {...imageProps}
-        {...img}
-        src={img.src}
-        alt={img.alt}
-        width={img.width ?? "100%"}
-        height={img.height ?? itemHeight}
-      />
+      <InternalComponentThemePart key={i} components="Image">
+        <Image
+          {...imageProps}
+          {...img}
+          src={img.src}
+          alt={img.alt}
+          width={img.width ?? "100%"}
+          height={img.height ?? itemHeight}
+        />
+      </InternalComponentThemePart>
     ))}
   </div>
 ));
-ImageGrid.displayName = "ImageGrid";
+ImageGridBase.displayName = "ImageGrid";
+
+export const ImageGrid = withComponentTheme(
+  ImageGridBase,
+  "ImageGrid",
+  ["image", "button"]
+);
 
 export interface SpriteRect {
   x: number;
@@ -814,7 +843,9 @@ export interface SpriteRect {
   height: number;
 }
 
-export interface SpriteImageProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "children"> {
+export interface SpriteImageProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "children">,
+    ComponentThemeProps {
   src: string;
   sprite: SpriteRect;
   alt?: string;
@@ -834,7 +865,7 @@ export interface SpriteImageProps extends Omit<React.HTMLAttributes<HTMLDivEleme
  * @example
  * <SpriteImage src={sheetUrl} sprite={{ x: 64, y: 32, width: 32, height: 32 }} />
  */
-export const SpriteImage = React.forwardRef<HTMLDivElement, SpriteImageProps>(({
+const SpriteImageBase = React.forwardRef<HTMLDivElement, SpriteImageProps>(({
   src,
   sprite,
   alt,
@@ -880,7 +911,13 @@ export const SpriteImage = React.forwardRef<HTMLDivElement, SpriteImageProps>(({
     </div>
   );
 });
-SpriteImage.displayName = "SpriteImage";
+SpriteImageBase.displayName = "SpriteImage";
+
+export const SpriteImage = withComponentTheme(
+  SpriteImageBase,
+  "SpriteImage",
+  "image"
+);
 
 export type LayeredImageInset =
   | number
@@ -896,7 +933,9 @@ export interface LayeredImageLayer
   zIndex?: number;
 }
 
-export interface LayeredImageProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface LayeredImageProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    ComponentThemeProps {
   layers: LayeredImageLayer[];
   width?: number | string;
   height?: number | string;
@@ -918,7 +957,7 @@ const insetStyle = (inset: LayeredImageInset | undefined): React.CSSProperties =
  * @example
  * <LayeredImage layers={[{ src: headUrl }, { src: frameUrl }]} width={48} height={48} />
  */
-export const LayeredImage = React.forwardRef<HTMLDivElement, LayeredImageProps>(({
+const LayeredImageBase = React.forwardRef<HTMLDivElement, LayeredImageProps>(({
   layers,
   width = 64,
   height = 64,
@@ -965,4 +1004,10 @@ export const LayeredImage = React.forwardRef<HTMLDivElement, LayeredImageProps>(
     </div>
   );
 });
-LayeredImage.displayName = "LayeredImage";
+LayeredImageBase.displayName = "LayeredImage";
+
+export const LayeredImage = withComponentTheme(
+  LayeredImageBase,
+  "LayeredImage",
+  "image"
+);

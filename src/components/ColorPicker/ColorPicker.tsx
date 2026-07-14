@@ -7,6 +7,12 @@ import { useFloating } from "../../utils/useFloating";
 import { usePortalContainer } from "../../utils/portal";
 import { useOverlayLayer } from "../../utils/overlayStack";
 import { Input } from "../Input";
+import {
+  InternalComponentThemePart,
+  useComponentPortalTheme,
+  withComponentTheme,
+  type ComponentThemeProps,
+} from "../Theme/ComponentTheme";
 
 /* ============================================================================
  * Color conversion helpers
@@ -93,7 +99,8 @@ export interface ColorPickerProps
   extends Omit<
     React.ButtonHTMLAttributes<HTMLButtonElement>,
     "value" | "defaultValue" | "onChange" | "children" | "color"
-  > {
+  >,
+    ComponentThemeProps {
   /** Controlled hex color (e.g. "#ff6b6b"). */
   value?: string;
   /** Initial hex when uncontrolled. */
@@ -324,7 +331,7 @@ const HueSlider: React.FC<HueProps> = ({ hue, onChange }) => {
  * @example
  * <ColorPicker defaultValue="#845ef7" onChange={setColor} />
  */
-export const ColorPicker = React.forwardRef<ColorPickerTriggerElement, ColorPickerProps>(
+const ColorPickerBase = React.forwardRef<ColorPickerTriggerElement, ColorPickerProps>(
   (props, ref) => {
     const {
       value,
@@ -379,6 +386,7 @@ export const ColorPicker = React.forwardRef<ColorPickerTriggerElement, ColorPick
       panelHeight: 300,
     });
     const portalContainer = usePortalContainer();
+    const portalTheme = useComponentPortalTheme(["ColorPicker", "ThemePanel"]);
     const panelId = React.useId();
 
     useOverlayLayer({
@@ -626,22 +634,25 @@ export const ColorPicker = React.forwardRef<ColorPickerTriggerElement, ColorPick
               className="cp-panel"
               role="dialog"
               aria-label="选择颜色"
-              style={floatingStyle}
+              {...portalTheme.dataAttributes}
+              style={{ ...floatingStyle, ...portalTheme.style, ...portalTheme.styles.popup }}
             >
               <SaturationBoard hue={h} s={s} v={v} onChange={handleBoard} />
               <HueSlider hue={h} onChange={handleHue} />
               <div className="cp-row">
                 <span className="cp-swatch sm" style={{ background: current }} />
-                <Input
-                  className="cp-input"
-                  size="sm"
-                  value={inputText}
-                  onValueChange={handleInputChange}
-                  onBlur={handleInputBlur}
-                  onKeyDown={handleInputKey}
-                  spellCheck={false}
-                  aria-label="十六进制颜色"
-                />
+                <InternalComponentThemePart components="Input">
+                  <Input
+                    className="cp-input"
+                    size="sm"
+                    value={inputText}
+                    onValueChange={handleInputChange}
+                    onBlur={handleInputBlur}
+                    onKeyDown={handleInputKey}
+                    spellCheck={false}
+                    aria-label="十六进制颜色"
+                  />
+                </InternalComponentThemePart>
               </div>
               {presets.length > 0 && (
                 <div className="cp-presets">
@@ -664,4 +675,10 @@ export const ColorPicker = React.forwardRef<ColorPickerTriggerElement, ColorPick
     );
   }
 );
-ColorPicker.displayName = "ColorPicker";
+ColorPickerBase.displayName = "ColorPicker";
+
+export const ColorPicker = withComponentTheme(
+  ColorPickerBase,
+  "ColorPicker",
+  ["color-picker", "input"]
+);

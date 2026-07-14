@@ -10,6 +10,12 @@ import { Pagination } from "../Pagination";
 import { useFloating } from "../../utils/useFloating";
 import { usePortalContainer } from "../../utils/portal";
 import { useOverlayLayer } from "../../utils/overlayStack";
+import {
+  InternalComponentThemePart,
+  useComponentPortalTheme,
+  withComponentTheme,
+  type ComponentThemeProps,
+} from "../Theme/ComponentTheme";
 
 export type RowKey = string | number;
 
@@ -127,7 +133,8 @@ export interface TableScrollConfig {
 }
 
 export interface TableProps<Row = any>
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onSelect" | "onChange"> {
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onSelect" | "onChange">,
+    ComponentThemeProps {
   columns: TableColumn<Row>[];
   data: Row[];
   rowKey?: keyof Row | ((row: Row) => RowKey);
@@ -578,12 +585,14 @@ const TableInner = <Row extends Record<string, any> = any>({
               {showSelCol && (
                 <th scope="col" className="row-check" style={{ width: 44 }}>
                   {selectionType === "checkbox" && (
-                    <Checkbox
-                      checked={allSelectedOnPage}
-                      indeterminate={someSelectedOnPage}
-                      onChange={toggleAll}
-                      label={<span className="table-sr-only">选择当前页</span>}
-                    />
+                    <InternalComponentThemePart components="Checkbox">
+                      <Checkbox
+                        checked={allSelectedOnPage}
+                        indeterminate={someSelectedOnPage}
+                        onChange={toggleAll}
+                        label={<span className="table-sr-only">选择当前页</span>}
+                      />
+                    </InternalComponentThemePart>
                   )}
                 </th>
               )}
@@ -600,21 +609,23 @@ const TableInner = <Row extends Record<string, any> = any>({
                     aria-sort={c.sortable ? (sorted ? (sortDir === "asc" ? "ascending" : "descending") : "none") : undefined}
                   >
                     {c.sortable ? (
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        className="table-sort-trigger"
-                        onClick={() => handleSort(c.key)}
-                      >
-                        <span className="th-label">{c.title}</span>
-                        <span className="sort-ind" aria-hidden="true">
-                          <Icon
-                            name={sorted ? (sortDir === "asc" ? "chevUp" : "chevDown") : "chevDown"}
-                            size={10}
-                          />
-                        </span>
-                      </Button>
+                      <InternalComponentThemePart components="Button">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          className="table-sort-trigger"
+                          onClick={() => handleSort(c.key)}
+                        >
+                          <span className="th-label">{c.title}</span>
+                          <span className="sort-ind" aria-hidden="true">
+                            <Icon
+                              name={sorted ? (sortDir === "asc" ? "chevUp" : "chevDown") : "chevDown"}
+                              size={10}
+                            />
+                          </span>
+                        </Button>
+                      </InternalComponentThemePart>
                     ) : (
                       <span className="th-label">{c.title}</span>
                     )}
@@ -714,12 +725,14 @@ const TableInner = <Row extends Record<string, any> = any>({
                               }}
                             />
                           ) : (
-                            <Checkbox
-                              checked={isSel}
-                              disabled={selProps?.disabled}
-                              onChange={() => toggleRow(row, k)}
-                              label={<span className="table-sr-only">选择第 {i + 1} 行</span>}
-                            />
+                            <InternalComponentThemePart components="Checkbox">
+                              <Checkbox
+                                checked={isSel}
+                                disabled={selProps?.disabled}
+                                onChange={() => toggleRow(row, k)}
+                                label={<span className="table-sr-only">选择第 {i + 1} 行</span>}
+                              />
+                            </InternalComponentThemePart>
                           )}
                         </td>
                       )}
@@ -751,16 +764,18 @@ const TableInner = <Row extends Record<string, any> = any>({
       </div>
       {pagEnabled && (
         <div className="table-pagination">
-          <Pagination
-            total={totalCount}
-            pageSize={curPageSize}
-            page={curPage}
-            onChange={onPageChange}
-            showQuickJumper={pagCfg.showQuickJumper}
-            showSizeChanger={pagCfg.showSizeChanger}
-            pageSizeOptions={pagCfg.pageSizeOptions}
-            onShowSizeChange={onPageSizeChange}
-          />
+          <InternalComponentThemePart components="Pagination">
+            <Pagination
+              total={totalCount}
+              pageSize={curPageSize}
+              page={curPage}
+              onChange={onPageChange}
+              showQuickJumper={pagCfg.showQuickJumper}
+              showSizeChanger={pagCfg.showSizeChanger}
+              pageSizeOptions={pagCfg.pageSizeOptions}
+              onShowSizeChange={onPageSizeChange}
+            />
+          </InternalComponentThemePart>
         </div>
       )}
     </>
@@ -768,8 +783,15 @@ const TableInner = <Row extends Record<string, any> = any>({
 };
 
 /** `Table` — neumorphic data table with sorting, selection and visual variants. */
-export const Table = React.forwardRef(TableInner) as TableComponent;
-(Table as any).displayName = "Table";
+const TableBase = React.forwardRef(TableInner) as TableComponent;
+(TableBase as any).displayName = "Table";
+export const Table = withComponentTheme(
+  TableBase as React.ForwardRefExoticComponent<
+    TableProps & React.RefAttributes<HTMLDivElement>
+  >,
+  "Table",
+  ["table", "button", "checkbox", "pagination", "select", "input"]
+) as TableComponent;
 
 /* ============ Column filter button (header popover) ============ */
 
@@ -789,6 +811,7 @@ function ColumnFilterButton<Row>({
   const [open, setOpen] = React.useState(false);
   const [draft, setDraft] = React.useState<(string | number)[]>(activeValues);
   const portalContainer = usePortalContainer();
+  const portalTheme = useComponentPortalTheme(["Table", "TablePro"]);
   const panelId = React.useId();
 
   const { triggerRef, floatingRef: panelRef, floatingStyle, zIndex: panelZIndex } = useFloating<HTMLButtonElement, HTMLDivElement>({
@@ -838,21 +861,23 @@ function ColumnFilterButton<Row>({
 
   return (
     <>
-      <IconButton
-        ref={triggerRef}
-        icon="filter"
-        size="sm"
-        variant="ghost"
-        className={`filter-ind ${active ? "active" : ""}`}
-        tip="筛选列"
-        aria-expanded={open}
-        aria-controls={open ? panelId : undefined}
-        aria-haspopup="dialog"
-        onClick={(e) => {
-          e.stopPropagation();
-          setOpen((o) => !o);
-        }}
-      />
+      <InternalComponentThemePart components="IconButton">
+        <IconButton
+          ref={triggerRef}
+          icon="filter"
+          size="sm"
+          variant="ghost"
+          className={`filter-ind ${active ? "active" : ""}`}
+          tip="筛选列"
+          aria-expanded={open}
+          aria-controls={open ? panelId : undefined}
+          aria-haspopup="dialog"
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpen((o) => !o);
+          }}
+        />
+      </InternalComponentThemePart>
       {open &&
         portalContainer &&
         createPortal(
@@ -860,7 +885,8 @@ function ColumnFilterButton<Row>({
             id={panelId}
             ref={panelRef}
             className="table-filter-panel"
-            style={floatingStyle}
+            {...portalTheme.dataAttributes}
+            style={{ ...floatingStyle, ...portalTheme.style, ...portalTheme.styles.popup }}
             role="dialog"
             aria-label="列筛选"
             tabIndex={-1}
@@ -868,39 +894,42 @@ function ColumnFilterButton<Row>({
           >
             <div className="table-filter-options">
               {(column.filters ?? []).map((f) => (
-                <Checkbox
-                  key={String(f.value)}
-                  className="table-filter-item"
-                  label={f.text}
-                  checked={draft.includes(f.value)}
-                  onChange={() => toggle(f.value)}
-                />
+                <InternalComponentThemePart key={String(f.value)} components="Checkbox">
+                  <Checkbox
+                    className="table-filter-item"
+                    label={f.text}
+                    checked={draft.includes(f.value)}
+                    onChange={() => toggle(f.value)}
+                  />
+                </InternalComponentThemePart>
               ))}
             </div>
             <div className="table-filter-actions">
-              <Button
-                size="sm"
-                variant="ghost"
-                className="tf-btn"
-                onClick={() => {
-                  setDraft([]);
-                  onApply([]);
-                  setOpen(false);
-                }}
-              >
-                重置
-              </Button>
-              <Button
-                size="sm"
-                variant="primary"
-                className="tf-btn"
-                onClick={() => {
-                  onApply(draft);
-                  setOpen(false);
-                }}
-              >
-                确定
-              </Button>
+              <InternalComponentThemePart components="Button">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="tf-btn"
+                  onClick={() => {
+                    setDraft([]);
+                    onApply([]);
+                    setOpen(false);
+                  }}
+                >
+                  重置
+                </Button>
+                <Button
+                  size="sm"
+                  variant="primary"
+                  className="tf-btn"
+                  onClick={() => {
+                    onApply(draft);
+                    setOpen(false);
+                  }}
+                >
+                  确定
+                </Button>
+              </InternalComponentThemePart>
             </div>
           </div>,
           portalContainer

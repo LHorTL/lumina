@@ -6,6 +6,12 @@ import ReactDOM from "react-dom";
 import { Input } from "../Input";
 import { OverlayZIndexProvider, useOverlayLayer, useOverlayZIndex } from "../../utils/overlayStack";
 import { usePortalContainer } from "../../utils/portal";
+import {
+  InternalComponentThemePart,
+  useComponentPortalTheme,
+  withComponentTheme,
+  type ComponentThemeProps,
+} from "../Theme/ComponentTheme";
 
 export interface CommandItem {
   key: string;
@@ -27,7 +33,8 @@ export interface CommandItem {
 }
 
 export interface CommandPaletteProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, "children"> {
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "children">,
+    ComponentThemeProps {
   open: boolean;
   onOpenChange?: (open: boolean) => void;
   items: CommandItem[];
@@ -90,7 +97,7 @@ const findFirstEnabledIndex = (items: CommandItem[]): number =>
  * />
  * ```
  */
-export const CommandPalette = React.forwardRef<HTMLDivElement, CommandPaletteProps>(({
+const CommandPaletteBase = React.forwardRef<HTMLDivElement, CommandPaletteProps>(({
   open,
   onOpenChange,
   items,
@@ -103,9 +110,11 @@ export const CommandPalette = React.forwardRef<HTMLDivElement, CommandPalettePro
   className = "",
   onMouseDown,
   onKeyDown,
+  style,
   ...rest
 }, ref) => {
   const portalContainer = usePortalContainer();
+  const portalTheme = useComponentPortalTheme("CommandPalette");
   const [query, setQuery] = React.useState("");
   const [active, setActive] = React.useState(-1);
   const inputRef = React.useRef<HTMLInputElement | null>(null);
@@ -228,7 +237,8 @@ export const CommandPalette = React.forwardRef<HTMLDivElement, CommandPalettePro
     <OverlayZIndexProvider zIndex={overlayZIndex}>
       <div
         className={["cmdp-overlay", overlayClassName].filter(Boolean).join(" ")}
-        style={{ zIndex: overlayZIndex }}
+        {...portalTheme.dataAttributes}
+        style={{ ...portalTheme.style, ...portalTheme.styles.overlay, zIndex: overlayZIndex }}
         onMouseDown={close}
         role="presentation"
       >
@@ -244,24 +254,28 @@ export const CommandPalette = React.forwardRef<HTMLDivElement, CommandPalettePro
           aria-label="命令面板"
           tabIndex={-1}
           onKeyDown={handlePanelKeyDown}
+          {...portalTheme.dataAttributes}
           {...rest}
+          style={{ ...portalTheme.style, ...portalTheme.styles.popup, ...style }}
         >
           <div className="cmdp-search">
-            <Input
-              ref={inputRef}
-              size="lg"
-              leadingIcon="search"
-              placeholder={placeholder}
-              value={query}
-              onValueChange={(v) => setQuery(v)}
-              role="combobox"
-              aria-autocomplete="list"
-              aria-haspopup="listbox"
-              aria-expanded={open}
-              aria-controls={listId}
-              aria-activedescendant={active >= 0 ? `${listId}-option-${active}` : undefined}
-              suffix={<span className="cmdp-kbd">esc</span>}
-            />
+            <InternalComponentThemePart components="Input">
+              <Input
+                ref={inputRef}
+                size="lg"
+                leadingIcon="search"
+                placeholder={placeholder}
+                value={query}
+                onValueChange={(v) => setQuery(v)}
+                role="combobox"
+                aria-autocomplete="list"
+                aria-haspopup="listbox"
+                aria-expanded={open}
+                aria-controls={listId}
+                aria-activedescendant={active >= 0 ? `${listId}-option-${active}` : undefined}
+                suffix={<span className="cmdp-kbd">esc</span>}
+              />
+            </InternalComponentThemePart>
           </div>
 
           <div ref={listRef} id={listId} className="cmdp-list" role="listbox" aria-label="命令">
@@ -323,4 +337,11 @@ export const CommandPalette = React.forwardRef<HTMLDivElement, CommandPalettePro
     portalContainer
   );
 });
-CommandPalette.displayName = "CommandPalette";
+CommandPaletteBase.displayName = "CommandPalette";
+
+export const CommandPalette = withComponentTheme(
+  CommandPaletteBase,
+  "CommandPalette",
+  ["command-palette", "input"],
+  { portalOnly: true }
+);

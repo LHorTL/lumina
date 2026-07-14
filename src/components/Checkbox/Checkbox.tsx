@@ -3,9 +3,11 @@ import "../../styles/shared.css";
 import "./Checkbox.css";
 import * as React from "react";
 import { Icon } from "../Icon";
+import { withComponentTheme, type ComponentThemeProps } from "../Theme/ComponentTheme";
 
 export interface CheckboxProps
-  extends Omit<React.LabelHTMLAttributes<HTMLLabelElement>, "onChange" | "children" | "id"> {
+  extends Omit<React.LabelHTMLAttributes<HTMLLabelElement>, "onChange" | "children" | "id">,
+    ComponentThemeProps {
   checked?: boolean;
   defaultChecked?: boolean;
   indeterminate?: boolean;
@@ -25,7 +27,7 @@ export interface CheckboxProps
 }
 
 /** `Checkbox` — binary choice, supports indeterminate state. */
-export const Checkbox = React.forwardRef<HTMLLabelElement, CheckboxProps>(({
+const CheckboxBase = React.forwardRef<HTMLLabelElement, CheckboxProps>(({
   checked,
   defaultChecked,
   indeterminate,
@@ -98,4 +100,6 @@ export const Checkbox = React.forwardRef<HTMLLabelElement, CheckboxProps>(({
     </label>
   );
 });
-Checkbox.displayName = "Checkbox";
+CheckboxBase.displayName = "Checkbox";
+
+export const Checkbox = withComponentTheme(CheckboxBase, "Checkbox", "checkbox");

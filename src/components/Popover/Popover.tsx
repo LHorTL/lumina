@@ -6,6 +6,11 @@ import { createPortal } from "react-dom";
 import { useFloating, type Placement } from "../../utils/useFloating";
 import { useOverlayLayer } from "../../utils/overlayStack";
 import { usePortalContainer } from "../../utils/portal";
+import {
+  useComponentPortalTheme,
+  withComponentTheme,
+  type ComponentThemeProps,
+} from "../Theme/ComponentTheme";
 
 export type PopoverPlacement =
   | "top"
@@ -22,7 +27,8 @@ export type PopoverPlacement =
   | "rightBottom";
 
 export interface PopoverProps
-  extends Omit<React.HTMLAttributes<HTMLSpanElement>, "title" | "children" | "content"> {
+  extends Omit<React.HTMLAttributes<HTMLSpanElement>, "title" | "children" | "content">,
+    ComponentThemeProps {
   /** Popover body content. */
   content?: React.ReactNode;
   /** Optional title rendered above content. */
@@ -84,7 +90,7 @@ const normalizePlacement = (
  *   <Button>Delete</Button>
  * </Popover>
  */
-export const Popover = React.forwardRef<HTMLSpanElement, PopoverProps>(({
+const PopoverBase = React.forwardRef<HTMLSpanElement, PopoverProps>(({
   content,
   title,
   placement = "bottom",
@@ -107,9 +113,11 @@ export const Popover = React.forwardRef<HTMLSpanElement, PopoverProps>(({
   onFocus,
   onBlur,
   "aria-label": ariaLabel,
+  style,
   ...rest
 }, ref) => {
   const portalContainer = usePortalContainer();
+  const portalTheme = useComponentPortalTheme("Popover");
   const [inner, setInner] = React.useState(defaultOpen);
   const hoverTimeout = React.useRef<number | undefined>();
   const nestedPointerEvents = React.useRef(new WeakSet<Event>());
@@ -119,7 +127,12 @@ export const Popover = React.forwardRef<HTMLSpanElement, PopoverProps>(({
   const isControlled = controlledOpen !== undefined;
   const show = isControlled ? controlledOpen! : inner;
 
-  const panelWidth = width === "auto" ? 160 : (width ?? 240);
+  const themedPopupStyle = portalTheme.styles.popup;
+  const themedPanelWidth = themedPopupStyle?.width ?? themedPopupStyle?.minWidth;
+  const panelWidth =
+    width === "auto"
+      ? 160
+      : width ?? (typeof themedPanelWidth === "number" ? themedPanelWidth : 240);
   const normalized = normalizePlacement(placement);
 
   const {
@@ -223,14 +236,25 @@ export const Popover = React.forwardRef<HTMLSpanElement, PopoverProps>(({
     "aria-controls": show ? popoverId : undefined,
   } as React.HTMLAttributes<HTMLElement>);
 
-  const widthStyle = width === "auto" ? {} : { width: width ?? undefined, minWidth: width ? undefined : 220 };
+  const hasThemedPopupWidth =
+    themedPopupStyle?.width != null ||
+    themedPopupStyle?.minWidth != null ||
+    themedPopupStyle?.maxWidth != null;
+  const widthStyle: React.CSSProperties =
+    width === "auto"
+      ? {}
+      : width !== undefined
+        ? { width }
+        : hasThemedPopupWidth
+          ? {}
+          : { minWidth: 220 };
 
   return (
     <>
       <span
         ref={setTriggerRef}
         className={`popover-anchor ${className}`}
-        style={{ display: "inline-flex", alignSelf: "flex-start" }}
+        style={{ display: "inline-flex", alignSelf: "flex-start", ...style }}
         onClick={(e) => {
           onClick?.(e);
           if ("onClick" in interact) interact.onClick?.();
@@ -267,7 +291,13 @@ export const Popover = React.forwardRef<HTMLSpanElement, PopoverProps>(({
             ref={floatingRef}
             id={popoverId}
             className={`popover popover-${resolved} ${overlayClassName} ${popupClassName}`}
-            style={{ ...floatingStyle, ...widthStyle }}
+            {...portalTheme.dataAttributes}
+            style={{
+              ...floatingStyle,
+              ...portalTheme.style,
+              ...portalTheme.styles.popup,
+              ...widthStyle,
+            }}
             role="dialog"
             aria-labelledby={title ? titleId : undefined}
             aria-label={!title ? ariaLabel : undefined}
@@ -296,7 +326,7 @@ export const Popover = React.forwardRef<HTMLSpanElement, PopoverProps>(({
                 )}
               </div>
             )}
-            <div className="popover-body">{content}</div>
+            <div className="popover-body" style={portalTheme.styles.body}>{content}</div>
             {arrow && <span className={`popover-arrow popover-arrow-${resolved}`} />}
           </div>,
           portalContainer
@@ -304,4 +334,6 @@ export const Popover = React.forwardRef<HTMLSpanElement, PopoverProps>(({
     </>
   );
 });
-Popover.displayName = "Popover";
+PopoverBase.displayName = "Popover";
+
+export const Popover = withComponentTheme(PopoverBase, "Popover", "popover");

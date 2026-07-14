@@ -57,6 +57,8 @@ showSearch 开启路径搜索,allowClear 提供一键清空；搜索框打开后
 | --- | --- | --- | --- |
 | options \* | `CascaderOption[]` | — | 层级选项树 |
 | options[].icon | `IconName | ReactNode` | — | 选项前置图标,可传内置图标名或自定义节点 |
+| options[].text | `string` | — | 复杂 label 的独立默认搜索文本 |
+| options[].ariaLabel | `string` | — | 复杂节点或 optionRender 的独立可访问名称 |
 | value / defaultValue | `string[]` | — | 受控/初始路径 |
 | onChange | `(path: string[], selectedOptions?: CascaderOption[]) => void` | — | 提交路径时触发，同时返回对应选项对象 |
 | placeholder | `string` | — | 占位文案 |

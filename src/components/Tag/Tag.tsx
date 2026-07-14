@@ -3,10 +3,11 @@ import "../../styles/shared.css";
 import "./Tag.css";
 import * as React from "react";
 import { Icon, renderIconSlot, type IconSlot } from "../Icon";
+import { withComponentTheme, type ComponentThemeProps } from "../Theme/ComponentTheme";
 
 export type TagTone = "neutral" | "accent" | "info" | "success" | "warning" | "danger";
 
-export interface TagProps extends React.HTMLAttributes<HTMLSpanElement> {
+export interface TagProps extends React.HTMLAttributes<HTMLSpanElement>, ComponentThemeProps {
   tone?: TagTone;
   solid?: boolean;
   /** Render a leading colored dot. */
@@ -22,7 +23,7 @@ export interface TagProps extends React.HTMLAttributes<HTMLSpanElement> {
 }
 
 /** `Tag` — small label/pill. */
-export const Tag = React.forwardRef<HTMLSpanElement, TagProps>(({
+const TagBase = React.forwardRef<HTMLSpanElement, TagProps>(({
   tone = "neutral",
   solid,
   dot,
@@ -72,4 +73,6 @@ export const Tag = React.forwardRef<HTMLSpanElement, TagProps>(({
     </span>
   );
 });
-Tag.displayName = "Tag";
+TagBase.displayName = "Tag";
+
+export const Tag = withComponentTheme(TagBase, "Tag", "tag");
