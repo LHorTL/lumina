@@ -1,5 +1,12 @@
 /* ============ Tabs ============ */
 .tabs { display: flex; flex-direction: column; gap: var(--gap-3); }
+.tabs.fill {
+  flex: 1 1 auto;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
 .tabs-nav {
   display: inline-flex;
   padding: 5px;
@@ -8,6 +15,7 @@
   box-shadow: var(--lmn-tabs-neu-shadow-inset, var(--neu-shadow-inset));
   gap: 2px;
   align-self: flex-start;
+  flex-shrink: 0;
 }
 .tabs-nav .tab {
   padding: 8px 16px;
@@ -66,3 +74,9 @@
 .tabs.centered.underline .tabs-nav .tab { margin-right: 11px; margin-left: 11px; }
 
 .tabs-content { padding: var(--gap-2) 0; }
+.tabs.fill .tabs-content {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+}

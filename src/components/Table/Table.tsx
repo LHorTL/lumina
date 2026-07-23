@@ -19,6 +19,11 @@ import {
 
 export type RowKey = string | number;
 
+/** 根据当前数据行生成附加类名，或为全部行使用同一个类名。 */
+export type TableRowClassName<Row = any> =
+  | string
+  | ((row: Row, index: number) => string | undefined);
+
 export interface TableColumnFilterItem {
   text: React.ReactNode;
   value: string | number;
@@ -189,6 +194,10 @@ export interface TableProps<Row = any>
 
   /** Called when user clicks a row. */
   onRowClick?: (row: Row, index: number) => void;
+  /** 仅高亮指定行，不改变选择状态或复选框。 */
+  activeRowKey?: RowKey;
+  /** 为数据行提供固定类名或按行计算类名。 */
+  rowClassName?: TableRowClassName<Row>;
   /** Empty state. */
   empty?: React.ReactNode;
   className?: string;
@@ -250,6 +259,8 @@ const TableInner = <Row extends Record<string, any> = any>({
   tableProps,
   caption,
   onRowClick,
+  activeRowKey,
+  rowClassName,
   empty = "暂无数据",
   className = "",
   style,
@@ -646,12 +657,15 @@ const TableInner = <Row extends Record<string, any> = any>({
             {rowsToRender.length === 0 ? (
               <tr>
                 <td colSpan={totalColCount} className="table-empty">
-                  {empty}
+                  <div className="table-empty-content">{empty}</div>
                 </td>
               </tr>
             ) : (
               rowsToRender.map(({ row, key: k }, i) => {
                 const isSel = selectedKeySet.has(k);
+                const isActive = activeRowKey !== undefined && activeRowKey === k;
+                const resolvedRowClassName =
+                  typeof rowClassName === "function" ? rowClassName(row, i) : rowClassName;
                 const selProps = rowSelection?.getCheckboxProps?.(row);
                 const canExpand =
                   hasExpandable && (expandable?.rowExpandable?.(row) ?? true);
@@ -668,10 +682,16 @@ const TableInner = <Row extends Record<string, any> = any>({
                 return (
                   <React.Fragment key={k}>
                     <tr
-                      className={`${onRowClick ? "clickable" : ""} ${isSel ? "selected" : ""}`}
+                      className={[
+                        onRowClick ? "clickable" : "",
+                        isSel ? "selected" : "",
+                        isActive ? "active-row" : "",
+                        resolvedRowClassName,
+                      ].filter(Boolean).join(" ")}
                       onClick={onRowClick ? () => onRowClick(row, i) : undefined}
                       tabIndex={onRowClick ? 0 : undefined}
                       aria-selected={selectionMode !== "off" ? isSel : undefined}
+                      aria-current={isActive ? "true" : undefined}
                       onKeyDown={onRowClick ? (event) => {
                         if (event.currentTarget !== event.target) return;
                         if (event.key === "Enter" || event.key === " ") {

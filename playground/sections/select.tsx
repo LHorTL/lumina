@@ -59,9 +59,24 @@ const renderPlanSelected = (option: SelectOption<string>): React.ReactNode => {
   );
 };
 
+/** 返回分类限选示例中选项值的类别前缀。 */
+const getOptionCategory = (value: string): string => value.split(":")[0];
+
+/** 同一类别已有其他选项时禁用当前候选项。 */
+const disableDuplicateCategory = (
+  option: SelectOption<string>,
+  selectedValues: readonly string[]
+): boolean => {
+  const category = getOptionCategory(option.value);
+  return selectedValues.some(
+    (value) => value !== option.value && getOptionCategory(value) === category
+  );
+};
+
 const SectionSelect: React.FC<SectionCtx> = () => {
   const [lang, setLang] = React.useState("zh");
   const [tags, setTags] = React.useState<string[]>(["design", "ui"]);
+  const [categoryValues, setCategoryValues] = React.useState<string[]>(["image:flux"]);
   const [city, setCity] = React.useState<string | undefined>("sh");
   const [aliasValue, setAliasValue] = React.useState<string | undefined>();
   const [framework, setFramework] = React.useState("");
@@ -145,6 +160,58 @@ const SectionSelect: React.FC<SectionCtx> = () => {
                   { value: "ux", label: "UX" },
                   { value: "frontend", label: "前端" },
                   { value: "backend", label: "后端" },
+                ]}
+              />
+            </Field>
+          ),
+        },
+        {
+          id: "selection-limit",
+          title: "数量上限 / 分类限选",
+          description: "maxCount 限制总数；getOptionDisabled 可读取当前选择，实现“一类最多选一个”。",
+          code: `<Select
+  multiple
+  maxCount={2}
+  value={values}
+  onChange={setValues}
+  getOptionDisabled={(option, selectedValues) =>
+    hasOtherSelectionInCategory(option, selectedValues)
+  }
+  options={groupedOptions}
+/>`,
+          render: () => (
+            <Field
+              label={`模型槽位 (已选 ${categoryValues.length}/2)`}
+              hint="每个类别最多一个模型，总共最多两个。先移除已选项即可解锁同类候选项。"
+            >
+              <Select
+                multiple
+                clearable
+                maxCount={2}
+                value={categoryValues}
+                onChange={setCategoryValues}
+                getOptionDisabled={disableDuplicateCategory}
+                options={[
+                  {
+                    label: "图像模型",
+                    options: [
+                      { value: "image:flux", label: "Flux" },
+                      { value: "image:gpt-image", label: "GPT Image" },
+                    ],
+                  },
+                  {
+                    label: "文本模型",
+                    options: [
+                      { value: "text:sol", label: "Sol" },
+                      { value: "text:terra", label: "Terra" },
+                    ],
+                  },
+                  {
+                    label: "语音模型",
+                    options: [
+                      { value: "audio:realtime", label: "Realtime Voice" },
+                    ],
+                  },
                 ]}
               />
             </Field>
@@ -337,6 +404,8 @@ const SectionSelect: React.FC<SectionCtx> = () => {
             { prop: "placeholder", description: "空选择时的提示文本", type: "string", default: `"请选择…"` },
             { prop: "multiple", description: "多选", type: "boolean", default: "false" },
             { prop: "maxTagCount", description: "多选时显示的标签数(超出折叠 +N)", type: "number" },
+            { prop: "maxCount", description: "多选允许的最大选择数；达到上限后禁用未选项", type: "number" },
+            { prop: "getOptionDisabled", description: "基于候选项和当前选择动态判断禁用状态", type: "(option, selectedValues) => boolean" },
             { prop: "searchable", description: "可搜索", type: "boolean", default: "false" },
             { prop: "showSearch", description: "searchable 的等价别名", type: "boolean", default: "false" },
             { prop: "filterOption", description: "自定义过滤", type: "(input, option) => boolean" },

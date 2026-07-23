@@ -21,6 +21,12 @@ export interface TabsProps
   variant?: "line" | "pill" | "segmented";
   /** Center-align the tab bar horizontally. */
   centered?: boolean;
+  /** 标签条容器的附加类名。 */
+  tabBarClassName?: string;
+  /** 正文容器的附加类名。 */
+  contentClassName?: string;
+  /** 占满父容器，并让正文区域独立滚动。 */
+  fill?: boolean;
   className?: string;
 }
 
@@ -36,6 +42,9 @@ const TabsBase = React.forwardRef<HTMLDivElement, TabsProps>(({
   onChange,
   variant = "line",
   centered,
+  tabBarClassName = "",
+  contentClassName = "",
+  fill = false,
   className = "",
   ...rest
 }, ref) => {
@@ -73,8 +82,18 @@ const TabsBase = React.forwardRef<HTMLDivElement, TabsProps>(({
   const activeIndex = items.findIndex((item) => item.key === current);
 
   return (
-    <div ref={ref} className={`tabs ${variant} ${centered ? "centered" : ""} ${className}`} {...rest}>
-      <div className="tabs-nav" role="tablist">
+    <div
+      ref={ref}
+      className={[
+        "tabs",
+        variant,
+        centered ? "centered" : "",
+        fill ? "fill" : "",
+        className,
+      ].filter(Boolean).join(" ")}
+      {...rest}
+    >
+      <div className={["tabs-nav", tabBarClassName].filter(Boolean).join(" ")} role="tablist">
         {items.map((it, index) => (
           <button
             ref={(node) => {
@@ -100,7 +119,7 @@ const TabsBase = React.forwardRef<HTMLDivElement, TabsProps>(({
       {active?.content !== undefined && (
         <div
           id={`${baseId}-panel-${activeIndex}`}
-          className="tabs-content"
+          className={["tabs-content", contentClassName].filter(Boolean).join(" ")}
           role="tabpanel"
           aria-labelledby={`${baseId}-tab-${activeIndex}`}
           tabIndex={0}

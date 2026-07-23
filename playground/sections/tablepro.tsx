@@ -13,6 +13,10 @@ import {
 import { DocPage } from "../docs";
 import { defineSection, type SectionCtx } from "./_types";
 
+/** 为离线成员行提供可供业务样式使用的稳定类名。 */
+const getMemberRowClassName = (row: { status: string }): string | undefined =>
+  row.status === "离线" ? "offline-member-row" : undefined;
+
 const SectionTablePro: React.FC<SectionCtx> = () => {
   const raw = React.useMemo(
     () => [
@@ -30,6 +34,7 @@ const SectionTablePro: React.FC<SectionCtx> = () => {
   const [search, setSearch] = React.useState("");
   const [roleFilter, setRoleFilter] = React.useState("all");
   const [selectedKeys, setSelectedKeys] = React.useState<(string | number)[]>([]);
+  const [activeRowKey, setActiveRowKey] = React.useState<string | number>(2);
   const [sortKey, setSortKey] = React.useState("id");
   const [sortDir, setSortDir] = React.useState<"asc" | "desc">("asc");
 
@@ -175,6 +180,61 @@ const SectionTablePro: React.FC<SectionCtx> = () => {
           ),
         },
         {
+          id: "active-row-and-empty",
+          title: "当前行高亮 / 横向空态",
+          span: 2,
+          description: "activeRowKey 只表达当前上下文，不会勾选行；横向滚动表格的 empty 会始终居中在可视区域。",
+          code: `<TablePro
+  rowKey="id"
+  activeRowKey={activeRowKey}
+  rowClassName={(row) => row.status === "离线" ? "offline-row" : undefined}
+  onRowClick={(row) => setActiveRowKey(row.id)}
+  data={rows}
+  columns={columns}
+/>
+
+<TablePro
+  data={[]}
+  scroll={{ x: 1200 }}
+  empty={<Tag>当前筛选没有结果</Tag>}
+/>`,
+          render: () => (
+            <div style={{ display: "grid", gap: 18 }}>
+              <TablePro
+                rowKey="id"
+                title="点击切换当前成员"
+                activeRowKey={activeRowKey}
+                rowClassName={getMemberRowClassName}
+                onRowClick={(row) => setActiveRowKey(row.id)}
+                data={raw.slice(0, 4)}
+                columns={[
+                  { key: "name", title: "姓名", dataIndex: "name", width: 180 },
+                  { key: "role", title: "部门", dataIndex: "role", width: 160 },
+                  {
+                    key: "status",
+                    title: "状态",
+                    dataIndex: "status",
+                    width: 160,
+                    render: (value) => <Tag tone={value === "在线" ? "success" : "neutral"}>{value}</Tag>,
+                  },
+                ]}
+              />
+              <TablePro
+                title="横向滚动空态"
+                data={[]}
+                columns={[
+                  { key: "name", title: "姓名", dataIndex: "name", width: 240 },
+                  { key: "role", title: "部门", dataIndex: "role", width: 220 },
+                  { key: "status", title: "状态", dataIndex: "status", width: 220 },
+                  { key: "progress", title: "完成度", dataIndex: "progress", width: 220 },
+                ]}
+                scroll={{ x: 1200 }}
+                empty={<Tag tone="neutral">当前筛选没有结果</Tag>}
+              />
+            </div>
+          ),
+        },
+        {
           id: "cardsPagination",
           title: "卡片行分页",
           span: 2,
@@ -276,7 +336,8 @@ const SectionTablePro: React.FC<SectionCtx> = () => {
         {
           title: "TablePro",
           rows: [
-            { prop: "...", description: "继承自 Table 全部 props (包括新的 pagination / scroll / rowSelection / expandable / filters)", type: "TableProps" },
+            { prop: "...", description: "继承自 Table 全部 props (包括 pagination / scroll / rowSelection / expandable / filters)", type: "TableProps" },
+            { prop: "activeRowKey / rowClassName", description: "纯高亮当前行，并支持固定或按行计算的业务类名", type: "RowKey / string | (row, index) => string" },
             { prop: "toolbar", description: "工具栏内容", type: "ReactNode" },
             { prop: "actions", description: "工具栏右侧操作", type: "ReactNode" },
             { prop: "footer", description: "底部 (可选,传了会渲染在分页下方)", type: "ReactNode" },

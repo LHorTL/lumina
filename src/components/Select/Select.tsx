@@ -103,6 +103,8 @@ interface BaseSelectProps<T extends string | number = string>
   listHeight?: number;
   /** Portal 菜单的额外内联样式，可覆盖宽度或高度。 */
   popupStyle?: React.CSSProperties;
+  /** 按当前选择动态禁用候选项；静态 disabled 仍然优先。 */
+  getOptionDisabled?: (option: SelectOption<T>, selectedValues: readonly T[]) => boolean;
   /** Controlled open state. */
   open?: boolean;
   defaultOpen?: boolean;
@@ -134,6 +136,8 @@ export interface MultiSelectProps<T extends string | number = string> extends Ba
   onClear?: () => void;
   /** Max selected items shown as tags before collapsing to "+N". */
   maxTagCount?: number;
+  /** 多选允许的最大选择数；达到上限后禁用尚未选中的候选项。 */
+  maxCount?: number;
 }
 
 export type SelectProps<T extends string | number = string> =
@@ -197,6 +201,7 @@ const SelectInner = <T extends string | number = string>(
     selectedRender,
     listHeight = 260,
     popupStyle,
+    getOptionDisabled,
     open: openProp,
     defaultOpen,
     onOpenChange,
@@ -218,11 +223,13 @@ const SelectInner = <T extends string | number = string>(
     defaultValue: _defaultValue,
     onChange: _selectionChange,
     onClear: _onClear,
-    maxTagCount: _maxTagCount,
+    maxTagCount,
+    maxCount,
     ...rest
   } = props as SelectProps<T> & {
     onClear?: () => void;
     maxTagCount?: number;
+    maxCount?: number;
   };
   const isMulti = multiple === true;
   const mergedClearable = clearable ?? !!allowClear;
@@ -313,6 +320,29 @@ const SelectInner = <T extends string | number = string>(
   const multiValue = multiControlled
     ? (Array.isArray(controlledMultiValue) ? controlledMultiValue : [])
     : innerMulti;
+  const selectedValues = React.useMemo<readonly T[]>(
+    () => isMulti ? multiValue : singleValue !== undefined ? [singleValue] : [],
+    [isMulti, multiValue, singleValue]
+  );
+  const selectionLimit =
+    maxCount !== undefined && Number.isFinite(maxCount)
+      ? Math.max(0, Math.floor(maxCount))
+      : undefined;
+
+  /** 合并静态禁用、动态禁用和多选数量上限。 */
+  const isOptionDisabled = React.useCallback((option: SelectOption<T>): boolean => {
+    const selected = selectedValues.includes(option.value);
+    return (
+      !!option.disabled ||
+      !!getOptionDisabled?.(option, selectedValues) ||
+      (
+        isMulti &&
+        !selected &&
+        selectionLimit !== undefined &&
+        selectedValues.length >= selectionLimit
+      )
+    );
+  }, [getOptionDisabled, isMulti, selectedValues, selectionLimit]);
 
   React.useEffect(() => {
     if (!open) return;
@@ -364,22 +394,26 @@ const SelectInner = <T extends string | number = string>(
 
   React.useEffect(() => {
     setActiveIdx((current) => {
-      if (current >= 0 && current < filteredFlat.length && !filteredFlat[current].disabled) {
+      if (
+        current >= 0 &&
+        current < filteredFlat.length &&
+        !isOptionDisabled(filteredFlat[current])
+      ) {
         return current;
       }
-      return filteredFlat.findIndex((option) => !option.disabled);
+      return filteredFlat.findIndex((option) => !isOptionDisabled(option));
     });
-  }, [filteredFlat]);
+  }, [filteredFlat, isOptionDisabled]);
 
   const pickSingle = (opt: SelectOption<T>) => {
-    if (disabled || opt.disabled) return;
+    if (disabled || isOptionDisabled(opt)) return;
     if (!singleControlled) setInnerSingle(opt.value);
     (props as SingleSelectProps<T>).onChange?.(opt.value);
     setOpen(false);
   };
 
   const toggleMulti = (opt: SelectOption<T>) => {
-    if (disabled || opt.disabled) return;
+    if (disabled || isOptionDisabled(opt)) return;
     const cur = multiValue ?? [];
     const next = cur.includes(opt.value) ? cur.filter((v) => v !== opt.value) : [...cur, opt.value];
     if (!multiControlled) setInnerMulti(next);
@@ -426,7 +460,7 @@ const SelectInner = <T extends string | number = string>(
       setActiveIdx((i) => {
         for (let step = 1; step <= filteredFlat.length; step++) {
           const next = (Math.max(i, -1) + step) % filteredFlat.length;
-          if (!filteredFlat[next]?.disabled) return next;
+          if (filteredFlat[next] && !isOptionDisabled(filteredFlat[next])) return next;
         }
         return i;
       });
@@ -437,7 +471,7 @@ const SelectInner = <T extends string | number = string>(
       setActiveIdx((i) => {
         for (let step = 1; step <= filteredFlat.length; step++) {
           const next = (i - step + filteredFlat.length) % filteredFlat.length;
-          if (!filteredFlat[next]?.disabled) return next;
+          if (filteredFlat[next] && !isOptionDisabled(filteredFlat[next])) return next;
         }
         return i;
       });
@@ -446,7 +480,7 @@ const SelectInner = <T extends string | number = string>(
     if (e.key === "Enter") {
       e.preventDefault();
       const opt = filteredFlat[activeIdx];
-      if (opt && !opt.disabled) {
+      if (opt && !isOptionDisabled(opt)) {
         if (isMulti) toggleMulti(opt);
         else pickSingle(opt);
       }
@@ -459,7 +493,7 @@ const SelectInner = <T extends string | number = string>(
       const selected = (multiValue ?? [])
         .map((v) => allFlat.find((o) => o.value === v))
         .filter((o): o is SelectOption<T> => !!o);
-      const max = (props as MultiSelectProps<T>).maxTagCount;
+      const max = maxTagCount;
       const shown = max != null ? selected.slice(0, max) : selected;
       const overflow = selected.length - shown.length;
       if (selected.length === 0) {
@@ -516,6 +550,7 @@ const SelectInner = <T extends string | number = string>(
     const idx = renderIdx;
     const sel = isSelected(o.value);
     const active = idx === activeIdx;
+    const optionDisabled = isOptionDisabled(o);
     return (
       <button
         key={String(o.value)}
@@ -524,9 +559,11 @@ const SelectInner = <T extends string | number = string>(
         role="option"
         aria-selected={sel}
         aria-label={getOptionAriaLabel(o)}
-        disabled={o.disabled}
+        disabled={optionDisabled}
         className={`menu-item ${sel ? "active" : ""} ${active ? "highlight" : ""}`}
-        onMouseEnter={() => setActiveIdx(idx)}
+        onMouseEnter={() => {
+          if (!optionDisabled) setActiveIdx(idx);
+        }}
         onClick={() => (isMulti ? toggleMulti(o) : pickSingle(o))}
       >
         {isMulti && (

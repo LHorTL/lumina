@@ -75,6 +75,7 @@ describe("overlay and navigation regressions", () => {
         bodyClassName="custom-drawer-body"
         bodyStyle={{ maxHeight: 240 }}
         bodyProps={{ "data-panel": "drawer-body" }}
+        bodyOverflow="hidden"
       >
         内容
       </Drawer>
@@ -85,6 +86,7 @@ describe("overlay and navigation regressions", () => {
     expect(body.classList.contains("custom-drawer-body")).toBe(true);
     expect(body.dataset.panel).toBe("drawer-body");
     expect(body.style.maxHeight).toBe("240px");
+    expect(body.style.overflow).toBe("hidden");
     expect(dialog.style.maxWidth).toBe("92vw");
   });
 
@@ -193,6 +195,9 @@ describe("overlay and navigation regressions", () => {
   it("moves Tabs with arrow keys and skips disabled items", () => {
     render(
       <Tabs
+        fill
+        tabBarClassName="workspace-tabs-bar"
+        contentClassName="workspace-tabs-content"
         items={[
           { key: "a", label: "A", content: "内容 A" },
           { key: "b", label: "B", disabled: true, content: "内容 B" },
@@ -206,7 +211,11 @@ describe("overlay and navigation regressions", () => {
     const third = screen.getByRole("tab", { name: "C" });
     expect(third.getAttribute("aria-selected")).toBe("true");
     expect(document.activeElement).toBe(third);
-    expect(screen.getByRole("tabpanel").getAttribute("aria-labelledby")).toBe(third.id);
+    const panel = screen.getByRole("tabpanel");
+    expect(panel.getAttribute("aria-labelledby")).toBe(third.id);
+    expect(panel.classList.contains("workspace-tabs-content")).toBe(true);
+    expect(document.querySelector(".tabs")?.classList.contains("fill")).toBe(true);
+    expect(document.querySelector(".tabs-nav")?.classList.contains("workspace-tabs-bar")).toBe(true);
   });
 
   it("refreshes the CommandPalette imperative ref and combobox relation on open", () => {

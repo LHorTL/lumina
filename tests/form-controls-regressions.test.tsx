@@ -13,7 +13,7 @@ import { Form } from "../src/components/Form";
 import { Input } from "../src/components/Input";
 import { InputNumber } from "../src/components/InputNumber";
 import { Radio, RadioGroup } from "../src/components/Radio";
-import { Select } from "../src/components/Select";
+import { Select, type SelectOption } from "../src/components/Select";
 import { Slider } from "../src/components/Slider";
 import { Switch } from "../src/components/Switch";
 import { Textarea } from "../src/components/Textarea";
@@ -106,6 +106,48 @@ describe("表单与选择器回归", () => {
     );
     fireEvent.keyDown(trigger, { key: "Enter" });
     expect(onChange).toHaveBeenLastCalledWith("a");
+  });
+
+  it("Select 同时遵守最大选择数和基于当前选择的动态禁用规则", () => {
+    /** 同一类别已有其他已选项时禁用当前候选项。 */
+    const disableDuplicateCategory = (
+      option: SelectOption<string>,
+      selectedValues: readonly string[]
+    ): boolean => {
+      const category = option.value.split(":")[0];
+      return selectedValues.some(
+        (value) => value !== option.value && value.split(":")[0] === category
+      );
+    };
+    render(
+      <Select
+        multiple
+        defaultOpen
+        defaultValue={["image:a"]}
+        maxCount={2}
+        getOptionDisabled={disableDuplicateCategory}
+        options={[
+          { value: "image:a", label: "图像 A" },
+          { value: "image:b", label: "图像 B" },
+          { value: "text:a", label: "文本 A" },
+          { value: "audio:a", label: "音频 A" },
+        ]}
+      />
+    );
+
+    const imageA = screen.getByRole("option", { name: "图像 A" }) as HTMLButtonElement;
+    const imageB = screen.getByRole("option", { name: "图像 B" }) as HTMLButtonElement;
+    const textA = screen.getByRole("option", { name: "文本 A" }) as HTMLButtonElement;
+    const audioA = screen.getByRole("option", { name: "音频 A" }) as HTMLButtonElement;
+    expect(imageA.disabled).toBe(false);
+    expect(imageB.disabled).toBe(true);
+    expect(textA.disabled).toBe(false);
+
+    fireEvent.click(textA);
+    expect(audioA.disabled).toBe(true);
+    fireEvent.click(imageA);
+    expect(imageB.disabled).toBe(false);
+    expect(audioA.disabled).toBe(false);
   });
 
   it("Cascader 分离复杂节点与已选路径渲染，并允许调整列高度", () => {

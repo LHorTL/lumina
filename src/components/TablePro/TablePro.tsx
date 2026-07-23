@@ -62,6 +62,8 @@ const TableProInner = <Row extends Record<string, any> = any>({
   tableProps,
   caption,
   onRowClick,
+  activeRowKey,
+  rowClassName,
   empty,
   ...rootProps
 }: TableProProps<Row>, ref: React.ForwardedRef<HTMLDivElement>) => {
@@ -103,6 +105,8 @@ const TableProInner = <Row extends Record<string, any> = any>({
           tableProps={tableProps}
           caption={caption}
           onRowClick={onRowClick}
+          activeRowKey={activeRowKey}
+          rowClassName={rowClassName}
           empty={empty}
           className={innerTableClassName}
           style={tableStyle}

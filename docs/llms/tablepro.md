@@ -25,6 +25,27 @@ import { TablePro } from "@fangxinyan/lumina";
 />
 ```
 
+### 当前行高亮 / 横向空态
+
+activeRowKey 只表达当前上下文，不会勾选行；横向滚动表格的 empty 会始终居中在可视区域。
+
+```tsx
+<TablePro
+  rowKey="id"
+  activeRowKey={activeRowKey}
+  rowClassName={(row) => row.status === "离线" ? "offline-row" : undefined}
+  onRowClick={(row) => setActiveRowKey(row.id)}
+  data={rows}
+  columns={columns}
+/>
+
+<TablePro
+  data={[]}
+  scroll={{ x: 1200 }}
+  empty={<Tag>当前筛选没有结果</Tag>}
+/>
+```
+
 ### 卡片行分页
 
 variant='cards' 与内置 pagination 共用 TablePro 容器背景,分页区不会单独变成另一块底色。
@@ -59,7 +80,8 @@ TablePro 直接透传 expandable 到 Table。
 
 | Prop | 类型 | 默认 | 说明 |
 | --- | --- | --- | --- |
-| ... | `TableProps` | — | 继承自 Table 全部 props (包括新的 pagination / scroll / rowSelection / expandable / filters) |
+| ... | `TableProps` | — | 继承自 Table 全部 props (包括 pagination / scroll / rowSelection / expandable / filters) |
+| activeRowKey / rowClassName | `RowKey / string | (row, index) => string` | — | 纯高亮当前行，并支持固定或按行计算的业务类名 |
 | toolbar | `ReactNode` | — | 工具栏内容 |
 | actions | `ReactNode` | — | 工具栏右侧操作 |
 | footer | `ReactNode` | — | 底部 (可选,传了会渲染在分页下方) |

@@ -36,6 +36,16 @@ export interface SplitterProps
   handleClassName?: string;
   /** 原生属性透传到拖拽手柄，可用于设置 aria-label。 */
   handleProps?: Omit<React.HTMLAttributes<HTMLDivElement>, "onPointerDown">;
+  /** 第一个面板的附加类名。 */
+  firstPaneClassName?: string;
+  /** 第一个面板的内联样式，优先级高于内部分栏尺寸样式。 */
+  firstPaneStyle?: React.CSSProperties;
+  /** 第二个面板的附加类名。 */
+  secondPaneClassName?: string;
+  /** 第二个面板的内联样式。 */
+  secondPaneStyle?: React.CSSProperties;
+  /** 自定义分隔手柄内容；传入 null 可隐藏默认握柄。 */
+  handle?: React.ReactNode;
   /** 第二个面板保留的最小尺寸。默认 24px。 */
   secondMin?: number;
   /** 可选持久化键；仅保存一个数值尺寸。 */
@@ -85,6 +95,11 @@ const SplitterBase = React.forwardRef<HTMLDivElement, SplitterProps>(({
   className = "",
   handleClassName = "",
   handleProps,
+  firstPaneClassName = "",
+  firstPaneStyle,
+  secondPaneClassName = "",
+  secondPaneStyle,
+  handle,
   secondMin = 24,
   storageKey,
   ...rest
@@ -214,6 +229,18 @@ const SplitterBase = React.forwardRef<HTMLDivElement, SplitterProps>(({
 
   const firstStyle: React.CSSProperties =
     direction === "horizontal" ? { width: current } : { height: current };
+  const {
+    className: nativeHandleClassName = "",
+    style: nativeHandleStyle,
+    children: nativeHandleChildren,
+    ...nativeHandleProps
+  } = handleProps ?? {};
+  const handleContent =
+    handle !== undefined
+      ? handle
+      : nativeHandleChildren !== undefined
+        ? nativeHandleChildren
+        : <span className="splitter-handle-grip" aria-hidden />;
 
   return (
     <div
@@ -225,11 +252,14 @@ const SplitterBase = React.forwardRef<HTMLDivElement, SplitterProps>(({
       className={`splitter ${direction} ${dragging ? "dragging" : ""} ${className}`}
       {...rest}
     >
-      <div className="splitter-panel first" style={firstStyle}>
+      <div
+        className={["splitter-panel", "first", firstPaneClassName].filter(Boolean).join(" ")}
+        style={{ ...firstStyle, ...firstPaneStyle }}
+      >
         {children[0]}
       </div>
       <div
-        {...handleProps}
+        {...nativeHandleProps}
         role="separator"
         tabIndex={0}
         aria-label={handleProps?.["aria-label"] ?? "调整分栏尺寸"}
@@ -237,16 +267,24 @@ const SplitterBase = React.forwardRef<HTMLDivElement, SplitterProps>(({
         aria-valuenow={current}
         aria-valuemin={min}
         aria-valuemax={Number.isFinite(max) ? clamp(max) : undefined}
-        className={`splitter-handle ${handleClassName}`}
+        className={["splitter-handle", handleClassName, nativeHandleClassName]
+          .filter(Boolean)
+          .join(" ")}
+        style={nativeHandleStyle}
         onPointerDown={onPointerDown}
         onKeyDown={(event) => {
           handleProps?.onKeyDown?.(event);
           if (!event.defaultPrevented) onKeyDown(event);
         }}
       >
-        <span className="splitter-handle-grip" aria-hidden />
+        {handleContent}
       </div>
-      <div className="splitter-panel second">{children[1]}</div>
+      <div
+        className={["splitter-panel", "second", secondPaneClassName].filter(Boolean).join(" ")}
+        style={secondPaneStyle}
+      >
+        {children[1]}
+      </div>
     </div>
   );
 });

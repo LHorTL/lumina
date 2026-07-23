@@ -33,6 +33,7 @@ import type {
   ListProps,
   MessageContainerProps,
   ModalProps,
+  MultiSelectProps,
   NamedIconProps,
   PaginationProps,
   ParagraphProps,
@@ -158,3 +159,30 @@ type ThemeProviderScopeControls = ThemeProviderProps extends {
 export type ThemeProviderScopeControlsSmokeResult = AssertThemeCoverage<[
   ThemeProviderScopeControls,
 ]>;
+
+/** 判断公共 Props 是否持续暴露指定能力键。 */
+type SupportsProp<T, Key extends PropertyKey> = Key extends keyof T ? true : false;
+
+/** 截图所需的组件扩展能力类型烟雾测试。 */
+type RequestedComponentCapabilityCoverage = AssertThemeCoverage<[
+  SupportsProp<TableProProps, "activeRowKey">,
+  SupportsProp<TableProProps, "rowClassName">,
+  SupportsProp<SplitterProps, "firstPaneClassName">,
+  SupportsProp<SplitterProps, "firstPaneStyle">,
+  SupportsProp<SplitterProps, "secondPaneClassName">,
+  SupportsProp<SplitterProps, "secondPaneStyle">,
+  SupportsProp<SplitterProps, "handle">,
+  SupportsProp<TabsProps, "tabBarClassName">,
+  SupportsProp<TabsProps, "contentClassName">,
+  SupportsProp<TabsProps, "fill">,
+  SupportsProp<DrawerProps, "bodyClassName">,
+  SupportsProp<DrawerProps, "bodyStyle">,
+  SupportsProp<DrawerProps, "bodyProps">,
+  SupportsProp<DrawerProps, "bodyOverflow">,
+  SupportsProp<MultiSelectProps, "maxCount">,
+  SupportsProp<MultiSelectProps, "getOptionDisabled">,
+]>;
+
+/** 防止新增公共能力在后续重构中静默丢失。 */
+export type RequestedComponentCapabilitySmokeResult =
+  RequestedComponentCapabilityCoverage;

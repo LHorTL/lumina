@@ -39,7 +39,15 @@ const SectionSplitter: React.FC<SectionCtx> = () => (
         id: "horizontal",
         title: "水平分栏",
         span: 2,
-        code: `<Splitter defaultSize={200} min={120} max={360}>
+        code: `<Splitter
+  defaultSize={200}
+  min={120}
+  max={360}
+  firstPaneClassName="workspace-sidebar-pane"
+  firstPaneStyle={{ overflow: "hidden" }}
+  secondPaneClassName="workspace-main-pane"
+  handle={<span aria-hidden>⋮</span>}
+>
   <SidePanel />
   <MainPanel />
 </Splitter>`,
@@ -52,7 +60,28 @@ const SectionSplitter: React.FC<SectionCtx> = () => (
               boxShadow: "var(--neu-shadow-panel)",
             }}
           >
-            <Splitter defaultSize={200} min={120} max={360}>
+            <Splitter
+              defaultSize={200}
+              min={120}
+              max={360}
+              firstPaneClassName="workspace-sidebar-pane"
+              firstPaneStyle={{ overflow: "hidden" }}
+              secondPaneClassName="workspace-main-pane"
+              secondPaneStyle={{ overflow: "auto" }}
+              handle={
+                <span
+                  aria-hidden
+                  style={{
+                    color: "var(--accent-ink)",
+                    fontSize: 15,
+                    lineHeight: 1,
+                    transform: "translateY(-1px)",
+                  }}
+                >
+                  ⋮
+                </span>
+              }
+            >
               <Panel bg="var(--bg-sunken)">左侧 · 可拖拽 120–360px</Panel>
               <Panel>右侧内容区 · 自适应剩余空间</Panel>
             </Splitter>
@@ -159,6 +188,9 @@ const SectionSplitter: React.FC<SectionCtx> = () => (
           { prop: "step", description: "方向键步长 (px)", type: "number", default: "16" },
           { prop: "secondMin", description: "第二面板保留的最小尺寸", type: "number", default: "24" },
           { prop: "storageKey", description: "持久化尺寸的本地存储键", type: "string" },
+          { prop: "firstPaneClassName / firstPaneStyle", description: "第一个面板的 class 与内联样式", type: "string / CSSProperties" },
+          { prop: "secondPaneClassName / secondPaneStyle", description: "第二个面板的 class 与内联样式", type: "string / CSSProperties" },
+          { prop: "handle", description: "正式的分隔手柄内容槽；null 隐藏默认握柄", type: "ReactNode" },
           { prop: "handleProps", description: "分隔手柄原生属性与 aria-label", type: "HTMLAttributes<HTMLDivElement>" },
           { prop: "children", description: "必须恰好两个子节点", type: "[ReactNode, ReactNode]", required: true },
         ],

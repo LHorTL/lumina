@@ -13,7 +13,15 @@ import { Splitter } from "@fangxinyan/lumina";
 ### 水平分栏
 
 ```tsx
-<Splitter defaultSize={200} min={120} max={360}>
+<Splitter
+  defaultSize={200}
+  min={120}
+  max={360}
+  firstPaneClassName="workspace-sidebar-pane"
+  firstPaneStyle={{ overflow: "hidden" }}
+  secondPaneClassName="workspace-main-pane"
+  handle={<span aria-hidden>⋮</span>}
+>
   <SidePanel />
   <MainPanel />
 </Splitter>
@@ -64,6 +72,9 @@ const [w, setW] = useState(220);
 | step | `number` | `16` | 方向键步长 (px) |
 | secondMin | `number` | `24` | 第二面板保留的最小尺寸 |
 | storageKey | `string` | — | 持久化尺寸的本地存储键 |
+| firstPaneClassName / firstPaneStyle | `string / CSSProperties` | — | 第一个面板的 class 与内联样式 |
+| secondPaneClassName / secondPaneStyle | `string / CSSProperties` | — | 第二个面板的 class 与内联样式 |
+| handle | `ReactNode` | — | 正式的分隔手柄内容槽；null 隐藏默认握柄 |
 | handleProps | `HTMLAttributes<HTMLDivElement>` | — | 分隔手柄原生属性与 aria-label |
 | children \* | `[ReactNode, ReactNode]` | — | 必须恰好两个子节点 |
 

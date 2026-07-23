@@ -34,7 +34,14 @@ extra 渲染到标题右边,常用来放刷新 / 更多 / 保存按钮。
 抽屉只让正文区滚动，并自动为拟态阴影留出空间；全宽内容可通过 bodyInset="none" 贴边。
 
 ```tsx
-<Drawer open={open} title="连接配置">
+<Drawer
+  open={open}
+  title="连接配置"
+  bodyClassName="connection-drawer-body"
+  bodyStyle={{ scrollBehavior: "smooth" }}
+  bodyProps={{ "data-purpose": "connection-settings" }}
+  bodyOverflow="auto"
+>
   <Card title="远程节点">无需手工补 padding 或修改 overflow。</Card>
 </Drawer>
 ```

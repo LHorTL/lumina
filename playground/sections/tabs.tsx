@@ -7,6 +7,25 @@ const PadBox: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div style={{ padding: 16, color: "var(--fg-muted)" }}>{children}</div>
 );
 
+/** 渲染足够长的内容，用于验证满高 Tabs 的独立正文滚动。 */
+const ScrollableSettings: React.FC<{ prefix: string }> = ({ prefix }) => (
+  <div style={{ display: "grid", gap: 10, padding: "var(--gap-2) var(--gap-1)" }}>
+    {Array.from({ length: 12 }, (_, index) => (
+      <div
+        key={index}
+        style={{
+          padding: "10px 12px",
+          borderRadius: "var(--r-sm)",
+          background: "var(--bg-sunken)",
+          color: "var(--fg-muted)",
+        }}
+      >
+        {prefix} · 设置项 {index + 1}
+      </div>
+    ))}
+  </div>
+);
+
 const SectionTabs: React.FC<SectionCtx> = () => (
   <DocPage
     whenToUse={<p>同一层级的内容分组,通过标签切换。</p>}
@@ -48,6 +67,44 @@ const SectionTabs: React.FC<SectionCtx> = () => (
         ),
       },
       {
+        id: "fill-scroll",
+        title: "满高布局 / 正文独立滚动",
+        span: 2,
+        description: "fill 让 Tabs 占满父容器，标签条保持固定，只有 tabs-content 滚动；两个 className 可定向接入业务布局。",
+        code: `<div style={{ height: 260 }}>
+  <Tabs
+    fill
+    tabBarClassName="workspace-tabs-bar"
+    contentClassName="workspace-tabs-content"
+    items={[
+      { key: "general", label: "通用", content: <LongSettings /> },
+      { key: "advanced", label: "高级", content: <LongSettings /> },
+    ]}
+  />
+</div>`,
+        render: () => (
+          <div
+            style={{
+              height: 260,
+              overflow: "hidden",
+              padding: 14,
+              borderRadius: "var(--r-lg)",
+              boxShadow: "var(--neu-shadow-inset)",
+            }}
+          >
+            <Tabs
+              fill
+              tabBarClassName="workspace-tabs-bar"
+              contentClassName="workspace-tabs-content"
+              items={[
+                { key: "general", label: "通用", content: <ScrollableSettings prefix="通用" /> },
+                { key: "advanced", label: "高级", content: <ScrollableSettings prefix="高级" /> },
+              ]}
+            />
+          </div>
+        ),
+      },
+      {
         id: "centered",
         title: "居中对齐",
         span: 2,
@@ -85,6 +142,9 @@ const SectionTabs: React.FC<SectionCtx> = () => (
           { prop: "onChange", description: "切换", type: "(key: string) => void" },
           { prop: "variant", description: "样式", type: `"line" | "pill" | "segmented"`, default: `"line"` },
           { prop: "centered", description: "标签条居中对齐", type: "boolean", default: "false" },
+          { prop: "tabBarClassName", description: "标签条容器的附加类名", type: "string" },
+          { prop: "contentClassName", description: "正文容器的附加类名", type: "string" },
+          { prop: "fill", description: "占满父容器，并让正文区域独立滚动", type: "boolean", default: "false" },
         ],
       },
     ]}

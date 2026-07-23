@@ -27,6 +27,23 @@ multiple + Tag 形式呈现已选项。
 <Select multiple clearable value={tags} onChange={setTags} options={...} />
 ```
 
+### 数量上限 / 分类限选
+
+maxCount 限制总数；getOptionDisabled 可读取当前选择，实现“一类最多选一个”。
+
+```tsx
+<Select
+  multiple
+  maxCount={2}
+  value={values}
+  onChange={setValues}
+  getOptionDisabled={(option, selectedValues) =>
+    hasOtherSelectionInCategory(option, selectedValues)
+  }
+  options={groupedOptions}
+/>
+```
+
 ### 搜索过滤
 
 searchable + clearable + 选项 icon/description。icon 支持 IconName 或 ReactNode。
@@ -108,6 +125,8 @@ loading 时显示 spinner,emptyContent 自定义空态。
 | placeholder | `string` | `"请选择…"` | 空选择时的提示文本 |
 | multiple | `boolean` | `false` | 多选 |
 | maxTagCount | `number` | — | 多选时显示的标签数(超出折叠 +N) |
+| maxCount | `number` | — | 多选允许的最大选择数；达到上限后禁用未选项 |
+| getOptionDisabled | `(option, selectedValues) => boolean` | — | 基于候选项和当前选择动态判断禁用状态 |
 | searchable | `boolean` | `false` | 可搜索 |
 | showSearch | `boolean` | `false` | searchable 的等价别名 |
 | filterOption | `(input, option) => boolean` | — | 自定义过滤 |

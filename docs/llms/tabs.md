@@ -25,6 +25,24 @@ import { Tabs } from "@fangxinyan/lumina";
 <Tabs variant="line" items={[...]} />
 ```
 
+### 满高布局 / 正文独立滚动
+
+fill 让 Tabs 占满父容器，标签条保持固定，只有 tabs-content 滚动；两个 className 可定向接入业务布局。
+
+```tsx
+<div style={{ height: 260 }}>
+  <Tabs
+    fill
+    tabBarClassName="workspace-tabs-bar"
+    contentClassName="workspace-tabs-content"
+    items={[
+      { key: "general", label: "通用", content: <LongSettings /> },
+      { key: "advanced", label: "高级", content: <LongSettings /> },
+    ]}
+  />
+</div>
+```
+
 ### 居中对齐
 
 centered 让标签条在容器中水平居中。
@@ -44,6 +62,9 @@ centered 让标签条在容器中水平居中。
 | onChange | `(key: string) => void` | — | 切换 |
 | variant | `"line" | "pill" | "segmented"` | `"line"` | 样式 |
 | centered | `boolean` | `false` | 标签条居中对齐 |
+| tabBarClassName | `string` | — | 标签条容器的附加类名 |
+| contentClassName | `string` | — | 正文容器的附加类名 |
+| fill | `boolean` | `false` | 占满父容器，并让正文区域独立滚动 |
 
 
 ---

@@ -96,7 +96,14 @@ const SectionDrawer: React.FC<SectionCtx> = () => {
           id: "shadow-safe-area",
           title: "拟态阴影安全区",
           description: "抽屉只让正文区滚动，并自动为拟态阴影留出空间；全宽内容可通过 bodyInset=\"none\" 贴边。",
-          code: `<Drawer open={open} title="连接配置">
+          code: `<Drawer
+  open={open}
+  title="连接配置"
+  bodyClassName="connection-drawer-body"
+  bodyStyle={{ scrollBehavior: "smooth" }}
+  bodyProps={{ "data-purpose": "connection-settings" }}
+  bodyOverflow="auto"
+>
   <Card title="远程节点">无需手工补 padding 或修改 overflow。</Card>
 </Drawer>`,
           render: () => {
@@ -108,6 +115,10 @@ const SectionDrawer: React.FC<SectionCtx> = () => {
                   open={open}
                   onClose={() => setOpen(false)}
                   title="连接配置"
+                  bodyClassName="connection-drawer-body"
+                  bodyStyle={{ scrollBehavior: "smooth" }}
+                  bodyProps={{ "data-purpose": "connection-settings" }}
+                  bodyOverflow="auto"
                   footer={<Button variant="primary" onClick={() => setOpen(false)}>完成</Button>}
                 >
                   <Card

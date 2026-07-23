@@ -12,6 +12,7 @@ import { Spin } from "../src/components/Spin";
 import { Splitter } from "../src/components/Splitter";
 import { StatusBar } from "../src/components/StatusBar";
 import { Table } from "../src/components/Table";
+import { TablePro } from "../src/components/TablePro";
 import { Tag } from "../src/components/Tag";
 import { Timeline } from "../src/components/Timeline";
 
@@ -68,6 +69,39 @@ describe("display component regressions", () => {
     }));
   });
 
+  it("highlights the active TablePro row without selecting it and keeps an empty slot inside the horizontal viewport", () => {
+    const rows = [
+      { id: "a", name: "Alpha" },
+      { id: "b", name: "Beta" },
+    ];
+    /** 为指定数据行提供稳定的业务类名。 */
+    const resolveRowClassName = (row: (typeof rows)[number]): string => `row-${row.id}`;
+    const { container } = render(
+      <>
+        <TablePro
+          rowKey="id"
+          columns={[{ key: "name", title: "Name", dataIndex: "name" }]}
+          data={rows}
+          activeRowKey="b"
+          rowClassName={resolveRowClassName}
+        />
+        <Table
+          columns={[{ key: "name", title: "Name", dataIndex: "name" }]}
+          data={[]}
+          scroll={{ x: 720 }}
+          empty="没有匹配项"
+        />
+      </>
+    );
+
+    const activeRow = container.querySelectorAll<HTMLTableRowElement>(".table-card tbody tr")[1];
+    expect(activeRow.classList.contains("active-row")).toBe(true);
+    expect(activeRow.classList.contains("row-b")).toBe(true);
+    expect(activeRow.getAttribute("aria-current")).toBe("true");
+    expect(activeRow.hasAttribute("aria-selected")).toBe(false);
+    expect(container.querySelector(".table-wrap.scroll-x .table-empty-content")?.textContent).toBe("没有匹配项");
+  });
+
   it("supports non-draggable title bars and nested accessible sidebars", () => {
     const onExpandedKeysChange = vi.fn();
     render(
@@ -122,7 +156,17 @@ describe("display component regressions", () => {
     const onResizeEnd = vi.fn();
     render(
       <div style={{ width: 400, height: 200 }}>
-        <Splitter defaultSize={80} min={80} onResizeEnd={onResizeEnd} storageKey="test">
+        <Splitter
+          defaultSize={80}
+          min={80}
+          onResizeEnd={onResizeEnd}
+          storageKey="test"
+          firstPaneClassName="primary-pane"
+          firstPaneStyle={{ overflow: "hidden" }}
+          secondPaneClassName="secondary-pane"
+          secondPaneStyle={{ overflow: "visible" }}
+          handle={<span data-testid="custom-splitter-handle">⋮</span>}
+        >
           <div>A</div>
           <div>B</div>
         </Splitter>
@@ -134,6 +178,11 @@ describe("display component regressions", () => {
     fireEvent.keyDown(separator, { key: "ArrowRight" });
     expect(onResizeEnd).toHaveBeenCalledWith(96);
     expect(window.localStorage.getItem("lumina:splitter:v1:test")).toBe("96");
+    expect(document.querySelector<HTMLElement>(".splitter-panel.first")?.classList.contains("primary-pane")).toBe(true);
+    expect(document.querySelector<HTMLElement>(".splitter-panel.first")?.style.overflow).toBe("hidden");
+    expect(document.querySelector<HTMLElement>(".splitter-panel.second")?.classList.contains("secondary-pane")).toBe(true);
+    expect(document.querySelector<HTMLElement>(".splitter-panel.second")?.style.overflow).toBe("visible");
+    expect(screen.getByTestId("custom-splitter-handle")).not.toBeNull();
   });
 
   it("forwards clickable status item attributes", () => {

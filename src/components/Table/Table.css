@@ -4,6 +4,7 @@
   background: var(--lmn-table-bg, var(--bg));
   box-shadow: var(--lmn-table-neu-shadow-inset, var(--neu-shadow-inset));
   overflow: auto;
+  container-type: inline-size;
 }
 /* When scroll=y is on, the wrap itself becomes the scroll region. */
 .table-wrap.scroll-y { overflow-y: auto; }
@@ -72,6 +73,10 @@
 .table.striped tbody tr:nth-child(even) td {
   background: color-mix(in oklch, var(--lmn-table-bg-sunken, var(--bg-sunken)) 40%, transparent);
 }
+.table:not(.cards) tbody tr.active-row td {
+  background: color-mix(in oklch, var(--lmn-table-accent-soft, var(--accent-soft)) 72%, transparent);
+  color: var(--lmn-table-accent-ink, var(--accent-ink));
+}
 
 /* Embossed: each row sits on the surface */
 .table.embossed { border-spacing: 0; }
@@ -128,11 +133,33 @@
 }
 .table.cards.hoverable tbody tr:hover .card-row-surface { box-shadow: var(--lmn-table-neu-shadow-panel, var(--neu-shadow-panel)); }
 .table.cards.hoverable tbody tr:hover td { background: transparent; }
+.table.cards tbody tr.active-row .card-row-surface {
+  box-shadow:
+    var(--lmn-table-neu-shadow-control, var(--neu-shadow-control)),
+    inset 0 0 0 2px var(--lmn-table-accent-glow, var(--accent-glow));
+}
+.table.cards tbody tr.active-row td {
+  color: var(--lmn-table-accent-ink, var(--accent-ink));
+}
 
 .table .row-check { width: 44px; }
 .table .row-check .checkbox { display: inline-flex; }
 .table .row-expand { width: 40px; text-align: center; }
-.table-empty { padding: 60px 20px; text-align: center; color: var(--lmn-table-fg-muted, var(--fg-muted)); }
+.table .table-empty {
+  padding: 0;
+  color: var(--lmn-table-fg-muted, var(--fg-muted));
+}
+.table-empty-content {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 60px 20px;
+  text-align: center;
+}
+.table-wrap.scroll-x .table-empty-content {
+  position: sticky;
+  left: 0;
+  width: 100cqi;
+}
 
 /* Expand button */
 .expand-btn {
