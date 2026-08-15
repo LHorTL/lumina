@@ -27,6 +27,8 @@ export interface SelectOption<T extends string | number = string> {
   description?: React.ReactNode;
   /** Leading icon. Accepts a built-in icon name or custom React node. */
   icon?: IconSlot;
+  /** 选项尾部的独立内容或操作，例如收藏按钮。 */
+  extra?: React.ReactNode;
   disabled?: boolean;
 }
 
@@ -34,6 +36,8 @@ export interface SelectOptionGroup<T extends string | number = string> {
   /** Group heading. */
   label: React.ReactNode;
   options: SelectOption<T>[];
+  /** 是否稳定提升到菜单顶部。 */
+  pinned?: boolean;
 }
 
 export type SelectItem<T extends string | number = string> =
@@ -49,6 +53,12 @@ export interface SelectOptionRenderInfo {
   index: number;
   selected: boolean;
   active: boolean;
+}
+
+/** 自定义选项尾部内容时可用的置顶与禁用状态。 */
+export interface SelectOptionExtraRenderInfo extends SelectOptionRenderInfo {
+  disabled: boolean;
+  groupPinned: boolean;
 }
 
 /** 自定义已选内容渲染时可用的状态。 */
@@ -97,6 +107,8 @@ interface BaseSelectProps<T extends string | number = string>
   emptyContent?: React.ReactNode;
   /** 自定义菜单内的完整选项内容；选择标记仍由 Select 负责。 */
   optionRender?: (option: SelectOption<T>, info: SelectOptionRenderInfo) => React.ReactNode;
+  /** 自定义选项尾部的独立内容或操作；不会触发该选项的选择行为。 */
+  optionExtraRender?: (option: SelectOption<T>, info: SelectOptionExtraRenderInfo) => React.ReactNode;
   /** 自定义触发器中的紧凑已选内容，避免复用复杂的 option 内容。 */
   selectedRender?: (option: SelectOption<T>, info: SelectSelectedRenderInfo<T>) => React.ReactNode;
   /** 菜单选项滚动区域的最大高度。 */
@@ -146,6 +158,19 @@ export type SelectProps<T extends string | number = string> =
 
 const flatten = <T extends string | number>(items: SelectItem<T>[]): SelectOption<T>[] =>
   items.flatMap((it) => (isGroup(it) ? it.options : [it]));
+
+/** 将置顶分组稳定提升到菜单首部，其他项目继续保持原始顺序。 */
+const prioritizePinnedGroups = <T extends string | number>(
+  items: SelectItem<T>[]
+): SelectItem<T>[] => {
+  const pinnedGroups: SelectOptionGroup<T>[] = [];
+  const remainingItems: SelectItem<T>[] = [];
+  items.forEach((item) => {
+    if (isGroup(item) && item.pinned) pinnedGroups.push(item);
+    else remainingItems.push(item);
+  });
+  return pinnedGroups.length > 0 ? [...pinnedGroups, ...remainingItems] : items;
+};
 
 const defaultFilter = <T extends string | number>(
   input: string,
@@ -198,6 +223,7 @@ const SelectInner = <T extends string | number = string>(
     loading,
     emptyContent,
     optionRender,
+    optionExtraRender,
     selectedRender,
     listHeight = 260,
     popupStyle,
@@ -366,7 +392,11 @@ const SelectInner = <T extends string | number = string>(
   }, [open, mergedSearchable]);
 
   // Filter options
-  const allFlat = React.useMemo(() => flatten(options), [options]);
+  const orderedItems = React.useMemo(
+    () => prioritizePinnedGroups(options),
+    [options]
+  );
+  const allFlat = React.useMemo(() => flatten(orderedItems), [orderedItems]);
   const filteredFlat = React.useMemo(() => {
     if (!query.trim()) return allFlat;
     if (filterOption === false) return allFlat;
@@ -380,17 +410,19 @@ const SelectInner = <T extends string | number = string>(
 
   // Re-bucket into groups respecting filter (for menu rendering)
   const filteredItems = React.useMemo<SelectItem<T>[]>(() => {
-    if (!query.trim()) return options;
-    return options
+    if (!query.trim()) {
+      return orderedItems.filter((item) => !isGroup(item) || item.options.length > 0);
+    }
+    return orderedItems
       .map((it) => {
         if (!isGroup(it)) {
           return filteredFlat.includes(it) ? it : null;
         }
         const kept = it.options.filter((o) => filteredFlat.includes(o));
-        return kept.length ? { label: it.label, options: kept } : null;
+        return kept.length ? { ...it, options: kept } : null;
       })
       .filter((x): x is SelectItem<T> => x !== null);
-  }, [options, filteredFlat, query]);
+  }, [orderedItems, filteredFlat, query]);
 
   React.useEffect(() => {
     setActiveIdx((current) => {
@@ -545,53 +577,83 @@ const SelectInner = <T extends string | number = string>(
 
   // Render an option button
   let renderIdx = -1;
-  const renderOption = (o: SelectOption<T>) => {
+  const renderOption = (o: SelectOption<T>, groupPinned = false) => {
     renderIdx += 1;
     const idx = renderIdx;
     const sel = isSelected(o.value);
     const active = idx === activeIdx;
     const optionDisabled = isOptionDisabled(o);
+    const renderInfo: SelectOptionExtraRenderInfo = {
+      index: idx,
+      selected: sel,
+      active,
+      disabled: optionDisabled,
+      groupPinned,
+    };
+    const extraContent = optionExtraRender
+      ? optionExtraRender(o, renderInfo)
+      : o.extra;
+    const hasExtra = extraContent !== null && extraContent !== undefined && extraContent !== false;
     return (
-      <button
+      <div
         key={String(o.value)}
-        id={`${listboxId}-option-${idx}`}
-        type="button"
-        role="option"
-        aria-selected={sel}
-        aria-label={getOptionAriaLabel(o)}
-        disabled={optionDisabled}
-        className={`menu-item ${sel ? "active" : ""} ${active ? "highlight" : ""}`}
+        role="presentation"
+        className={`menu-item-row ${sel ? "active" : ""} ${active ? "highlight" : ""} ${optionDisabled ? "disabled" : ""}`}
         onMouseEnter={() => {
           if (!optionDisabled) setActiveIdx(idx);
         }}
-        onClick={() => (isMulti ? toggleMulti(o) : pickSingle(o))}
       >
-        {isMulti && (
-          <span className={`menu-check ${sel ? "on" : ""}`} aria-hidden>
-            {sel && <Icon name="check" size={11} stroke={3} />}
-          </span>
-        )}
-        {optionRender ? (
-          <span className="menu-item-custom">
-            {optionRender(o, { index: idx, selected: sel, active })}
-          </span>
-        ) : (
-          <>
-            {renderIconSlot(o.icon, { size: 14, className: "menu-item-icon" })}
-            <span className="menu-item-body">
-              <span className="menu-item-label">{o.label}</span>
-              {o.description && <span className="menu-item-desc">{o.description}</span>}
+        <button
+          id={`${listboxId}-option-${idx}`}
+          type="button"
+          role="option"
+          aria-selected={sel}
+          aria-label={getOptionAriaLabel(o)}
+          disabled={optionDisabled}
+          className={`menu-item ${sel ? "active" : ""} ${active ? "highlight" : ""}`}
+          onClick={() => (isMulti ? toggleMulti(o) : pickSingle(o))}
+        >
+          {isMulti && (
+            <span className={`menu-check ${sel ? "on" : ""}`} aria-hidden>
+              {sel && <Icon name="check" size={11} stroke={3} />}
             </span>
-          </>
-        )}
-        {!isMulti && (
-          <span className="tick">
-            <Icon name="check" size={12} stroke={3} />
-          </span>
-        )}
-      </button>
+          )}
+          {optionRender ? (
+            <span className="menu-item-custom">
+              {optionRender(o, renderInfo)}
+            </span>
+          ) : (
+            <>
+              {renderIconSlot(o.icon, { size: 14, className: "menu-item-icon" })}
+              <span className="menu-item-body">
+                <span className="menu-item-label">{o.label}</span>
+                {o.description && <span className="menu-item-desc">{o.description}</span>}
+              </span>
+            </>
+          )}
+          {!isMulti && (
+            <span className="tick">
+              <Icon name="check" size={12} stroke={3} />
+            </span>
+          )}
+        </button>
+        {hasExtra && <span className="menu-item-extra">{extraContent}</span>}
+      </div>
     );
   };
+
+  /** 按当前可见顺序渲染分组与普通选项。 */
+  const renderMenuItems = (items: SelectItem<T>[]): React.ReactNode =>
+    items.map((item, groupIndex) =>
+      isGroup(item) ? (
+        <React.Fragment key={`g-${groupIndex}-${item.pinned ? "pinned" : "regular"}`}>
+          <div className="menu-group-label">{item.label}</div>
+          {item.options.map((option) => renderOption(option, !!item.pinned))}
+        </React.Fragment>
+      ) : (
+        renderOption(item)
+      )
+    );
 
   return (
     <div
@@ -708,25 +770,14 @@ const SelectInner = <T extends string | number = string>(
                 </span>
                 <span>加载中...</span>
               </div>
-            ) : filteredItems.length === 0 ? (
+            ) : filteredFlat.length === 0 ? (
               <div className="menu-state">
                 <span className="menu-state-ico">
                   <Icon name="search" size={16} />
                 </span>
                 <span>{emptyContent ?? "暂无匹配项"}</span>
               </div>
-            ) : (
-              filteredItems.map((it, gi) =>
-                isGroup(it) ? (
-                  <React.Fragment key={`g-${gi}`}>
-                    <div className="menu-group-label">{it.label}</div>
-                    {it.options.map(renderOption)}
-                  </React.Fragment>
-                ) : (
-                  renderOption(it)
-                )
-              )
-            )}
+            ) : renderMenuItems(filteredItems)}
           </div>
           </div>,
           portalContainer

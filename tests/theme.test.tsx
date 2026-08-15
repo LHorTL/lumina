@@ -188,6 +188,41 @@ describe("ThemeProvider", () => {
     expect(target.style.getPropertyValue("--custom-slot")).toBe("");
   });
 
+  it("ThemeProvider 派生的浅色与深色主题使用收紧后的拟态阴影尺寸", () => {
+    const target = document.createElement("div");
+
+    applyTheme(target, { mode: "light" });
+    expect(target.style.getPropertyValue("--shadow-offset")).toBe(
+      "calc(5px * var(--d) * var(--shadow-scale))"
+    );
+    expect(target.style.getPropertyValue("--shadow-blur")).toBe(
+      "calc(12px * var(--d) * var(--shadow-scale))"
+    );
+    expect(target.style.getPropertyValue("--shadow-inset-offset")).toBe(
+      "calc(3px * var(--d) * var(--shadow-scale))"
+    );
+    expect(target.style.getPropertyValue("--shadow-inset-blur")).toBe(
+      "calc(8px * var(--d) * var(--shadow-scale))"
+    );
+    expect(target.style.getPropertyValue("--neu-shadow-subtle")).toContain(
+      ".75px .75px 1.5px"
+    );
+
+    applyTheme(target, { mode: "dark" });
+    expect(target.style.getPropertyValue("--shadow-offset")).toBe(
+      "calc(3px * var(--d) * var(--shadow-scale))"
+    );
+    expect(target.style.getPropertyValue("--shadow-blur")).toBe(
+      "calc(8px * var(--d) * var(--shadow-scale))"
+    );
+    expect(target.style.getPropertyValue("--shadow-inset-offset")).toBe(
+      "calc(2px * var(--d) * var(--shadow-scale))"
+    );
+    expect(target.style.getPropertyValue("--shadow-inset-blur")).toBe(
+      "calc(5px * var(--d) * var(--shadow-scale))"
+    );
+  });
+
   it("用版本化结构保存主题并兼容旧格式", async () => {
     localStorage.setItem("theme:legacy", JSON.stringify({ mode: "dark" }));
     render(

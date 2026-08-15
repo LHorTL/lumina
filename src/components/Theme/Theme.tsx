@@ -611,10 +611,10 @@ export function visualThemeToStyle(
   const dark = snapshot.colorScheme === "dark";
 
   style[variable("d")] = String(d);
-  style[variable("shadow-offset")] = `calc(${dark ? 4 : 6}px * ${reference("d")} * ${inheritedReference("shadow-scale")})`;
-  style[variable("shadow-blur")] = `calc(${dark ? 10 : 16}px * ${reference("d")} * ${inheritedReference("shadow-scale")})`;
-  style[variable("shadow-inset-offset")] = `calc(${dark ? 3 : 4}px * ${reference("d")} * ${inheritedReference("shadow-scale")})`;
-  style[variable("shadow-inset-blur")] = `calc(${dark ? 7 : 10}px * ${reference("d")} * ${inheritedReference("shadow-scale")})`;
+  style[variable("shadow-offset")] = `calc(${dark ? 3 : 5}px * ${reference("d")} * ${inheritedReference("shadow-scale")})`;
+  style[variable("shadow-blur")] = `calc(${dark ? 8 : 12}px * ${reference("d")} * ${inheritedReference("shadow-scale")})`;
+  style[variable("shadow-inset-offset")] = `calc(${dark ? 2 : 3}px * ${reference("d")} * ${inheritedReference("shadow-scale")})`;
+  style[variable("shadow-inset-blur")] = `calc(${dark ? 5 : 8}px * ${reference("d")} * ${inheritedReference("shadow-scale")})`;
   style[variable("neu-shadow-panel")] =
     `${reference("shadow-offset")} ${reference("shadow-offset")} ${reference("shadow-blur")} ${reference("shadow-dark")}, ` +
     `calc(${reference("shadow-offset")} * -1) calc(${reference("shadow-offset")} * -1) ${reference("shadow-blur")} ${reference("shadow-light")}`;
@@ -631,7 +631,7 @@ export function visualThemeToStyle(
     `inset calc(${reference("shadow-inset-offset")} * .6) calc(${reference("shadow-inset-offset")} * .6) calc(${reference("shadow-inset-blur")} * .6) ${reference("shadow-dark")}, ` +
     `inset calc(${reference("shadow-inset-offset")} * -.6) calc(${reference("shadow-inset-offset")} * -.6) calc(${reference("shadow-inset-blur")} * .6) ${reference("shadow-light")}`;
   style[variable("neu-shadow-subtle")] =
-    `1px 1px 2px ${reference("shadow-dark")}, -1px -1px 2px ${reference("shadow-light")}`;
+    `.75px .75px 1.5px ${reference("shadow-dark")}, -.75px -.75px 1.5px ${reference("shadow-light")}`;
   style[variable("neu-shadow-float")] =
     `0 calc(${reference("shadow-offset")} * 1.8 * ${inheritedReference("shadow-float-scale")}) calc(${reference("shadow-blur")} * 2.2 * ${inheritedReference("shadow-float-scale")}) ${reference("shadow-dark")}, ` +
     `0 calc(${reference("shadow-offset")} * .4 * ${inheritedReference("shadow-float-scale")}) calc(${reference("shadow-blur")} * .7 * ${inheritedReference("shadow-float-scale")}) ${reference("shadow-dark")}`;

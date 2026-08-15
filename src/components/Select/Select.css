@@ -220,6 +220,30 @@
   min-width: 0;
   text-align: left;
 }
+.menu-item-row {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  border-radius: var(--r-sm);
+  transition: all var(--dur-fast) var(--ease);
+}
+.menu-item-row > .menu-item {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+}
+.menu-item-extra {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0 8px 0 2px;
+  color: var(--lmn-select-fg-subtle, var(--fg-subtle));
+}
+.menu-item-extra:focus-within,
+.menu-item-extra:hover {
+  color: var(--lmn-select-accent-ink, var(--accent-ink));
+}
 .menu-item-label {
   white-space: nowrap;
   overflow: hidden;
@@ -234,14 +258,18 @@
 }
 .menu-item.active .menu-item-desc { color: color-mix(in oklch, var(--lmn-select-accent-ink, var(--accent-ink)) 70%, var(--lmn-select-fg-subtle, var(--fg-subtle))); }
 
-/* Keyboard / hover highlight — soft raised pill */
-.menu-item.highlight:not([disabled]) {
+/* Keyboard / hover highlight — inset styling stays inside the scrollport edge. */
+.menu-item-row.highlight:not(.disabled) {
   background: var(--lmn-select-bg, var(--bg));
-  box-shadow: var(--lmn-select-neu-shadow-control, var(--neu-shadow-control));
+  box-shadow: var(--lmn-select-neu-shadow-inset, var(--neu-shadow-inset));
+}
+.menu-item-row.highlight:not(.disabled) .menu-item {
   color: var(--lmn-select-accent-ink, var(--accent-ink));
 }
-.menu-item[disabled] {
+.menu-item-row.disabled {
   opacity: 0.45;
+}
+.menu-item-row.disabled .menu-item {
   cursor: not-allowed;
 }
 
@@ -277,7 +305,8 @@
   width: 100%;
   text-align: left;
 }
-.menu-item:hover { background: var(--lmn-select-bg, var(--bg)); box-shadow: var(--lmn-select-neu-shadow-subtle, var(--neu-shadow-subtle)); color: var(--lmn-select-accent-ink, var(--accent-ink)); }
+.menu-item-row:hover:not(.disabled) { background: var(--lmn-select-bg, var(--bg)); box-shadow: var(--lmn-select-neu-shadow-inset, var(--neu-shadow-inset)); }
+.menu-item-row:hover:not(.disabled) .menu-item { color: var(--lmn-select-accent-ink, var(--accent-ink)); }
 .menu-item.active { color: var(--lmn-select-accent-ink, var(--accent-ink)); font-weight: 500; }
 .menu-item .tick { margin-left: auto; color: var(--lmn-select-accent, var(--accent)); opacity: 0; }
 .menu-item.active .tick { opacity: 1; }

@@ -32,6 +32,9 @@
   flex-shrink: 0;
   transition: all var(--dur) var(--ease);
 }
+.switch.invalid .switch-track {
+  box-shadow: var(--lmn-switch-neu-shadow-inset, var(--neu-shadow-inset)), 0 0 0 2px color-mix(in oklch, var(--lmn-switch-danger, var(--danger)) 30%, transparent);
+}
 .switch.sm { --w: 36px; --h: 20px; }
 .switch.lg { --w: 58px; --h: 32px; }
 /* When checkedChildren / unCheckedChildren are present, widen the track to fit. */

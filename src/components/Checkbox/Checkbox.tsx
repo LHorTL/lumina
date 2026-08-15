@@ -24,6 +24,8 @@ export interface CheckboxProps
   required?: boolean;
   /** 关联的原生 form 元素 id。 */
   form?: string;
+  /** 是否显示错误态，可由 Form.Item 自动注入。 */
+  invalid?: boolean;
 }
 
 /** `Checkbox` — binary choice, supports indeterminate state. */
@@ -40,6 +42,7 @@ const CheckboxBase = React.forwardRef<HTMLLabelElement, CheckboxProps>(({
   value: formValue,
   required,
   form,
+  invalid = false,
   "aria-label": ariaLabel,
   "aria-labelledby": ariaLabelledBy,
   "aria-describedby": ariaDescribedBy,
@@ -67,6 +70,7 @@ const CheckboxBase = React.forwardRef<HTMLLabelElement, CheckboxProps>(({
     value && "checked",
     indeterminate && "indeterminate",
     disabled && "disabled",
+    invalid && "invalid",
     className,
   ]
     .filter(Boolean)

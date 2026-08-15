@@ -27,6 +27,8 @@ export interface SwitchProps
   required?: boolean;
   /** 关联的原生 form 元素 id。 */
   form?: string;
+  /** 是否显示错误态，可由 Form.Item 自动注入。 */
+  invalid?: boolean;
 }
 
 /**
@@ -47,6 +49,7 @@ const SwitchBase = React.forwardRef<HTMLLabelElement, SwitchProps>(({
   value: formValue,
   required,
   form,
+  invalid = false,
   "aria-label": ariaLabel,
   "aria-labelledby": ariaLabelledBy,
   "aria-describedby": ariaDescribedBy,
@@ -70,6 +73,7 @@ const SwitchBase = React.forwardRef<HTMLLabelElement, SwitchProps>(({
     value && "on",
     size !== "md" && size,
     disabled && "disabled",
+    invalid && "invalid",
     hasChildren && "with-children",
     className,
   ]

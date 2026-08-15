@@ -16,15 +16,31 @@ import { Switch } from "@fangxinyan/lumina";
 <Switch checked={v} onChange={setV} label="开启通知" />
 ```
 
-### 原生表单
+### Lumina 表单校验
 
-开启后按 name / value 参与原生表单提交，required 可交给浏览器校验。
+通过 Form.Item 与 message 提供一致的组件反馈，不再触发浏览器原生 required 气泡。name / value 仍会透传到真实 checkbox。
 
 ```tsx
-<form onSubmit={(event) => event.preventDefault()}>
-  <Switch name="notifications" value="enabled" required label="开启通知" />
+<Form
+  layout="inline"
+  onFinish={() => message.success({ key: "switch-validation", content: "通知已开启" })}
+  onFinishFailed={() => message.warning({ key: "switch-validation", content: "请先开启通知" })}
+>
+  <Form.Item
+    name="notifications"
+    valuePropName="checked"
+    rules={[{
+      required: true,
+      message: "请开启通知",
+      validator: (_rule, checked) => checked
+        ? Promise.resolve()
+        : Promise.reject(new Error("请开启通知")),
+    }]}
+  >
+    <Switch name="notifications" value="enabled" label="开启通知" />
+  </Form.Item>
   <Button type="submit">验证提交</Button>
-</form>
+</Form>
 ```
 
 ### 尺寸
@@ -66,6 +82,7 @@ checkedChildren / unCheckedChildren 在轨道内显示简短文字(如 ON/OFF)�
 | size | `"sm" | "md"` | `"md"` | 尺寸 |
 | name / value | `string` | — | 原生表单字段名与开启时提交的值 |
 | required / form | `boolean / string` | — | 原生必填约束与关联 form id |
+| invalid | `boolean` | `false` | 错误态，可由 Form.Item 自动注入 |
 | disabled | `boolean` | `false` | 禁用 |
 
 

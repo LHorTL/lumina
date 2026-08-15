@@ -13,7 +13,7 @@ import { Form } from "../src/components/Form";
 import { Input } from "../src/components/Input";
 import { InputNumber } from "../src/components/InputNumber";
 import { Radio, RadioGroup } from "../src/components/Radio";
-import { Select, type SelectOption } from "../src/components/Select";
+import { Select, type SelectItem, type SelectOption } from "../src/components/Select";
 import { Slider } from "../src/components/Slider";
 import { Switch } from "../src/components/Switch";
 import { Textarea } from "../src/components/Textarea";
@@ -62,7 +62,13 @@ describe("表单与选择器回归", () => {
         listHeight={420}
         popupStyle={{ minWidth: 480 }}
         options={[
-          { value: "pro", label: "专业方案", text: "专业方案", ariaLabel: "专业方案可访问名称" },
+          {
+            value: "pro",
+            label: "专业方案",
+            text: "专业方案",
+            ariaLabel: "专业方案可访问名称",
+            extra: <span data-testid="static-option-extra">常用</span>,
+          },
           { value: "team", label: "团队方案", text: "团队方案", ariaLabel: "团队方案可访问名称" },
         ]}
         optionRender={(option) => <span data-testid={`option-${option.value}`}>复杂内容 · {option.label}</span>}
@@ -72,10 +78,106 @@ describe("表单与选择器回归", () => {
 
     expect(screen.getByTestId("selected-plan").textContent).toBe("已选：专业方案");
     expect(screen.getByTestId("option-pro").textContent).toBe("复杂内容 · 专业方案");
+    expect(screen.getByTestId("static-option-extra").textContent).toBe("常用");
     expect(document.querySelector<HTMLElement>(".menu-options")?.style.maxHeight).toBe("420px");
     expect(document.querySelector<HTMLElement>(".menu")?.style.minWidth).toBe("480px");
     fireEvent.click(screen.getByRole("option", { name: "团队方案可访问名称" }));
     expect(screen.getByTestId("selected-plan").textContent).toBe("已选：团队方案");
+  });
+
+  it("Select 将置顶项提升到菜单首部，且额外操作不会触发选择", () => {
+    const onChange = vi.fn();
+
+    /** 用受控收藏状态更新选项的置顶标记。 */
+    const FavoriteSelect: React.FC = () => {
+      const [favoriteValues, setFavoriteValues] = React.useState<string[]>(["b"]);
+      const options = React.useMemo<SelectItem<string>[]>(
+        () => {
+          const allOptions: SelectOption<string>[] = [
+            { value: "c", label: "C" },
+            { value: "a", label: "A" },
+            { value: "b", label: "B" },
+          ];
+          return [
+            {
+              label: "其他",
+              options: allOptions.filter((option) => !favoriteValues.includes(option.value)),
+            },
+            {
+              label: "已收藏",
+              pinned: true,
+              options: allOptions.filter((option) => favoriteValues.includes(option.value)),
+            },
+          ];
+        },
+        [favoriteValues]
+      );
+
+      return (
+        <Select
+          defaultOpen
+          defaultValue="b"
+          searchable
+          onChange={onChange}
+          options={options}
+          optionExtraRender={(option, info) => (
+            <Button
+              size="sm"
+              variant="ghost"
+              icon={favoriteValues.includes(option.value) ? "starFilled" : "star"}
+              aria-label={`${favoriteValues.includes(option.value) ? "取消收藏" : "收藏"} ${option.label}`}
+              data-group-pinned={info.groupPinned ? "true" : "false"}
+              onClick={() => {
+                setFavoriteValues((current) =>
+                  current.includes(option.value)
+                    ? current.filter((value) => value !== option.value)
+                    : [...current, option.value]
+                );
+              }}
+            />
+          )}
+        />
+      );
+    };
+
+    render(<FavoriteSelect />);
+    expect(screen.getByText("已收藏")).not.toBeNull();
+    expect(
+      Array.from(document.querySelectorAll(".menu-group-label"), (label) => label.textContent)
+    ).toEqual(["已收藏", "其他"]);
+    expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual([
+      "B",
+      "C",
+      "A",
+    ]);
+    expect(
+      screen.getAllByRole("option").filter((option) => option.getAttribute("aria-selected") === "true")
+    ).toHaveLength(1);
+    expect(
+      screen.getByRole("button", { name: "取消收藏 B" }).getAttribute("data-group-pinned")
+    ).toBe("true");
+
+    const favoriteC = screen.getByRole("button", { name: "收藏 C" });
+    expect(screen.getByRole("option", { name: "C" }).contains(favoriteC)).toBe(false);
+    fireEvent.click(favoriteC);
+
+    expect(onChange).not.toHaveBeenCalled();
+    expect(screen.getByRole("listbox")).not.toBeNull();
+    expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual([
+      "C",
+      "B",
+      "A",
+    ]);
+    expect(screen.getAllByRole("button", { name: "取消收藏 C" })).toHaveLength(1);
+    expect(
+      screen.getAllByRole("option").filter((option) => option.getAttribute("aria-selected") === "true")
+    ).toHaveLength(1);
+
+    fireEvent.change(screen.getByPlaceholderText("搜索..."), { target: { value: "B" } });
+    expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual(["B"]);
+    expect(
+      Array.from(document.querySelectorAll(".menu-group-label"), (label) => label.textContent)
+    ).toEqual(["已收藏"]);
   });
 
   it("Select 在等长选项更新后重新定位首个可用项", () => {
@@ -195,6 +297,57 @@ describe("表单与选择器回归", () => {
     expect(screen.queryByRole("alert")).toBeNull();
     fireEvent.blur(screen.getByRole("textbox", { name: "title" }));
     await waitFor(() => expect(screen.getByRole("alert")).not.toBeNull());
+  });
+
+  it("Form.Item 用 Lumina 错误态校验未选中的 Switch 与 Checkbox，不触发原生气泡", async () => {
+    const onFinishFailed = vi.fn();
+    render(
+      <Form onFinishFailed={onFinishFailed}>
+        <Form.Item
+          name="enabled"
+          valuePropName="checked"
+          rules={[{
+            required: true,
+            message: "请开启通知",
+            validator: (_rule, checked) => checked
+              ? Promise.resolve()
+              : Promise.reject(new Error("请开启通知")),
+          }]}
+        >
+          <Switch label="开启通知" />
+        </Form.Item>
+        <Form.Item
+          name="agreement"
+          valuePropName="checked"
+          rules={[{
+            required: true,
+            message: "请同意条款",
+            validator: (_rule, checked) => checked
+              ? Promise.resolve()
+              : Promise.reject(new Error("请同意条款")),
+          }]}
+        >
+          <Checkbox label="同意条款" />
+        </Form.Item>
+        <Button type="submit">验证提交</Button>
+      </Form>
+    );
+
+    const switchInput = screen.getByRole("switch", { name: "开启通知" }) as HTMLInputElement;
+    const checkboxInput = screen.getByRole("checkbox", { name: "同意条款" }) as HTMLInputElement;
+    expect(switchInput.required).toBe(false);
+    expect(checkboxInput.required).toBe(false);
+
+    fireEvent.click(screen.getByRole("button", { name: "验证提交" }));
+    await waitFor(() => expect(onFinishFailed).toHaveBeenCalledTimes(1));
+    expect(screen.getByText("请开启通知").getAttribute("role")).toBe("alert");
+    expect(screen.getByText("请同意条款").getAttribute("role")).toBe("alert");
+    expect(switchInput.getAttribute("aria-invalid")).toBe("true");
+    expect(checkboxInput.getAttribute("aria-invalid")).toBe("true");
+    expect(switchInput.closest(".switch")?.classList.contains("invalid")).toBe(true);
+    expect(checkboxInput.closest(".checkbox")?.classList.contains("invalid")).toBe(true);
+    expect(switchInput.validationMessage).toBe("");
+    expect(checkboxInput.validationMessage).toBe("");
   });
 
   it("Form.Item 不把 Select 自有浮层内的焦点切换当成失焦", async () => {

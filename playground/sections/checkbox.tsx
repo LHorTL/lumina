@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Button, Checkbox, Divider } from "lumina";
+import { Button, Checkbox, Divider, Form, message } from "lumina";
 import { DocPage } from "../docs";
 import { Row } from "./_shared";
 import { defineSection, type SectionCtx } from "./_types";
@@ -26,17 +26,49 @@ const SectionCheckbox: React.FC<SectionCtx> = () => {
         },
         {
           id: "native-form",
-          title: "原生表单",
-          description: "name / value / required 会落到真实 checkbox，可直接参与浏览器表单提交与约束校验。",
-          code: `<form onSubmit={(event) => event.preventDefault()}>
-  <Checkbox name="agreement" value="accepted" required label="同意条款" />
+          title: "Lumina 表单校验",
+          description: "通过 Form.Item 与 message 提供一致的组件反馈，不再触发浏览器原生 required 气泡。name / value 仍会透传到真实 checkbox。",
+          code: `<Form
+  layout="inline"
+  onFinish={() => message.success({ key: "checkbox-validation", content: "条款已确认" })}
+  onFinishFailed={() => message.warning({ key: "checkbox-validation", content: "请先同意条款" })}
+>
+  <Form.Item
+    name="agreement"
+    valuePropName="checked"
+    rules={[{
+      required: true,
+      message: "请同意条款",
+      validator: (_rule, checked) => checked
+        ? Promise.resolve()
+        : Promise.reject(new Error("请同意条款")),
+    }]}
+  >
+    <Checkbox name="agreement" value="accepted" label="同意条款" />
+  </Form.Item>
   <Button type="submit">验证提交</Button>
-</form>`,
+</Form>`,
           render: () => (
-            <form onSubmit={(event) => event.preventDefault()} style={{ display: "flex", gap: 12, alignItems: "center" }}>
-              <Checkbox name="agreement" value="accepted" required label="同意条款" />
+            <Form
+              layout="inline"
+              onFinish={() => message.success({ key: "checkbox-validation", content: "条款已确认" })}
+              onFinishFailed={() => message.warning({ key: "checkbox-validation", content: "请先同意条款" })}
+            >
+              <Form.Item
+                name="agreement"
+                valuePropName="checked"
+                rules={[{
+                  required: true,
+                  message: "请同意条款",
+                  validator: (_rule, checked) => checked
+                    ? Promise.resolve()
+                    : Promise.reject(new Error("请同意条款")),
+                }]}
+              >
+                <Checkbox name="agreement" value="accepted" label="同意条款" />
+              </Form.Item>
               <Button type="submit" size="sm">验证提交</Button>
-            </form>
+            </Form>
           ),
         },
         {
@@ -72,6 +104,7 @@ const SectionCheckbox: React.FC<SectionCtx> = () => {
             { prop: "label", description: "右侧文案", type: "ReactNode" },
             { prop: "name / value", description: "原生表单字段名与选中时提交的值", type: "string" },
             { prop: "required / form", description: "原生必填约束与关联 form id", type: "boolean / string" },
+            { prop: "invalid", description: "错误态，可由 Form.Item 自动注入", type: "boolean", default: "false" },
             { prop: "disabled", description: "禁用", type: "boolean", default: "false" },
           ],
         },

@@ -87,6 +87,26 @@ optionRender 承载多行菜单内容；selectedRender 提供适合固定高度�
 />
 ```
 
+### 置顶分组与额外操作
+
+分组设置 pinned 后会稳定提升到菜单顶部；optionExtraRender 提供不会触发选中的独立尾部区域。收藏仅是业务侧示例。
+
+```tsx
+const groups = [
+  { label: "其他服务", options: otherOptions },
+  { label: "已收藏", pinned: true, options: favoriteOptions },
+];
+
+<Select
+  value={service}
+  onChange={setService}
+  options={groups}
+  optionExtraRender={(option) => (
+    <IconButton icon={isFavorite(option) ? "starFilled" : "star"} />
+  )}
+/>
+```
+
 ### 分组
 
 options 接受 { label, options } 表示分组。
@@ -140,6 +160,7 @@ loading 时显示 spinner,emptyContent 自定义空态。
 | loading | `boolean` | `false` | 加载态 |
 | emptyContent | `ReactNode` | — | 空态文案 |
 | optionRender | `(option, info) => ReactNode` | — | 自定义菜单内完整选项内容，并获得 selected / active / index 状态 |
+| optionExtraRender | `(option, info) => ReactNode` | — | 自定义选项尾部的独立内容或操作，不触发选中；info 含 disabled / groupPinned |
 | selectedRender | `(option, info) => ReactNode` | — | 自定义触发器中的紧凑已选内容；单选和多选标签均支持 |
 | listHeight | `number` | `260` | 菜单选项滚动区域最大高度 |
 | popupStyle | `CSSProperties` | — | Portal 菜单内联样式，可覆盖宽度或高度 |
@@ -158,7 +179,17 @@ loading 时显示 spinner,emptyContent 自定义空态。
 | ariaLabel | `string` | — | 复杂选项或 optionRender 的独立可访问名称 |
 | icon | `IconName | ReactNode` | — | 前置图标,可传内置图标名或自定义节点 |
 | description | `ReactNode` | — | 次要描述 |
+| extra | `ReactNode` | — | 选项尾部的静态独立内容或操作；optionExtraRender 存在时由其覆盖 |
 | disabled | `boolean` | `false` | 禁用项 |
+
+
+**SelectOptionGroup**
+
+| Prop | 类型 | 默认 | 说明 |
+| --- | --- | --- | --- |
+| label \* | `ReactNode` | — | 分组标题 |
+| options \* | `SelectOption<T>[]` | — | 分组内选项 |
+| pinned | `boolean` | `false` | 稳定提升到菜单顶部，其他项目保持原始顺序 |
 
 
 ---

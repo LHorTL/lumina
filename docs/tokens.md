@@ -66,6 +66,16 @@
 | `--shadow-scale` | 整体阴影距离/模糊缩放 |
 | `--shadow-float-scale` | 浮层阴影额外缩放 |
 
+默认 `--d: 1`、`--shadow-scale: 1` 时，浅色与深色主题使用同一套紧凑比例；命名主题、组件主题和 Portal 主题也会从对应色彩模式继承这些基准值：
+
+| 基础尺寸 | Light | Dark |
+|---|---:|---:|
+| 外凸偏移 `--shadow-offset` | `5px` | `3px` |
+| 外凸模糊 `--shadow-blur` | `12px` | `8px` |
+| 内凹偏移 `--shadow-inset-offset` | `3px` | `2px` |
+| 内凹模糊 `--shadow-inset-blur` | `8px` | `5px` |
+| 轻微边缘偏移 / 模糊 | `0.75px / 1.5px` | `0.75px / 1.5px` |
+
 ### 强度调节
 
 通过 `--d` 乘数统一缩放,也可以用 `--shadow-scale` / `--shadow-float-scale` 做主题级微调。ThemePanel 默认把阴影强度开放到 `0-20`,把 `--shadow-scale` 开放到 `0.2-3`,把 `--shadow-float-scale` 开放到 `0.2-4`：

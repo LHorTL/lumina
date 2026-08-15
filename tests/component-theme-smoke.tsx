@@ -41,6 +41,8 @@ import type {
   ProgressProps,
   RadioGroupProps,
   RadioProps,
+  SelectOption,
+  SelectOptionGroup,
   SelectProps,
   SidebarProps,
   SkeletonProps,
@@ -181,6 +183,9 @@ type RequestedComponentCapabilityCoverage = AssertThemeCoverage<[
   SupportsProp<DrawerProps, "bodyOverflow">,
   SupportsProp<MultiSelectProps, "maxCount">,
   SupportsProp<MultiSelectProps, "getOptionDisabled">,
+  SupportsProp<SelectProps, "optionExtraRender">,
+  SupportsProp<SelectOption, "extra">,
+  SupportsProp<SelectOptionGroup, "pinned">,
 ]>;
 
 /** 防止新增公共能力在后续重构中静默丢失。 */

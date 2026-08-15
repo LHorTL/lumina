@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Button, Switch } from "lumina";
+import { Button, Form, message, Switch } from "lumina";
 import { DocPage } from "../docs";
 import { Row } from "./_shared";
 import { defineSection, type SectionCtx } from "./_types";
@@ -22,17 +22,49 @@ const SectionSwitch: React.FC<SectionCtx> = () => {
         },
         {
           id: "native-form",
-          title: "原生表单",
-          description: "开启后按 name / value 参与原生表单提交，required 可交给浏览器校验。",
-          code: `<form onSubmit={(event) => event.preventDefault()}>
-  <Switch name="notifications" value="enabled" required label="开启通知" />
+          title: "Lumina 表单校验",
+          description: "通过 Form.Item 与 message 提供一致的组件反馈，不再触发浏览器原生 required 气泡。name / value 仍会透传到真实 checkbox。",
+          code: `<Form
+  layout="inline"
+  onFinish={() => message.success({ key: "switch-validation", content: "通知已开启" })}
+  onFinishFailed={() => message.warning({ key: "switch-validation", content: "请先开启通知" })}
+>
+  <Form.Item
+    name="notifications"
+    valuePropName="checked"
+    rules={[{
+      required: true,
+      message: "请开启通知",
+      validator: (_rule, checked) => checked
+        ? Promise.resolve()
+        : Promise.reject(new Error("请开启通知")),
+    }]}
+  >
+    <Switch name="notifications" value="enabled" label="开启通知" />
+  </Form.Item>
   <Button type="submit">验证提交</Button>
-</form>`,
+</Form>`,
           render: () => (
-            <form onSubmit={(event) => event.preventDefault()} style={{ display: "flex", gap: 12, alignItems: "center" }}>
-              <Switch name="notifications" value="enabled" required label="开启通知" />
+            <Form
+              layout="inline"
+              onFinish={() => message.success({ key: "switch-validation", content: "通知已开启" })}
+              onFinishFailed={() => message.warning({ key: "switch-validation", content: "请先开启通知" })}
+            >
+              <Form.Item
+                name="notifications"
+                valuePropName="checked"
+                rules={[{
+                  required: true,
+                  message: "请开启通知",
+                  validator: (_rule, checked) => checked
+                    ? Promise.resolve()
+                    : Promise.reject(new Error("请开启通知")),
+                }]}
+              >
+                <Switch name="notifications" value="enabled" label="开启通知" />
+              </Form.Item>
               <Button type="submit" size="sm">验证提交</Button>
-            </form>
+            </Form>
           ),
         },
         {
@@ -87,6 +119,7 @@ const SectionSwitch: React.FC<SectionCtx> = () => {
             { prop: "size", description: "尺寸", type: `"sm" | "md"`, default: `"md"` },
             { prop: "name / value", description: "原生表单字段名与开启时提交的值", type: "string" },
             { prop: "required / form", description: "原生必填约束与关联 form id", type: "boolean / string" },
+            { prop: "invalid", description: "错误态，可由 Form.Item 自动注入", type: "boolean", default: "false" },
             { prop: "disabled", description: "禁用", type: "boolean", default: "false" },
           ],
         },

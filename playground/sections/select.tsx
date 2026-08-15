@@ -3,8 +3,10 @@ import {
   Avatar,
   Button,
   Icon,
+  IconButton,
   Select,
   Tag,
+  type SelectItem,
   type SelectOption,
   type SelectOptionRenderInfo,
 } from "lumina";
@@ -25,6 +27,27 @@ const PLAN_META: Record<string, PlanMeta> = {
   pro: { description: "完整组件库与高级主题能力", price: "¥99/月", tone: "accent", icon: "sparkle" },
   team: { description: "团队权限、审计与共享资产", price: "¥299/月", tone: "success", icon: "layers" },
 };
+
+/** 置顶分组示例使用的全部服务选项。 */
+const SERVICE_OPTIONS: SelectOption<string>[] = [
+  { value: "figma", label: "Figma", icon: "palette", description: "设计与原型" },
+  { value: "github", label: "GitHub", icon: "code", description: "代码与协作" },
+  { value: "notion", label: "Notion", icon: "file", description: "文档与知识库" },
+  { value: "slack", label: "Slack", icon: "mail", description: "团队沟通" },
+];
+
+/** 根据业务侧收藏状态生成互斥的置顶分组和常规分组。 */
+const createServiceGroups = (favoriteValues: readonly string[]): SelectItem<string>[] => [
+  {
+    label: "其他服务",
+    options: SERVICE_OPTIONS.filter((option) => !favoriteValues.includes(option.value)),
+  },
+  {
+    label: "已收藏",
+    pinned: true,
+    options: SERVICE_OPTIONS.filter((option) => favoriteValues.includes(option.value)),
+  },
+];
 
 /** 渲染包含图标、说明和价格的复杂 Select 菜单项。 */
 const renderPlanOption = (
@@ -81,8 +104,38 @@ const SectionSelect: React.FC<SectionCtx> = () => {
   const [aliasValue, setAliasValue] = React.useState<string | undefined>();
   const [framework, setFramework] = React.useState("");
   const [plan, setPlan] = React.useState("pro");
+  const [service, setService] = React.useState("github");
+  const [favoriteServices, setFavoriteServices] = React.useState<string[]>(["figma", "github"]);
   const [loading, setLoading] = React.useState(false);
   const [asyncOpts, setAsyncOpts] = React.useState<{ value: string; label: string }[]>([]);
+  const serviceGroups = React.useMemo(
+    () => createServiceGroups(favoriteServices),
+    [favoriteServices]
+  );
+
+  /** 渲染不触发选中行为的服务收藏操作。 */
+  const renderServiceExtra = React.useCallback(
+    (option: SelectOption<string>): React.ReactNode => {
+      const favorite = favoriteServices.includes(option.value);
+      return (
+        <IconButton
+          size="sm"
+          variant="ghost"
+          icon={favorite ? "starFilled" : "star"}
+          tip={favorite ? `取消收藏 ${option.label}` : `收藏 ${option.label}`}
+          aria-pressed={favorite}
+          onClick={() => {
+            setFavoriteServices((current) =>
+              current.includes(option.value)
+                ? current.filter((value) => value !== option.value)
+                : [...current, option.value]
+            );
+          }}
+        />
+      );
+    },
+    [favoriteServices]
+  );
   const itemIcon = (tone: string) => (
     <span
       style={{
@@ -116,6 +169,7 @@ const SectionSelect: React.FC<SectionCtx> = () => {
             <li>需要搜索过滤时启用 <code>searchable</code></li>
             <li>多选场景使用 <code>multiple</code>,可配合 <code>maxTagCount</code> 折叠</li>
             <li>菜单内容复杂时分别使用 <code>optionRender</code> 与 <code>selectedRender</code></li>
+            <li>常用或高优先级内容可放入带 <code>pinned</code> 的置顶分组</li>
           </ul>
         </>
       }
@@ -312,6 +366,41 @@ const SectionSelect: React.FC<SectionCtx> = () => {
           ),
         },
         {
+          id: "pinned-group",
+          title: "置顶分组与额外操作",
+          span: 2,
+          description: "分组设置 pinned 后会稳定提升到菜单顶部；optionExtraRender 提供不会触发选中的独立尾部区域。收藏仅是业务侧示例。",
+          code: `const groups = [
+  { label: "其他服务", options: otherOptions },
+  { label: "已收藏", pinned: true, options: favoriteOptions },
+];
+
+<Select
+  value={service}
+  onChange={setService}
+  options={groups}
+  optionExtraRender={(option) => (
+    <IconButton icon={isFavorite(option) ? "starFilled" : "star"} />
+  )}
+/>`,
+          render: () => (
+            <Field
+              label="连接服务"
+              hint="“已收藏”虽定义在其他服务之后，仍优先显示；点击星标只会在分组间移动项目，不会改变当前选择。"
+            >
+              <Select
+                searchable
+                value={service}
+                onChange={setService}
+                options={serviceGroups}
+                optionExtraRender={renderServiceExtra}
+                listHeight={190}
+                popupStyle={{ minWidth: 360 }}
+              />
+            </Field>
+          ),
+        },
+        {
           id: "group",
           title: "分组",
           description: "options 接受 { label, options } 表示分组。",
@@ -419,6 +508,7 @@ const SectionSelect: React.FC<SectionCtx> = () => {
             { prop: "loading", description: "加载态", type: "boolean", default: "false" },
             { prop: "emptyContent", description: "空态文案", type: "ReactNode" },
             { prop: "optionRender", description: "自定义菜单内完整选项内容，并获得 selected / active / index 状态", type: "(option, info) => ReactNode" },
+            { prop: "optionExtraRender", description: "自定义选项尾部的独立内容或操作，不触发选中；info 含 disabled / groupPinned", type: "(option, info) => ReactNode" },
             { prop: "selectedRender", description: "自定义触发器中的紧凑已选内容；单选和多选标签均支持", type: "(option, info) => ReactNode" },
             { prop: "listHeight", description: "菜单选项滚动区域最大高度", type: "number", default: "260" },
             { prop: "popupStyle", description: "Portal 菜单内联样式，可覆盖宽度或高度", type: "CSSProperties" },
@@ -436,7 +526,16 @@ const SectionSelect: React.FC<SectionCtx> = () => {
             { prop: "ariaLabel", description: "复杂选项或 optionRender 的独立可访问名称", type: "string" },
             { prop: "icon", description: "前置图标,可传内置图标名或自定义节点", type: "IconName | ReactNode" },
             { prop: "description", description: "次要描述", type: "ReactNode" },
+            { prop: "extra", description: "选项尾部的静态独立内容或操作；optionExtraRender 存在时由其覆盖", type: "ReactNode" },
             { prop: "disabled", description: "禁用项", type: "boolean", default: "false" },
+          ],
+        },
+        {
+          title: "SelectOptionGroup",
+          rows: [
+            { prop: "label", description: "分组标题", type: "ReactNode", required: true },
+            { prop: "options", description: "分组内选项", type: "SelectOption<T>[]", required: true },
+            { prop: "pinned", description: "稳定提升到菜单顶部，其他项目保持原始顺序", type: "boolean", default: "false" },
           ],
         },
       ]}
