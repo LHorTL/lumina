@@ -29,6 +29,8 @@
 }
 .modal-head {
   display: flex;
+  flex: 0 0 auto;
+  min-width: 0;
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--gap-3);
@@ -43,26 +45,41 @@
 .modal-body {
   min-width: 0;
   min-height: 0;
-  margin-inline: calc(var(--gap-6) * -1);
+  margin-inline: calc(var(--overlay-shadow-safe-area) * -1);
   padding: var(--overlay-shadow-safe-area);
   color: var(--lmn-modal-fg-muted, var(--fg-muted));
   font-size: 13px;
   line-height: 1.6;
-  flex: 1;
+  flex: 1 1 auto;
+  overflow-x: hidden;
   overflow-y: auto;
 }
 .modal-body:first-child {
-  margin-top: calc(var(--gap-6) * -1);
+  margin-top: calc(var(--overlay-shadow-safe-area) * -1);
 }
-.modal-body:last-child {
-  margin-bottom: calc(var(--gap-6) * -1);
+.modal-body.default-overflow > * {
+  min-width: 0;
+  max-width: 100%;
+  flex-shrink: 0;
 }
 .modal-body.inset-none {
+  margin-inline: calc(var(--gap-6) * -1);
   padding: 0;
+}
+.modal-body.inset-none:first-child {
+  margin-top: calc(var(--gap-6) * -1);
+}
+.modal-body.inset-none:last-child {
+  margin-bottom: calc(var(--gap-6) * -1);
 }
 .modal-foot {
   display: flex;
-  gap: 10px;
+  flex: 0 0 auto;
+  min-width: 0;
+  min-height: var(--lmn-modal-footer-min-height, var(--ctrl-h));
+  margin-top: var(--lmn-modal-footer-gap, var(--gap-4));
+  align-items: center;
+  gap: var(--lmn-modal-footer-action-gap, var(--gap-3));
   justify-content: flex-end;
 }
 .modal-close {

@@ -1073,6 +1073,31 @@ describe("多色组件主题", () => {
     expect(screen.getByTestId("themed-drawer").style.width).toBe("430px");
   });
 
+  it("Modal 将主题 header、body 与 footer 插槽应用到对应结构", () => {
+    render(
+      <ThemeProvider
+        target="scope"
+        components={{
+          Modal: {
+            styles: {
+              header: { paddingBottom: 7 },
+              body: { paddingBottom: 22 },
+              footer: { minHeight: 56 },
+            },
+          },
+        }}
+      >
+        <Modal open title="结构插槽" bodyStyle={{ paddingBottom: 31 }}>
+          内容
+        </Modal>
+      </ThemeProvider>
+    );
+
+    expect(document.querySelector<HTMLElement>(".modal-head")?.style.paddingBottom).toBe("7px");
+    expect(document.querySelector<HTMLElement>(".modal-body")?.style.paddingBottom).toBe("31px");
+    expect(document.querySelector<HTMLElement>(".modal-foot")?.style.minHeight).toBe("56px");
+  });
+
   it("ContextMenu 的主题最小宽度覆盖默认值且显式 minWidth 仍优先", () => {
     /** 按不同实例宽度重绘同一个上下文菜单场景。 */
     const renderMenu = (minWidth?: number) => (

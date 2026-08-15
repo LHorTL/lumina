@@ -260,6 +260,10 @@ const ModalBase = React.forwardRef<HTMLDivElement, ModalProps>((props, ref) => {
     bodyOverflow == null
       ? { ...portalTheme.styles.body, ...bodyStyle }
       : { ...portalTheme.styles.body, overflow: bodyOverflow, ...bodyStyle };
+  const usesDefaultBodyOverflow =
+    bodyOverflow == null &&
+    bodyStyle?.overflow == null &&
+    portalTheme.styles.body?.overflow == null;
 
   return ReactDOM.createPortal(
     <OverlayZIndexProvider zIndex={overlayZIndex}>
@@ -289,7 +293,7 @@ const ModalBase = React.forwardRef<HTMLDivElement, ModalProps>((props, ref) => {
           {...rest}
         >
           {(title || description || closable) && (
-            <div className="modal-head">
+            <div className="modal-head" style={portalTheme.styles.header}>
               <div className="modal-titles">
                 {title && <div id={titleId} className="modal-title">{title}</div>}
                 {description && <div id={descriptionId} className="modal-desc">{description}</div>}
@@ -308,7 +312,12 @@ const ModalBase = React.forwardRef<HTMLDivElement, ModalProps>((props, ref) => {
           )}
           <div
             {...bodyProps}
-            className={["modal-body", `inset-${bodyInset}`, bodyClassName]
+            className={[
+              "modal-body",
+              `inset-${bodyInset}`,
+              usesDefaultBodyOverflow ? "default-overflow" : "",
+              bodyClassName,
+            ]
               .filter(Boolean)
               .join(" ")}
             style={modalBodyStyle}
@@ -316,7 +325,9 @@ const ModalBase = React.forwardRef<HTMLDivElement, ModalProps>((props, ref) => {
             {children}
           </div>
           {footer === null ? null : (
-            <div className="modal-foot">{footer ?? defaultFooter}</div>
+            <div className="modal-foot" style={portalTheme.styles.footer}>
+              {footer ?? defaultFooter}
+            </div>
           )}
         </div>
       </div>

@@ -272,7 +272,7 @@ applyTheme(document.documentElement, {
 | tokens | `ThemeTokens` | — | 短键会写入组件前缀变量；以 -- 开头的键作为高级原始变量逃生口 |
 | components | `ComponentThemeOverrides` | — | 继续定向配置当前组件内部或 subtree 后代的组件类型 |
 | styles.root | `CSSProperties` | — | 所有组件都支持真实视觉根节点；调用方 style 仍保持最高优先级 |
-| styles.popup / overlay / body | `CSSProperties` | — | 浮层、遮罩和正文等组件专用静态插槽；定位与用户 popupStyle 不会被覆盖 |
+| styles.popup / overlay / header / body / footer | `CSSProperties` | — | 浮层、遮罩和 Modal 头部/正文/footer 等稳定静态插槽；定位与用户实例样式不会被覆盖 |
 
 
 ---

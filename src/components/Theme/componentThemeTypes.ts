@@ -88,10 +88,21 @@ export interface ComponentThemeOverride<TSlot extends string = string> {
   styles?: Partial<Record<TSlot, React.CSSProperties>>;
 }
 
+/** Modal 对外提供的稳定结构样式插槽。 */
+export type ModalThemeSlot =
+  | "root"
+  | "popup"
+  | "overlay"
+  | "header"
+  | "body"
+  | "footer";
+
 /** 按公共组件名称配置的主题覆盖。 */
-export type ComponentThemeOverrides = Partial<
-  Record<ComponentThemeName, ComponentThemeOverride>
->;
+export type ComponentThemeOverrides = Partial<{
+  [TName in ComponentThemeName]: TName extends "Modal"
+    ? ComponentThemeOverride<ModalThemeSlot>
+    : ComponentThemeOverride;
+}>;
 
 /** 单个组件或组件子树使用的视觉主题。 */
 export interface ComponentThemeOptions

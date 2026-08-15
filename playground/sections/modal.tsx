@@ -1,7 +1,16 @@
 import * as React from "react";
-import { Button, Card, Modal, Select, message } from "lumina";
+import { Button, Card, Input, Modal, Select, message } from "lumina";
 import { DocPage } from "../docs";
 import { defineSection, type SectionCtx } from "./_types";
+
+/** Modal 长内容结构演示使用的稳定示例项。 */
+const MODAL_LAYOUT_ITEMS = Array.from(
+  { length: 14 },
+  (_, index) => `配置项 ${String(index + 1).padStart(2, "0")}`
+);
+
+/** Modal 长内容结构演示的当前场景。 */
+type ModalLayoutDemo = "no-footer" | "footer" | "hidden" | null;
 
 const SectionModal: React.FC<SectionCtx> = () => {
   const [m, setM] = React.useState(false);
@@ -9,6 +18,7 @@ const SectionModal: React.FC<SectionCtx> = () => {
   const [asyncOpen, setAsyncOpen] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
   const [stackOpen, setStackOpen] = React.useState(false);
+  const [layoutDemo, setLayoutDemo] = React.useState<ModalLayoutDemo>(null);
   return (
     <DocPage
       whenToUse={<p>需要用户处理事务,又不希望跳转页面以致打断工作流时,使用 Modal 在当前页面弹出。</p>}
@@ -273,6 +283,112 @@ Modal.warning({ title: "容量不足", content: "请先清理缓存。" });`,
           },
         },
         {
+          id: "long-content-layout",
+          title: "长内容与独立 footer",
+          description: "默认正文只纵向滚动并保留底部安全区；直接子控件不会被纵向压缩。footer 独立于滚动区，bodyOverflow=\"hidden\" 仍可交给内层容器滚动。",
+          code: `<Modal
+  footer={null}
+  bodyStyle={{ maxHeight: 360, display: "flex", flexDirection: "column" }}
+>
+  <Input placeholder="固定高度的搜索框" />
+  <LongList />
+</Modal>
+
+<Modal bodyStyle={{ maxHeight: 360 }}>
+  <LongForm />
+</Modal>
+
+<Modal bodyOverflow="hidden">
+  <InnerScrollableLayout />
+</Modal>`,
+          render: () => (
+            <>
+              <Button onClick={() => setLayoutDemo("no-footer")}>无 footer 长列表</Button>
+              <Button variant="ghost" onClick={() => setLayoutDemo("footer")}>带 footer 长表单</Button>
+              <Button variant="ghost" onClick={() => setLayoutDemo("hidden")}>内层接管滚动</Button>
+
+              <Modal
+                open={layoutDemo === "no-footer"}
+                onClose={() => setLayoutDemo(null)}
+                title="无 footer 长列表"
+                footer={null}
+                width={620}
+                bodyStyle={{
+                  maxHeight: 360,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "var(--gap-3)",
+                }}
+              >
+                <Input aria-label="筛选配置项" placeholder="搜索配置项…" allowClear />
+                <div style={{ display: "grid", gap: "var(--gap-3)" }}>
+                  {MODAL_LAYOUT_ITEMS.map((item) => (
+                    <Card key={item} title={item}>滚动到底部仍保留完整留白。</Card>
+                  ))}
+                </div>
+              </Modal>
+
+              <Modal
+                open={layoutDemo === "footer"}
+                onClose={() => setLayoutDemo(null)}
+                onCancel={() => setLayoutDemo(null)}
+                onOk={() => setLayoutDemo(null)}
+                title="带 footer 长表单"
+                width={560}
+                bodyStyle={{ maxHeight: 360 }}
+              >
+                <div style={{ display: "grid", gap: "var(--gap-4)" }}>
+                  {MODAL_LAYOUT_ITEMS.slice(0, 10).map((item) => (
+                    <Input key={item} aria-label={item} placeholder={`填写${item}`} />
+                  ))}
+                </div>
+              </Modal>
+
+              <Modal
+                open={layoutDemo === "hidden"}
+                onClose={() => setLayoutDemo(null)}
+                title="内层接管滚动"
+                footer={null}
+                width={620}
+                bodyOverflow="hidden"
+                bodyStyle={{ height: "min(52vh, 360px)" }}
+              >
+                <div
+                  style={{
+                    height: "100%",
+                    minHeight: 0,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "var(--gap-3)",
+                  }}
+                >
+                  <div style={{ flexShrink: 0 }}>
+                    <Input
+                      aria-label="内层筛选"
+                      placeholder="固定在内层滚动区上方"
+                    />
+                  </div>
+                  <div
+                    style={{
+                      flex: "1 1 auto",
+                      minHeight: 0,
+                      overflowY: "auto",
+                      overflowX: "hidden",
+                      display: "grid",
+                      gap: "var(--gap-3)",
+                      padding: "var(--gap-3)",
+                    }}
+                  >
+                    {MODAL_LAYOUT_ITEMS.map((item) => (
+                      <Card key={item} title={item}>由内层容器负责滚动。</Card>
+                    ))}
+                  </div>
+                </div>
+              </Modal>
+            </>
+          ),
+        },
+        {
           id: "nested-overlay",
           title: "嵌套浮层与 Esc 顺序",
           description: "子 Select 即使 Portal 到对话框之外，也会保持在 Modal 上方并参与同一焦点范围；连续按 Esc 会先关 Select，再关 Modal。",
@@ -312,14 +428,14 @@ Modal.warning({ title: "容量不足", content: "请先清理缓存。" });`,
             { prop: "onOk", description: "默认 OK 按钮点击", type: "() => void" },
             { prop: "onCancel", description: "默认 Cancel 按钮 / Esc / 关闭 / 遮罩触发,缺省则用 onClose", type: "() => void" },
             { prop: "title / description", description: "标题/说明", type: "ReactNode" },
-            { prop: "footer", description: "自定义底部(null 去除)", type: "ReactNode" },
+            { prop: "footer", description: "独立于正文滚动区的底部区域；自定义内容，null 去除", type: "ReactNode" },
             { prop: "okText / cancelText", description: "默认按钮文案", type: "ReactNode", default: `"确定" / "取消"` },
             { prop: "okButtonProps / cancelButtonProps", description: "透传给默认按钮", type: "Partial<ButtonProps>" },
             { prop: "confirmLoading", description: "OK 按钮显示 spinner 并禁用", type: "boolean", default: "false" },
             { prop: "bodyClassName", description: "正文容器 className", type: "string" },
             { prop: "bodyStyle", description: "正文容器内联样式", type: "CSSProperties" },
             { prop: "bodyProps", description: "透传给正文容器的 DOM props", type: "HTMLAttributes<HTMLDivElement>" },
-            { prop: "bodyOverflow", description: "正文容器 overflow 快捷控制", type: "CSSProperties['overflow']" },
+            { prop: "bodyOverflow", description: "正文容器 overflow 快捷控制；hidden 可让复杂内层布局接管滚动", type: "CSSProperties['overflow']" },
             { prop: "bodyInset", description: "正文边缘留白；safe 自动保护拟态阴影，none 用于贴边内容", type: `"safe" | "none"`, default: `"safe"` },
             { prop: "closable", description: "显示右上角 ×", type: "boolean", default: "true" },
             { prop: "closeIcon", description: "自定义关闭图标", type: "ReactNode" },

@@ -104,6 +104,28 @@ closable={false} 隐藏右上角 ×,closeIcon 可自定义。
 </Modal>
 ```
 
+### 长内容与独立 footer
+
+默认正文只纵向滚动并保留底部安全区；直接子控件不会被纵向压缩。footer 独立于滚动区，bodyOverflow="hidden" 仍可交给内层容器滚动。
+
+```tsx
+<Modal
+  footer={null}
+  bodyStyle={{ maxHeight: 360, display: "flex", flexDirection: "column" }}
+>
+  <Input placeholder="固定高度的搜索框" />
+  <LongList />
+</Modal>
+
+<Modal bodyStyle={{ maxHeight: 360 }}>
+  <LongForm />
+</Modal>
+
+<Modal bodyOverflow="hidden">
+  <InnerScrollableLayout />
+</Modal>
+```
+
 ### 嵌套浮层与 Esc 顺序
 
 子 Select 即使 Portal 到对话框之外，也会保持在 Modal 上方并参与同一焦点范围；连续按 Esc 会先关 Select，再关 Modal。
@@ -125,14 +147,14 @@ closable={false} 隐藏右上角 ×,closeIcon 可自定义。
 | onOk | `() => void` | — | 默认 OK 按钮点击 |
 | onCancel | `() => void` | — | 默认 Cancel 按钮 / Esc / 关闭 / 遮罩触发,缺省则用 onClose |
 | title / description | `ReactNode` | — | 标题/说明 |
-| footer | `ReactNode` | — | 自定义底部(null 去除) |
+| footer | `ReactNode` | — | 独立于正文滚动区的底部区域；自定义内容，null 去除 |
 | okText / cancelText | `ReactNode` | `"确定" / "取消"` | 默认按钮文案 |
 | okButtonProps / cancelButtonProps | `Partial<ButtonProps>` | — | 透传给默认按钮 |
 | confirmLoading | `boolean` | `false` | OK 按钮显示 spinner 并禁用 |
 | bodyClassName | `string` | — | 正文容器 className |
 | bodyStyle | `CSSProperties` | — | 正文容器内联样式 |
 | bodyProps | `HTMLAttributes<HTMLDivElement>` | — | 透传给正文容器的 DOM props |
-| bodyOverflow | `CSSProperties['overflow']` | — | 正文容器 overflow 快捷控制 |
+| bodyOverflow | `CSSProperties['overflow']` | — | 正文容器 overflow 快捷控制；hidden 可让复杂内层布局接管滚动 |
 | bodyInset | `"safe" | "none"` | `"safe"` | 正文边缘留白；safe 自动保护拟态阴影，none 用于贴边内容 |
 | closable | `boolean` | `true` | 显示右上角 × |
 | closeIcon | `ReactNode` | — | 自定义关闭图标 |

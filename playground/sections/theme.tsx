@@ -571,7 +571,7 @@ applyTheme(document.documentElement, {
           { prop: "tokens", description: "短键会写入组件前缀变量；以 -- 开头的键作为高级原始变量逃生口", type: "ThemeTokens" },
           { prop: "components", description: "继续定向配置当前组件内部或 subtree 后代的组件类型", type: "ComponentThemeOverrides" },
           { prop: "styles.root", description: "所有组件都支持真实视觉根节点；调用方 style 仍保持最高优先级", type: "CSSProperties" },
-          { prop: "styles.popup / overlay / body", description: "浮层、遮罩和正文等组件专用静态插槽；定位与用户 popupStyle 不会被覆盖", type: "CSSProperties" },
+          { prop: "styles.popup / overlay / header / body / footer", description: "浮层、遮罩和 Modal 头部/正文/footer 等稳定静态插槽；定位与用户实例样式不会被覆盖", type: "CSSProperties" },
         ],
       },
     ]}

@@ -34,6 +34,17 @@ describe("完整样式入口", () => {
 
     expect(modalCss).toContain("--overlay-shadow-safe-area");
     expect(modalCss).toContain("padding: var(--overlay-shadow-safe-area)");
+    expect(modalCss).toContain("margin-inline: calc(var(--overlay-shadow-safe-area) * -1)");
+    expect(modalCss).toContain("overflow-x: hidden");
+    expect(modalCss).toMatch(
+      /\.modal-body\.default-overflow > \* \{[\s\S]*?flex-shrink: 0;/
+    );
+    expect(modalCss).not.toMatch(
+      /\.modal-body:last-child \{[\s\S]*?margin-bottom: calc\(var\(--gap-6\) \* -1\);/
+    );
+    expect(modalCss).toMatch(
+      /\.modal-foot \{[\s\S]*?min-height: var\(--lmn-modal-footer-min-height, var\(--ctrl-h\)\);[\s\S]*?margin-top: var\(--lmn-modal-footer-gap, var\(--gap-4\)\);[\s\S]*?align-items: center;/
+    );
     expect(drawerCss).toContain("overflow: hidden");
     expect(drawerCss).toContain("padding: var(--overlay-shadow-safe-area)");
     expect(drawerCss).toContain("overflow: auto");

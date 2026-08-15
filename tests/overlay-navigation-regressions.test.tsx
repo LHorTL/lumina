@@ -67,6 +67,31 @@ describe("overlay and navigation regressions", () => {
     expect(document.querySelector(".modal-body")?.classList.contains("inset-none")).toBe(true);
   });
 
+  it("keeps default Modal children at their intrinsic height and leaves hidden bodies flexible", () => {
+    const { rerender } = render(
+      <Modal
+        open
+        title="默认滚动"
+        footer={null}
+        bodyStyle={{ display: "flex", flexDirection: "column" }}
+      >
+        <input aria-label="搜索" />
+        <div>长内容</div>
+      </Modal>
+    );
+    const body = document.querySelector<HTMLElement>(".modal-body")!;
+    expect(body.classList.contains("default-overflow")).toBe(true);
+    expect(document.querySelector(".modal-foot")).toBeNull();
+
+    rerender(
+      <Modal open title="内层滚动" bodyOverflow="hidden">
+        <div style={{ flex: "1 1 auto", minHeight: 0 }}>复杂布局</div>
+      </Modal>
+    );
+    expect(document.querySelector(".modal-body")?.classList.contains("default-overflow")).toBe(false);
+    expect(document.querySelector(".modal-foot")).not.toBeNull();
+  });
+
   it("keeps Drawer chrome fixed while its shadow-safe body owns scrolling", () => {
     render(
       <Drawer

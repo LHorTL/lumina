@@ -13,6 +13,7 @@ import type {
   ColorPickerProps,
   CommandPaletteProps,
   ComponentTheme,
+  ComponentThemeOverrides,
   ContextMenuProps,
   DatePickerProps,
   DateTimePickerProps,
@@ -33,6 +34,7 @@ import type {
   ListProps,
   MessageContainerProps,
   ModalProps,
+  ModalThemeSlot,
   MultiSelectProps,
   NamedIconProps,
   PaginationProps,
@@ -164,6 +166,32 @@ export type ThemeProviderScopeControlsSmokeResult = AssertThemeCoverage<[
 
 /** 判断公共 Props 是否持续暴露指定能力键。 */
 type SupportsProp<T, Key extends PropertyKey> = Key extends keyof T ? true : false;
+
+/** 判断组件主题覆盖是否持续暴露指定的稳定样式插槽。 */
+type SupportsThemeStyleSlot<T, Slot extends PropertyKey> = T extends {
+  styles?: infer TStyles;
+}
+  ? Slot extends keyof NonNullable<TStyles>
+    ? true
+    : false
+  : false;
+
+/** Modal 主题插槽类型必须同时覆盖正文结构的五个视觉区域。 */
+type ModalThemeSlotCoverage = AssertThemeCoverage<[
+  SupportsThemeStyleSlot<NonNullable<ComponentThemeOverrides["Modal"]>, "popup">,
+  SupportsThemeStyleSlot<NonNullable<ComponentThemeOverrides["Modal"]>, "overlay">,
+  SupportsThemeStyleSlot<NonNullable<ComponentThemeOverrides["Modal"]>, "header">,
+  SupportsThemeStyleSlot<NonNullable<ComponentThemeOverrides["Modal"]>, "body">,
+  SupportsThemeStyleSlot<NonNullable<ComponentThemeOverrides["Modal"]>, "footer">,
+  ModalThemeSlot extends keyof NonNullable<
+    NonNullable<ComponentThemeOverrides["Modal"]>["styles"]
+  >
+    ? true
+    : false,
+]>;
+
+/** 防止 Modal 稳定主题插槽在后续重构中静默丢失。 */
+export type ModalThemeSlotSmokeResult = ModalThemeSlotCoverage;
 
 /** 截图所需的组件扩展能力类型烟雾测试。 */
 type RequestedComponentCapabilityCoverage = AssertThemeCoverage<[
