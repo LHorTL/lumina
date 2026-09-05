@@ -1,9 +1,29 @@
+import fs from "node:fs";
+import path from "node:path";
 import * as React from "react";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { Empty } from "../src/components/Empty";
 import { Select, type SelectOption } from "../src/components/Select";
 
-afterEach(cleanup);
+const SELECT_CSS = fs.readFileSync(
+  path.join(process.cwd(), "src", "components", "Select", "Select.css"),
+  "utf8"
+);
+const EMPTY_CSS = fs.readFileSync(
+  path.join(process.cwd(), "src", "components", "Empty", "Empty.css"),
+  "utf8"
+);
+const SEARCH_STYLE_ORDERS = [
+  { name: "Select 后加载 Empty", css: `${SELECT_CSS}\n${EMPTY_CSS}` },
+  { name: "Empty 后加载 Select", css: `${EMPTY_CSS}\n${SELECT_CSS}` },
+];
+
+/** 清理组件挂载内容与用于样式顺序回归的临时样式。 */
+afterEach(() => {
+  cleanup();
+  document.head.querySelectorAll("style[data-select-style-order]").forEach((style) => style.remove());
+});
 
 const APPEARANCE_OPTIONS: SelectOption<string>[] = [
   {
@@ -20,7 +40,54 @@ const APPEARANCE_OPTIONS: SelectOption<string>[] = [
   },
 ];
 
+/** 构造同时包含 Empty 与空单选、可控多选的样式冲突回归场景。 */
+const renderStyleCollisionFixture = (selectedValues: string[]): React.ReactNode => (
+  <>
+    <Empty title="暂无内容" />
+    <Select searchable defaultOpen aria-label="空单选搜索" options={APPEARANCE_OPTIONS} />
+    <Select
+      multiple
+      searchable
+      aria-label="空多选搜索"
+      value={selectedValues}
+      options={APPEARANCE_OPTIONS}
+    />
+  </>
+);
+
 describe("Select 远程搜索多选", () => {
+  it.each(SEARCH_STYLE_ORDERS)("$name 时空搜索输入不受 Empty 根样式影响", ({ css }) => {
+    const style = document.createElement("style");
+    style.dataset.selectStyleOrder = "true";
+    style.textContent = css;
+    document.head.appendChild(style);
+
+    const { rerender } = render(renderStyleCollisionFixture([]));
+
+    expect(document.querySelector(".empty")).not.toBeNull();
+    for (const accessibleName of ["空单选搜索", "空多选搜索"]) {
+      const searchInput = screen.getByRole("combobox", { name: accessibleName }) as HTMLInputElement;
+      const computedStyle = getComputedStyle(searchInput);
+      expect(searchInput.classList.contains("empty")).toBe(false);
+      expect(searchInput.getAttribute("data-inline-size")).toBe("fill");
+      expect(computedStyle.height).toBe("24px");
+      expect(computedStyle.paddingTop).toBe("0px");
+      expect(computedStyle.paddingRight).toBe("2px");
+      expect(computedStyle.display).not.toBe("grid");
+      expect(computedStyle.textAlign).not.toBe("center");
+    }
+
+    rerender(renderStyleCollisionFixture(["成衣_长云黯雪·二·衣"]));
+    expect(
+      screen.getByRole("combobox", { name: "空多选搜索" }).getAttribute("data-inline-size")
+    ).toBe("content");
+
+    rerender(renderStyleCollisionFixture([]));
+    expect(
+      screen.getByRole("combobox", { name: "空多选搜索" }).getAttribute("data-inline-size")
+    ).toBe("fill");
+  });
+
   it("把搜索框和标签放在同一触发器内，并在连续选择后保持展开和关键词", async () => {
     const onSearch = vi.fn();
     const onChange = vi.fn();

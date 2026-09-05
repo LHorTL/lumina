@@ -609,7 +609,8 @@ const SelectInner = <T extends string | number = string>(
       <input
         ref={searchRef}
         id={fieldId}
-        className={`select-search-input ${multiHasSelection ? "with-selection" : "empty"}`}
+        className="select-search-input"
+        data-inline-size={multiHasSelection ? "content" : "fill"}
         type="search"
         value={searchValue}
         style={multiHasSelection

@@ -81,6 +81,23 @@ describe("完整样式入口", () => {
     );
   });
 
+  it("Select 框内搜索使用私有数据状态，避免与 Empty 根类发生级联冲突", () => {
+    const selectSource = fs.readFileSync(
+      path.join(ROOT, "src", "components", "Select", "Select.tsx"),
+      "utf8"
+    );
+    const selectCss = fs.readFileSync(
+      path.join(ROOT, "src", "components", "Select", "Select.css"),
+      "utf8"
+    );
+
+    expect(selectSource).toContain('data-inline-size={multiHasSelection ? "content" : "fill"}');
+    expect(selectSource).not.toMatch(/select-search-input[^\n]*\bempty\b/);
+    expect(selectCss).toContain('.select-search-input[data-inline-size="fill"]');
+    expect(selectCss).toContain('.select-search-input[data-inline-size="content"]');
+    expect(selectCss).not.toContain(".select-search-input.empty");
+  });
+
   it("ThemePanel 演示滚动区按实际浮起阴影预留安全区", () => {
     const playgroundCss = fs.readFileSync(
       path.join(ROOT, "playground", "playground.css"),
