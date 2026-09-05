@@ -100,14 +100,29 @@ import { Button, Input, Modal, message } from "lumina";
 ## Select
 
 ```tsx
-<Select options={[{ value: "cn", label: "中国" }, ...]} />
+<Select
+  multiple
+  searchable
+  value={selectedValues}
+  onChange={setSelectedValues}
+  searchValue={keyword}
+  onSearch={setKeyword}
+  options={remoteOptions}
+  filterOption={false}
+/>
 ```
 
 | Prop | 类型 | 说明 |
 |---|---|---|
-| `options` | `SelectOption<T>[]` | 选项 |
-| `value` / `defaultValue` | `T` | 受控 / 非受控 |
+| `options` | `SelectItem<T>[]` | 选项或选项分组 |
+| `value` / `defaultValue` | `T \| T[]` | 单选或多选的受控 / 非受控值 |
 | `onChange` | `(value) => void` | 选中变化 |
+| `multiple` | `boolean` | 启用多选；选中后保持浮层展开 |
+| `searchable` / `showSearch` | `boolean` | 在选择框本体内启用搜索 |
+| `searchValue` / `defaultSearchValue` | `string` | 受控搜索词 / 非受控初始搜索词 |
+| `onSearch` | `(value: string) => void` | 搜索词变化；远程搜索可配合 `filterOption={false}` |
+| `loading` / `emptyContent` | `boolean` / `ReactNode` | 远程候选的加载与空态 |
+| `maxCount` / `maxTagCount` | `number` | 限制选择数 / 折叠框内标签 |
 | `placeholder` | `string` | 占位符 |
 | `size` | `"sm" \| "md" \| "lg"` | 尺寸 |
 

@@ -27,6 +27,43 @@ multiple + Tag 形式呈现已选项。
 <Select multiple clearable value={tags} onChange={setTags} options={...} />
 ```
 
+### 远程搜索多选
+
+searchable 在单选和多选中都复用选择框本体作为输入；多选 Tag 后的空输入会收缩，不单独占行。选中后保持展开和关键词，业务层负责防抖与迟到结果保护。
+
+```tsx
+const [value, setValue] = useState<string[]>([]);
+const [searchValue, setSearchValue] = useState("");
+const [options, setOptions] = useState<SelectOption[]>([]);
+const [loading, setLoading] = useState(false);
+const latestRequest = useRef(0);
+
+useEffect(() => {
+  const requestId = ++latestRequest.current;
+  setLoading(true);
+  const timer = window.setTimeout(() => {
+    void fetchOptions(searchValue).then((nextOptions) => {
+      if (requestId !== latestRequest.current) return;
+      setOptions(nextOptions);
+      setLoading(false);
+    });
+  }, 300);
+  return () => {
+    window.clearTimeout(timer);
+    if (requestId === latestRequest.current) latestRequest.current += 1;
+  };
+}, [searchValue]);
+
+<Select
+  multiple searchable clearable
+  value={value} onChange={setValue}
+  searchValue={searchValue} onSearch={setSearchValue}
+  options={options} loading={loading}
+  filterOption={false}
+  maxTagCount={2}
+/>
+```
+
 ### 数量上限 / 分类限选
 
 maxCount 限制总数；getOptionDisabled 可读取当前选择，实现“一类最多选一个”。
@@ -147,8 +184,10 @@ loading 时显示 spinner,emptyContent 自定义空态。
 | maxTagCount | `number` | — | 多选时显示的标签数(超出折叠 +N) |
 | maxCount | `number` | — | 多选允许的最大选择数；达到上限后禁用未选项 |
 | getOptionDisabled | `(option, selectedValues) => boolean` | — | 基于候选项和当前选择动态判断禁用状态 |
-| searchable | `boolean` | `false` | 可搜索 |
+| searchable | `boolean` | `false` | 在选择框本体内启用搜索，单选和多选共用同一交互形态 |
 | showSearch | `boolean` | `false` | searchable 的等价别名 |
+| searchValue / defaultSearchValue | `string` | — | 受控搜索词 / 非受控初始搜索词；多选 searchable 时输入框位于标签同一触发器内 |
+| onSearch | `(value: string) => void` | — | 搜索词交互变化回调；多选选中不会清空关键词，关闭时清空并回调空字符串 |
 | filterOption | `(input, option) => boolean` | — | 自定义过滤 |
 | optionFilterProp | `"label" | "value" | "text" | string` | — | 默认过滤使用的 option 字段 |
 | clearable | `boolean` | `false` | 显示独立且可访问的清除按钮 |

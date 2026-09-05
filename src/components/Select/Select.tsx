@@ -4,7 +4,6 @@ import "./Select.css";
 import * as React from "react";
 import { createPortal } from "react-dom";
 import { Icon, renderIconSlot, type IconSlot } from "../Icon";
-import { Input } from "../Input";
 import { Tag } from "../Tag";
 import { useFloating } from "../../utils/useFloating";
 import { usePortalContainer } from "../../utils/portal";
@@ -93,10 +92,16 @@ interface BaseSelectProps<T extends string | number = string>
   clearable?: boolean;
   /** Alias for `clearable`. */
   allowClear?: boolean | { clearIcon?: React.ReactNode };
-  /** Add a search input at the top of the menu. */
+  /** 在选择框本体内启用单选或多选搜索。 */
   searchable?: boolean;
   /** Alias for `searchable`. */
   showSearch?: boolean;
+  /** 受控搜索词；外部更新不会触发 onSearch。 */
+  searchValue?: string;
+  /** 非受控搜索词初始值。 */
+  defaultSearchValue?: string;
+  /** 搜索词发生交互变化时触发，适合由业务层发起远程请求。 */
+  onSearch?: (value: string) => void;
   /** Custom filter — defaults to label/text/value substring match. */
   filterOption?: SelectFilterOption<T>;
   /** Field used by the default filter. */
@@ -188,6 +193,13 @@ const defaultFilter = <T extends string | number>(
   return txt.toLowerCase().includes(q);
 };
 
+/** 以半角字符为一格、宽字符为两格估算框内搜索词宽度。 */
+const getSearchInputDisplayWidth = (value: string): number =>
+  Array.from(value).reduce(
+    (width, character) => width + ((character.codePointAt(0) ?? 0) > 0xff ? 2 : 1),
+    0
+  );
+
 /** 为复杂 Select 选项返回稳定的读屏名称。 */
 const getOptionAriaLabel = <T extends string | number>(
   option: SelectOption<T>
@@ -218,6 +230,9 @@ const SelectInner = <T extends string | number = string>(
     allowClear,
     searchable,
     showSearch,
+    searchValue: searchValueProp,
+    defaultSearchValue,
+    onSearch,
     filterOption,
     optionFilterProp,
     loading,
@@ -275,7 +290,7 @@ const SelectInner = <T extends string | number = string>(
       : []
   );
   const [innerOpen, setInnerOpen] = React.useState(defaultOpen ?? false);
-  const [query, setQuery] = React.useState("");
+  const [innerSearchValue, setInnerSearchValue] = React.useState(defaultSearchValue ?? "");
   const [activeIdx, setActiveIdx] = React.useState(-1);
 
   const searchRef = React.useRef<HTMLInputElement>(null);
@@ -299,12 +314,35 @@ const SelectInner = <T extends string | number = string>(
   const openControlled = openProp !== undefined;
   const requestedOpen = openControlled ? openProp! : innerOpen;
   const open = !disabled && requestedOpen;
-  const setOpen = (v: boolean) => {
-    if (disabled && v) return;
-    if (!openControlled) setInnerOpen(v);
-    onOpenChange?.(v);
-    if (!v) setQuery("");
-  };
+  const requestedOpenRef = React.useRef(requestedOpen);
+  requestedOpenRef.current = requestedOpen;
+  const searchControlled = searchValueProp !== undefined;
+  const searchValue = searchControlled ? searchValueProp : innerSearchValue;
+  const hasInlineSearch = mergedSearchable;
+  const showsInlineSearchInput = hasInlineSearch && (isMulti || open);
+
+  /** 提交一次搜索词变化，受控模式只通知调用方而不越权写入内部事实来源。 */
+  const updateSearchValue = React.useCallback((nextValue: string) => {
+    if (!searchControlled) setInnerSearchValue(nextValue);
+    onSearch?.(nextValue);
+  }, [onSearch, searchControlled]);
+
+  /** 关闭浮层时沿用既有清空语义，并把实际变化同步给远程搜索调用方。 */
+  const resetSearchValue = React.useCallback(() => {
+    if (!searchValue) return;
+    if (!searchControlled) setInnerSearchValue("");
+    onSearch?.("");
+  }, [onSearch, searchControlled, searchValue]);
+
+  /** 请求切换浮层开关，并统一处理关闭时的搜索词复位。 */
+  const setOpen = React.useCallback((nextOpen: boolean) => {
+    if (disabled && nextOpen) return;
+    if (nextOpen === requestedOpenRef.current) return;
+    requestedOpenRef.current = nextOpen;
+    if (!openControlled) setInnerOpen(nextOpen);
+    onOpenChange?.(nextOpen);
+    if (!nextOpen) resetSearchValue();
+  }, [disabled, onOpenChange, openControlled, resetSearchValue]);
 
   React.useEffect(() => {
     if (!disabled || openControlled || !innerOpen) return;
@@ -317,7 +355,7 @@ const SelectInner = <T extends string | number = string>(
     placement: "bottom",
     matchTriggerWidth: !hasCustomPopupWidth,
     panelWidth: typeof resolvedPopupWidth === "number" ? resolvedPopupWidth : 360,
-    panelHeight: mergedListHeight + (mergedSearchable ? 58 : 12),
+    panelHeight: mergedListHeight + 12,
   });
 
   useOverlayLayer({
@@ -380,8 +418,7 @@ const SelectInner = <T extends string | number = string>(
     };
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  }, [menuRef, open, setOpen, triggerRef]);
 
   // Auto-focus search input when opened
   React.useEffect(() => {
@@ -397,20 +434,44 @@ const SelectInner = <T extends string | number = string>(
     [options]
   );
   const allFlat = React.useMemo(() => flatten(orderedItems), [orderedItems]);
+  /** 为候选项建立值索引，避免筛选、选中渲染与远程结果切换时重复线性查找。 */
+  const optionByValue = React.useMemo(() => {
+    const index = new Map<T, SelectOption<T>>();
+    allFlat.forEach((option) => index.set(option.value, option));
+    return index;
+  }, [allFlat]);
+  const selectedOptionCacheRef = React.useRef(new Map<T, SelectOption<T>>());
+
+  React.useEffect(() => {
+    selectedValues.forEach((selectedValue) => {
+      const option = optionByValue.get(selectedValue);
+      if (option) selectedOptionCacheRef.current.set(selectedValue, option);
+    });
+  }, [optionByValue, selectedValues]);
+
+  /** 优先使用当前候选项，并在远程候选暂时缺席时回退到最近一次已知标签。 */
+  const selectedOptions = React.useMemo(
+    () => selectedValues
+      .map((selectedValue) =>
+        optionByValue.get(selectedValue) ?? selectedOptionCacheRef.current.get(selectedValue)
+      )
+      .filter((option): option is SelectOption<T> => option !== undefined),
+    [optionByValue, selectedValues]
+  );
   const filteredFlat = React.useMemo(() => {
-    if (!query.trim()) return allFlat;
+    if (!searchValue.trim()) return allFlat;
     if (filterOption === false) return allFlat;
     const f =
       typeof filterOption === "function"
         ? filterOption
         : (input: string, option: SelectOption<T>) =>
             defaultFilter(input, option, optionFilterProp);
-    return allFlat.filter((o) => f(query, o));
-  }, [allFlat, query, filterOption, optionFilterProp]);
+    return allFlat.filter((o) => f(searchValue, o));
+  }, [allFlat, filterOption, optionFilterProp, searchValue]);
 
   // Re-bucket into groups respecting filter (for menu rendering)
   const filteredItems = React.useMemo<SelectItem<T>[]>(() => {
-    if (!query.trim()) {
+    if (!searchValue.trim()) {
       return orderedItems.filter((item) => !isGroup(item) || item.options.length > 0);
     }
     return orderedItems
@@ -422,7 +483,7 @@ const SelectInner = <T extends string | number = string>(
         return kept.length ? { ...it, options: kept } : null;
       })
       .filter((x): x is SelectItem<T> => x !== null);
-  }, [orderedItems, filteredFlat, query]);
+  }, [orderedItems, filteredFlat, searchValue]);
 
   React.useEffect(() => {
     setActiveIdx((current) => {
@@ -439,6 +500,7 @@ const SelectInner = <T extends string | number = string>(
 
   const pickSingle = (opt: SelectOption<T>) => {
     if (disabled || isOptionDisabled(opt)) return;
+    selectedOptionCacheRef.current.set(opt.value, opt);
     if (!singleControlled) setInnerSingle(opt.value);
     (props as SingleSelectProps<T>).onChange?.(opt.value);
     setOpen(false);
@@ -448,8 +510,19 @@ const SelectInner = <T extends string | number = string>(
     if (disabled || isOptionDisabled(opt)) return;
     const cur = multiValue ?? [];
     const next = cur.includes(opt.value) ? cur.filter((v) => v !== opt.value) : [...cur, opt.value];
+    selectedOptionCacheRef.current.set(opt.value, opt);
     if (!multiControlled) setInnerMulti(next);
     (props as MultiSelectProps<T>).onChange?.(next);
+    if (hasInlineSearch) requestAnimationFrame(() => searchRef.current?.focus());
+  };
+
+  /** 从多选值中移除一个标签，并在框内搜索模式下恢复输入焦点。 */
+  const removeMultiValue = (removedValue: T) => {
+    if (disabled) return;
+    const next = (multiValue ?? []).filter((value) => value !== removedValue);
+    if (!multiControlled) setInnerMulti(next);
+    (props as MultiSelectProps<T>).onChange?.(next);
+    if (hasInlineSearch) requestAnimationFrame(() => searchRef.current?.focus());
   };
 
   /** 清空当前选择，并保持浮层开关状态不变。 */
@@ -470,13 +543,20 @@ const SelectInner = <T extends string | number = string>(
     isMulti ? (multiValue ?? []).includes(val) : singleValue === val;
 
   const onKeyDown = (e: React.KeyboardEvent) => {
-    if ((e.key === "Backspace" || e.key === "Delete") && showClear) {
+    const fromSearchInput = e.target === searchRef.current;
+    if ((e.nativeEvent as KeyboardEvent).isComposing || e.keyCode === 229) return;
+    if (fromSearchInput && e.key === "Backspace" && !searchValue && isMulti && multiValue.length > 0) {
+      e.preventDefault();
+      removeMultiValue(multiValue[multiValue.length - 1]);
+      return;
+    }
+    if (!fromSearchInput && (e.key === "Backspace" || e.key === "Delete") && showClear) {
       e.preventDefault();
       clearAll();
       return;
     }
     if (!open) {
-      if (e.key === "Enter" || e.key === " " || e.key === "ArrowDown") {
+      if (e.key === "Enter" || (!fromSearchInput && e.key === " ") || e.key === "ArrowDown") {
         e.preventDefault();
         setOpen(true);
       }
@@ -520,15 +600,50 @@ const SelectInner = <T extends string | number = string>(
     }
   };
 
+  /** 在选择框本体内渲染单选或多选共用的搜索输入。 */
+  const renderInlineSearchInput = (): React.ReactNode => {
+    if (!showsInlineSearchInput) return null;
+    const multiHasSelection = isMulti && multiValue.length > 0;
+    const searchDisplayWidth = getSearchInputDisplayWidth(searchValue);
+    return (
+      <input
+        ref={searchRef}
+        id={fieldId}
+        className={`select-search-input ${multiHasSelection ? "with-selection" : "empty"}`}
+        type="search"
+        value={searchValue}
+        style={multiHasSelection
+          ? { width: `${Math.min(Math.max(searchDisplayWidth + 1, 2), 32)}ch` }
+          : undefined}
+        placeholder={isMulti ? (multiValue.length === 0 ? placeholder : undefined) : "搜索..."}
+        disabled={disabled}
+        autoComplete="off"
+        role="combobox"
+        aria-autocomplete="list"
+        aria-label={ariaLabel}
+        aria-labelledby={ariaLabelledBy}
+        aria-invalid={ariaInvalid}
+        aria-required={ariaRequired}
+        aria-describedby={ariaDescribedBy}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={open ? listboxId : undefined}
+        aria-activedescendant={open && activeIdx >= 0 ? `${listboxId}-option-${activeIdx}` : undefined}
+        onChange={(event) => {
+          updateSearchValue(event.target.value);
+          if (!open) setOpen(true);
+        }}
+      />
+    );
+  };
+
   const renderTrigger = () => {
     if (isMulti) {
-      const selected = (multiValue ?? [])
-        .map((v) => allFlat.find((o) => o.value === v))
-        .filter((o): o is SelectOption<T> => !!o);
+      const selected = selectedOptions;
       const max = maxTagCount;
       const shown = max != null ? selected.slice(0, max) : selected;
       const overflow = selected.length - shown.length;
-      if (selected.length === 0) {
+      if (selected.length === 0 && !hasInlineSearch) {
         return <span className="placeholder">{placeholder}</span>;
       }
       return (
@@ -539,23 +654,26 @@ const SelectInner = <T extends string | number = string>(
                 key={String(o.value)}
                 tone="accent"
                 removable={!disabled}
-                onRemove={() => {
-                  const cur = multiValue ?? [];
-                  const next = cur.filter((v) => v !== o.value);
-                  if (!multiControlled) setInnerMulti(next);
-                  (props as MultiSelectProps<T>).onChange?.(next);
+                onRemove={() => removeMultiValue(o.value)}
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
                 }}
                 onClick={(e) => e.stopPropagation()}
               >
-                {selectedRender?.(o, { value: o.value, multiple: true }) ?? o.label}
+                <span className="select-tag-label">
+                  {selectedRender?.(o, { value: o.value, multiple: true }) ?? o.label}
+                </span>
               </Tag>
             ))}
-            {overflow > 0 && <Tag tone="neutral">+{overflow}</Tag>}
+            {overflow > 0 && <Tag className="select-tag-overflow" tone="neutral">+{overflow}</Tag>}
+            {renderInlineSearchInput()}
           </span>
         </InternalComponentThemePart>
       );
     }
-    const current = allFlat.find((o) => o.value === singleValue);
+    if (showsInlineSearchInput) return renderInlineSearchInput();
+    const current = selectedOptions[0];
     if (!current) return <span className="placeholder">{placeholder}</span>;
     if (selectedRender) {
       return (
@@ -611,6 +729,9 @@ const SelectInner = <T extends string | number = string>(
           aria-label={getOptionAriaLabel(o)}
           disabled={optionDisabled}
           className={`menu-item ${sel ? "active" : ""} ${active ? "highlight" : ""}`}
+          onMouseDown={(event) => {
+            if (hasInlineSearch) event.preventDefault();
+          }}
           onClick={() => (isMulti ? toggleMulti(o) : pickSingle(o))}
         >
           {isMulti && (
@@ -655,14 +776,36 @@ const SelectInner = <T extends string | number = string>(
       )
     );
 
+  /** 框内搜索点击只负责展开和聚焦，点击箭头则保留明确的展开/收起切换。 */
+  const handleTriggerClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (disabled) return;
+    if (!hasInlineSearch) {
+      setOpen(!open);
+      return;
+    }
+    const target = event.target as Element;
+    if (target.closest(".select-caret")) {
+      setOpen(!open);
+      return;
+    }
+    setOpen(true);
+    searchRef.current?.focus();
+  };
+
   return (
     <div
       ref={setTriggerRef}
       {...rest}
-      className={`select ${size} ${isMulti ? "multi" : ""} ${open ? "open" : ""} ${disabled ? "disabled" : ""} ${invalid ? "invalid" : ""} ${className}`}
+      className={`select ${size} ${isMulti ? "multi" : ""} ${hasInlineSearch ? "searchable" : ""} ${open ? "open" : ""} ${disabled ? "disabled" : ""} ${invalid ? "invalid" : ""} ${className}`}
       onKeyDown={(e) => {
         onRootKeyDown?.(e);
-        if (!e.defaultPrevented && (e.target as HTMLElement).classList.contains("select-trigger")) onKeyDown(e);
+        const target = e.target as HTMLElement;
+        if (
+          !e.defaultPrevented &&
+          (target.classList.contains("select-trigger") || target === searchRef.current)
+        ) {
+          onKeyDown(e);
+        }
       }}
       onBlur={(event) => {
         onRootBlur?.(event);
@@ -685,20 +828,20 @@ const SelectInner = <T extends string | number = string>(
     >
       <div
         className="select-trigger"
-        onClick={() => !disabled && setOpen(!open)}
-        tabIndex={disabled ? -1 : triggerTabIndex ?? 0}
-        id={fieldId}
-        role="combobox"
-        aria-disabled={disabled || undefined}
-        aria-label={ariaLabel}
-        aria-labelledby={ariaLabelledBy}
-        aria-invalid={ariaInvalid}
-        aria-required={ariaRequired}
-        aria-describedby={ariaDescribedBy}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        aria-controls={open ? listboxId : undefined}
-        aria-activedescendant={open && activeIdx >= 0 ? `${listboxId}-option-${activeIdx}` : undefined}
+        onClick={handleTriggerClick}
+        tabIndex={showsInlineSearchInput || disabled ? -1 : triggerTabIndex ?? 0}
+        id={showsInlineSearchInput ? undefined : fieldId}
+        role={showsInlineSearchInput ? undefined : "combobox"}
+        aria-disabled={showsInlineSearchInput ? undefined : disabled || undefined}
+        aria-label={showsInlineSearchInput ? undefined : ariaLabel}
+        aria-labelledby={showsInlineSearchInput ? undefined : ariaLabelledBy}
+        aria-invalid={showsInlineSearchInput ? undefined : ariaInvalid}
+        aria-required={showsInlineSearchInput ? undefined : ariaRequired}
+        aria-describedby={showsInlineSearchInput ? undefined : ariaDescribedBy}
+        aria-haspopup={showsInlineSearchInput ? undefined : "listbox"}
+        aria-expanded={showsInlineSearchInput ? undefined : open}
+        aria-controls={showsInlineSearchInput ? undefined : open ? listboxId : undefined}
+        aria-activedescendant={showsInlineSearchInput ? undefined : open && activeIdx >= 0 ? `${listboxId}-option-${activeIdx}` : undefined}
       >
         {renderTrigger()}
         <Icon name="chevDown" size={14} className="select-caret" />
@@ -709,7 +852,10 @@ const SelectInner = <T extends string | number = string>(
           className="select-clear"
           aria-label="Clear"
           onPointerDown={(event) => event.stopPropagation()}
-          onMouseDown={(event) => event.stopPropagation()}
+          onMouseDown={(event) => {
+            if (hasInlineSearch) event.preventDefault();
+            event.stopPropagation();
+          }}
           onClick={(event) => {
             event.stopPropagation();
             clearAll();
@@ -734,31 +880,6 @@ const SelectInner = <T extends string | number = string>(
               ...popupStyle,
             }}
           >
-            {mergedSearchable && (
-            <div className="menu-search">
-              <InternalComponentThemePart components="Input">
-                <Input
-                  ref={searchRef}
-                  size="sm"
-                  leadingIcon="search"
-                  value={query}
-                  placeholder="搜索..."
-                  role="combobox"
-                  aria-autocomplete="list"
-                  aria-expanded={open}
-                  aria-controls={listboxId}
-                  aria-activedescendant={activeIdx >= 0 ? `${listboxId}-option-${activeIdx}` : undefined}
-                  onValueChange={setQuery}
-                  onKeyDown={(e) => {
-                    if (e.key === "Escape" || e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Enter") {
-                      e.preventDefault();
-                      onKeyDown(e);
-                    }
-                  }}
-                />
-              </InternalComponentThemePart>
-            </div>
-          )}
           <div
             className="menu-options"
             style={{ maxHeight: mergedListHeight }}

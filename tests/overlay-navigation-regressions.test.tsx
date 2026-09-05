@@ -388,7 +388,7 @@ describe("overlay and navigation regressions", () => {
     const modal = screen.getByRole("dialog", { name: "同帧父弹窗" });
     const listbox = screen.getByRole("listbox");
     expect(Number(listbox.style.zIndex)).toBeGreaterThan(7200);
-    const search = within(listbox).getByRole("combobox");
+    const search = screen.getByRole("combobox");
     search.focus();
     fireEvent.keyDown(document, { key: "Escape" });
     act(() => vi.runOnlyPendingTimers());
@@ -408,13 +408,13 @@ describe("overlay and navigation regressions", () => {
         <button type="button">后续按钮</button>
       </Modal>
     );
-    const trigger = document.querySelector<HTMLElement>(".select-trigger")!;
-    const search = within(screen.getByRole("listbox")).getByRole("combobox");
-    trigger.focus();
-    fireEvent.keyDown(trigger, { key: "Tab" });
+    const search = screen.getByRole("combobox");
+    const option = screen.getByRole("option", { name: "选项 A" });
+    search.focus();
+    fireEvent.keyDown(search, { key: "Tab" });
+    expect(document.activeElement).toBe(option);
+    fireEvent.keyDown(option, { key: "Tab", shiftKey: true });
     expect(document.activeElement).toBe(search);
-    fireEvent.keyDown(search, { key: "Tab", shiftKey: true });
-    expect(document.activeElement).toBe(trigger);
   });
 
   it("does not restore focus while an open modal only changes z-index", () => {

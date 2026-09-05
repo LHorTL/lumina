@@ -194,7 +194,7 @@ describe("picker regressions", () => {
         <button type="button">外部焦点</button>
       </>
     );
-    const search = within(screen.getByRole("listbox")).getByRole("combobox");
+    const search = screen.getByRole("combobox");
     fireEvent.keyDown(search, { key: "Tab" });
     fireEvent.blur(search, { relatedTarget: screen.getByRole("button", { name: "外部焦点" }) });
     expect(screen.queryByRole("listbox")).toBeNull();

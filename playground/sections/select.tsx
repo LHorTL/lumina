@@ -14,6 +14,93 @@ import { DocPage } from "../docs";
 import { Field, Row } from "./_shared";
 import { defineSection, type SectionCtx } from "./_types";
 
+/** 远程搜索示例使用的万宝楼候选数据。 */
+const APPEARANCE_CATALOG: SelectOption<string>[] = [
+  { value: "成衣_长云黯雪·二·衣", label: "长云黯雪·二·衣", text: "长云黯雪 二 衣", description: "成衣" },
+  { value: "披风_雪落无声", label: "雪落无声", text: "雪落无声", description: "披风" },
+  { value: "发型_孤鸿影·长发", label: "孤鸿影·长发", text: "孤鸿影 长发", description: "发型" },
+  { value: "称号_踏雪寻梅", label: "踏雪寻梅", text: "踏雪寻梅", description: "称号" },
+  { value: "成衣_山海同归·衣", label: "山海同归·衣", text: "山海同归 衣", description: "成衣" },
+  { value: "称号_风雪故人归", label: "风雪故人归", text: "风雪故人归", description: "称号" },
+  { value: "披风_星河入梦·稀有长名称", label: "星河入梦·稀有长名称展示测试", text: "星河入梦 稀有", description: "披风" },
+];
+
+/** 模拟由业务层执行的远程搜索；不同延迟用于演示迟到结果保护。 */
+const searchAppearanceOptions = (keyword: string): Promise<SelectOption<string>[]> => {
+  const normalizedKeyword = keyword.trim().toLowerCase();
+  const delay = normalizedKeyword.length % 2 === 0 ? 680 : 420;
+  return new Promise((resolve) => {
+    window.setTimeout(() => {
+      const matched = normalizedKeyword
+        ? APPEARANCE_CATALOG.filter((option) => {
+            const searchableText = `${option.text ?? ""} ${option.description ?? ""}`.toLowerCase();
+            return searchableText.includes(normalizedKeyword);
+          })
+        : APPEARANCE_CATALOG.slice(0, 5);
+      resolve(matched);
+    }, delay);
+  });
+};
+
+/** 演示由业务层托管搜索词、防抖、迟到结果和远程候选状态。 */
+const RemoteMultiSearchDemo: React.FC = () => {
+  const [appearanceValues, setAppearanceValues] = React.useState<string[]>([
+    "成衣_长云黯雪·二·衣",
+    "发型_孤鸿影·长发",
+  ]);
+  const [appearanceSearch, setAppearanceSearch] = React.useState("");
+  const [appearanceOptions, setAppearanceOptions] = React.useState<SelectOption<string>[]>(
+    APPEARANCE_CATALOG.slice(0, 5)
+  );
+  const [appearanceLoading, setAppearanceLoading] = React.useState(false);
+  const latestAppearanceRequestRef = React.useRef(0);
+
+  React.useEffect(() => {
+    const requestId = latestAppearanceRequestRef.current + 1;
+    latestAppearanceRequestRef.current = requestId;
+    setAppearanceLoading(true);
+    const debounceTimer = window.setTimeout(() => {
+      void searchAppearanceOptions(appearanceSearch).then((nextOptions) => {
+        if (requestId !== latestAppearanceRequestRef.current) return;
+        setAppearanceOptions(nextOptions);
+        setAppearanceLoading(false);
+      });
+    }, 300);
+
+    return () => {
+      window.clearTimeout(debounceTimer);
+      if (latestAppearanceRequestRef.current === requestId) {
+        latestAppearanceRequestRef.current += 1;
+      }
+    };
+  }, [appearanceSearch]);
+
+  return (
+    <Field
+      label={`万宝楼外观与称号 (已选 ${appearanceValues.length})`}
+      hint="连续输入并选择；远程结果即使暂时为空或加载中，已选标签仍保留原显示名称。"
+    >
+      <Select
+        multiple
+        searchable
+        clearable
+        value={appearanceValues}
+        onChange={setAppearanceValues}
+        searchValue={appearanceSearch}
+        onSearch={setAppearanceSearch}
+        options={appearanceOptions}
+        loading={appearanceLoading}
+        filterOption={false}
+        maxTagCount={2}
+        maxCount={5}
+        placeholder="搜索外观名称或称号..."
+        emptyContent={appearanceSearch ? "没有匹配的外观或称号" : "暂无候选项"}
+        aria-label="搜索万宝楼外观与称号"
+      />
+    </Field>
+  );
+};
+
 /** 套餐复杂选项所需的附加展示信息。 */
 interface PlanMeta {
   description: string;
@@ -168,6 +255,7 @@ const SectionSelect: React.FC<SectionCtx> = () => {
             <li>选项数量 ≥ 4 时优先使用 Select 而非 Radio / Checkbox</li>
             <li>需要搜索过滤时启用 <code>searchable</code></li>
             <li>多选场景使用 <code>multiple</code>,可配合 <code>maxTagCount</code> 折叠</li>
+            <li>远程搜索由业务层在 <code>onSearch</code> 中处理防抖和迟到结果，Select 只管理输入与选择交互</li>
             <li>菜单内容复杂时分别使用 <code>optionRender</code> 与 <code>selectedRender</code></li>
             <li>常用或高优先级内容可放入带 <code>pinned</code> 的置顶分组</li>
           </ul>
@@ -218,6 +306,43 @@ const SectionSelect: React.FC<SectionCtx> = () => {
               />
             </Field>
           ),
+        },
+        {
+          id: "remote-multi-search",
+          title: "远程搜索多选",
+          span: 2,
+          description: "searchable 在单选和多选中都复用选择框本体作为输入；多选 Tag 后的空输入会收缩，不单独占行。选中后保持展开和关键词，业务层负责防抖与迟到结果保护。",
+          code: `const [value, setValue] = useState<string[]>([]);
+const [searchValue, setSearchValue] = useState("");
+const [options, setOptions] = useState<SelectOption[]>([]);
+const [loading, setLoading] = useState(false);
+const latestRequest = useRef(0);
+
+useEffect(() => {
+  const requestId = ++latestRequest.current;
+  setLoading(true);
+  const timer = window.setTimeout(() => {
+    void fetchOptions(searchValue).then((nextOptions) => {
+      if (requestId !== latestRequest.current) return;
+      setOptions(nextOptions);
+      setLoading(false);
+    });
+  }, 300);
+  return () => {
+    window.clearTimeout(timer);
+    if (requestId === latestRequest.current) latestRequest.current += 1;
+  };
+}, [searchValue]);
+
+<Select
+  multiple searchable clearable
+  value={value} onChange={setValue}
+  searchValue={searchValue} onSearch={setSearchValue}
+  options={options} loading={loading}
+  filterOption={false}
+  maxTagCount={2}
+/>`,
+          render: () => <RemoteMultiSearchDemo />,
         },
         {
           id: "selection-limit",
@@ -495,8 +620,10 @@ const SectionSelect: React.FC<SectionCtx> = () => {
             { prop: "maxTagCount", description: "多选时显示的标签数(超出折叠 +N)", type: "number" },
             { prop: "maxCount", description: "多选允许的最大选择数；达到上限后禁用未选项", type: "number" },
             { prop: "getOptionDisabled", description: "基于候选项和当前选择动态判断禁用状态", type: "(option, selectedValues) => boolean" },
-            { prop: "searchable", description: "可搜索", type: "boolean", default: "false" },
+            { prop: "searchable", description: "在选择框本体内启用搜索，单选和多选共用同一交互形态", type: "boolean", default: "false" },
             { prop: "showSearch", description: "searchable 的等价别名", type: "boolean", default: "false" },
+            { prop: "searchValue / defaultSearchValue", description: "受控搜索词 / 非受控初始搜索词；多选 searchable 时输入框位于标签同一触发器内", type: "string" },
+            { prop: "onSearch", description: "搜索词交互变化回调；多选选中不会清空关键词，关闭时清空并回调空字符串", type: "(value: string) => void" },
             { prop: "filterOption", description: "自定义过滤", type: "(input, option) => boolean" },
             { prop: "optionFilterProp", description: "默认过滤使用的 option 字段", type: `"label" | "value" | "text" | string` },
             { prop: "clearable", description: "显示独立且可访问的清除按钮", type: "boolean", default: "false" },
