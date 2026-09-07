@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["src/components/Select", "playground/global.d.ts", "playground/sections/select.tsx", "tests/select-types-smoke.tsx"],
+  "references": []
+}

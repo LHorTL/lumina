@@ -221,6 +221,8 @@ npm run build             # Playground 生产构建
 
 修改本地质量门禁、生成文档或构建步骤时同步维护 CI。发布工作流至少执行 typecheck、test、docs 和库构建。
 
+仅在用户明确要求 Select 定向验证时，CI 和 Publish 的手动入口可选择 `validation_scope=select`：运行 `tsconfig.select.json`、Select 自适应/搜索测试、现有测试中的 Select 用例，以及构建后的 `scripts/check-select-package.mjs`。自动 CI 和 tag 发布通过提交正文的独立行 `Lumina-Validation: select` 选择相同范围；手动输入优先，未明确标记时仍使用完整验证。提交范围标记必须与用户授权一致，不能自行缩小默认验证范围。
+
 ### 构建与子路径
 
 - dist 为扁平结构，`package.json.exports` 的 `./*` 只适用于导出名等于 dist 文件名的情况。
@@ -235,6 +237,7 @@ npm run build             # Playground 生产构建
 - 主分支：`main`。
 - 远程：`https://github.com/LHorTL/lumina.git`。
 - 正式发布走 `.github/workflows/publish.yml`，通过 `v*` tag 或手动 workflow 触发；不得把本地 `npm publish` 当作默认路径。
+- 发布 workflow 逐项验证后执行 `npm pack`，再发布该 tarball，避免目录发布隐式重复运行 `prepublishOnly`。定向发布仍须先通过相同提交的 CI，再推送版本 tag 或使用手动发布入口。
 - 包名保持 `@fangxinyan/lumina`，`publishConfig.access` 保持 `public`。
 - 发布前确保 `src/index.ts` 的 `VERSION` 与 `package.json.version` 一致。
 - 不提交 `dist/`、`node_modules/`，不使用 `--ignore-scripts` 绕过 `prepublishOnly`。

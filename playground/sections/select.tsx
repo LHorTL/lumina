@@ -5,6 +5,8 @@ import {
   Icon,
   IconButton,
   Select,
+  Slider,
+  Switch,
   Tag,
   type SelectItem,
   type SelectOption,
@@ -13,6 +15,50 @@ import {
 import { DocPage } from "../docs";
 import { Field, Row } from "./_shared";
 import { defineSection, type SectionCtx } from "./_types";
+
+/** 单行折叠示例包含常见短标签、长标签和两位数折叠计数。 */
+const RESPONSIVE_OPTIONS: SelectOption[] = [
+  { value: "gift", label: "外观礼盒" },
+  { value: "hair", label: "发型" },
+  { value: "long", label: "星河入梦·稀有长名称外观礼盒展示测试" },
+  ...Array.from({ length: 10 }, (_, index) => ({ value: `item-${index}`, label: `外观 ${index + 1}` })),
+];
+
+/** 使用真实容器缩放演示折叠、恢复标签以及搜索输入时的单行布局。 */
+const ResponsiveTagsDemo: React.FC = () => {
+  const [width, setWidth] = React.useState(218);
+  const [values, setValues] = React.useState(["gift", "hair"]);
+  const [searchable, setSearchable] = React.useState(true);
+  const [allowClear, setAllowClear] = React.useState(true);
+  const [visible, setVisible] = React.useState(true);
+  return (
+    <div style={{ display: "grid", gap: "var(--gap-4)" }}>
+      <Row>
+        {[190, 218, 300].map((preset) => <Button key={preset} size="sm" onClick={() => setWidth(preset)}>{preset}px</Button>)}
+        <span>当前宽度：{width}px</span>
+      </Row>
+      <Slider aria-label="自适应选择框宽度" min={180} max={480} value={width} onChange={setWidth} />
+      <Row>
+        <Switch checked={searchable} onChange={setSearchable} label="框内搜索" />
+        <Switch checked={allowClear} onChange={setAllowClear} label="允许清空" />
+        <Button size="sm" onClick={() => setVisible((current) => !current)}>{visible ? "隐藏选择框" : "显示选择框"}</Button>
+      </Row>
+      <Row>
+        <Button size="sm" onClick={() => setValues([])}>0 项</Button>
+        <Button size="sm" onClick={() => setValues(["gift"])}>1 项</Button>
+        <Button size="sm" onClick={() => setValues(["gift", "hair"])}>2 项</Button>
+        <Button size="sm" onClick={() => setValues(RESPONSIVE_OPTIONS.map((option) => option.value))}>全部 13 项</Button>
+        <Button size="sm" onClick={() => setValues(["long", "gift"])}>长标签</Button>
+      </Row>
+      <div style={{ display: visible ? "block" : "none", width, maxWidth: "100%" }}>
+        <Field label="自适应外观类型" hint={`完整选值保留 ${values.length} 项，缩窄或输入长搜索词只改变标签展示。`}>
+          <Select multiple maxTagCount="responsive" searchable={searchable} allowClear={allowClear}
+            aria-label="自适应外观类型" value={values} onChange={setValues} options={RESPONSIVE_OPTIONS} />
+        </Field>
+      </div>
+    </div>
+  );
+};
 
 /** 远程搜索示例使用的万宝楼候选数据。 */
 const APPEARANCE_CATALOG: SelectOption<string>[] = [
@@ -306,6 +352,20 @@ const SectionSelect: React.FC<SectionCtx> = () => {
               />
             </Field>
           ),
+        },
+        {
+          id: "responsive-tags",
+          title: "单行自适应标签折叠",
+          span: 2,
+          description: 'maxTagCount="responsive" 按标签、+N、输入框和按钮的实际占位自动增减展示数量，始终单行。长搜索词在原输入框内横向编辑；折叠不改变完整选值。仅多选启用，数字值与未设置时仍保留原来的数量折叠和换行行为。',
+          code: `<Select
+  multiple searchable allowClear
+  maxTagCount="responsive"
+  style={{ width: 218 }}
+  value={values} onChange={setValues}
+  options={options}
+/>`,
+          render: () => <ResponsiveTagsDemo />,
         },
         {
           id: "remote-multi-search",
@@ -617,7 +677,7 @@ useEffect(() => {
             { prop: "onChange", description: "变更", type: "(value) => void" },
             { prop: "placeholder", description: "空选择时的提示文本", type: "string", default: `"请选择…"` },
             { prop: "multiple", description: "多选", type: "boolean", default: "false" },
-            { prop: "maxTagCount", description: "多选时显示的标签数(超出折叠 +N)", type: "number" },
+            { prop: "maxTagCount", description: "多选标签展示上限；responsive 按可用宽度动态折叠为 +N 并保持单行，搜索词可横向编辑；不改变选值。数字和未设置时保留既有换行行为", type: 'number | "responsive"' },
             { prop: "maxCount", description: "多选允许的最大选择数；达到上限后禁用未选项", type: "number" },
             { prop: "getOptionDisabled", description: "基于候选项和当前选择动态判断禁用状态", type: "(option, selectedValues) => boolean" },
             { prop: "searchable", description: "在选择框本体内启用搜索，单选和多选共用同一交互形态", type: "boolean", default: "false" },

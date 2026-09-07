@@ -188,6 +188,72 @@
 .select:hover .select-clear { opacity: 1; }
 .select-clear:hover { color: var(--lmn-select-accent-ink, var(--accent-ink)); box-shadow: var(--lmn-select-neu-shadow-inset, var(--neu-shadow-inset)); }
 
+/* 自适应模式：控件按真实宽度参与布局，标签区只展示测量后能完整容纳的前缀。 */
+.select.multi.responsive .select-trigger {
+  flex-wrap: nowrap;
+  padding: var(--lmn-select-tag-gap, var(--gap-1)) var(--lmn-select-trigger-padding, var(--gap-2));
+  gap: var(--lmn-select-control-gap, var(--gap-2));
+}
+.select.multi.responsive .select-tags {
+  flex-wrap: nowrap;
+  flex: 1 1 0%;
+  gap: var(--lmn-select-tag-gap, var(--gap-1));
+  position: relative;
+}
+.select.multi.responsive .select-tags > .tag,
+.select-tag-measurements > .tag {
+  flex: none;
+  width: max-content;
+  max-width: var(--lmn-select-tag-max-width, 160px);
+}
+.select.multi.responsive .select-tags > .select-tag-overflow {
+  max-width: none;
+}
+.select.multi.responsive [data-collapsed="true"],
+.select-tag-measurements {
+  position: absolute;
+  top: 0;
+  left: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.select-tag-measurements {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.select-tag-measurements > .tag {
+  position: absolute;
+  max-width: none;
+}
+.select-search-measure {
+  display: block;
+  width: max-content;
+  min-width: 2ch;
+  padding-inline: calc(var(--gap-1) / 2);
+  padding-inline-end: calc(var(--gap-1) / 2 + 1ch);
+  white-space: pre;
+  font: inherit;
+}
+.select.multi.responsive .select-search-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  field-sizing: fixed;
+}
+.select.multi.responsive .select-caret,
+.select.multi.responsive .select-clear {
+  position: static;
+  transform: none;
+  flex-shrink: 0;
+}
+.select.multi.responsive.open .select-caret { transform: rotate(180deg); }
+.select.multi.responsive .select-tags > .placeholder {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* Multi-select menu: leading checkbox per item */
 .menu-check {
   width: 16px;

@@ -5,6 +5,7 @@ import * as React from "react";
 import { createPortal } from "react-dom";
 import { Icon, renderIconSlot, type IconSlot } from "../Icon";
 import { Tag } from "../Tag";
+import { useResponsiveTags } from "./useResponsiveTags";
 import { useFloating } from "../../utils/useFloating";
 import { usePortalContainer } from "../../utils/portal";
 import { useOverlayLayer } from "../../utils/overlayStack";
@@ -144,6 +145,7 @@ export interface SingleSelectProps<T extends string | number = string> extends B
   onClear?: () => void;
 }
 
+/** 多选模式的选值、标签展示和数量限制配置。 */
 export interface MultiSelectProps<T extends string | number = string> extends BaseSelectProps<T> {
   multiple: true;
   value?: T[];
@@ -151,8 +153,11 @@ export interface MultiSelectProps<T extends string | number = string> extends Ba
   onChange?: SelectMultiChangeHandler<T>;
   /** Fired when user clears all selections via the × button. */
   onClear?: () => void;
-  /** Max selected items shown as tags before collapsing to "+N". */
-  maxTagCount?: number;
+  /**
+   * 显示的标签数量；responsive 按实际可用宽度折叠为 +N，保持单行且不改变选值。
+   * @example <Select multiple maxTagCount="responsive" options={options} />
+   */
+  maxTagCount?: number | "responsive";
   /** 多选允许的最大选择数；达到上限后禁用尚未选中的候选项。 */
   maxCount?: number;
 }
@@ -216,6 +221,7 @@ type SelectComponent = {
   <T extends string | number = string>(props: MultiSelectProps<T> & React.RefAttributes<HTMLDivElement>): React.ReactElement;
 };
 
+/** 渲染兼容单选、多选和框内搜索的选择器。 */
 const SelectInner = <T extends string | number = string>(
   props: SelectProps<T>,
   forwardedRef: React.ForwardedRef<HTMLDivElement>
@@ -269,10 +275,11 @@ const SelectInner = <T extends string | number = string>(
     ...rest
   } = props as SelectProps<T> & {
     onClear?: () => void;
-    maxTagCount?: number;
+    maxTagCount?: number | "responsive";
     maxCount?: number;
   };
   const isMulti = multiple === true;
+  const responsiveTags = isMulti && maxTagCount === "responsive";
   const mergedClearable = clearable ?? !!allowClear;
   const mergedClearIcon = typeof allowClear === "object" ? allowClear.clearIcon : undefined;
   const mergedSearchable = searchable ?? !!showSearch;
@@ -458,6 +465,7 @@ const SelectInner = <T extends string | number = string>(
       .filter((option): option is SelectOption<T> => option !== undefined),
     [optionByValue, selectedValues]
   );
+  const responsiveLayout = useResponsiveTags(responsiveTags, selectedOptions, hasInlineSearch);
   const filteredFlat = React.useMemo(() => {
     if (!searchValue.trim()) return allFlat;
     if (filterOption === false) return allFlat;
@@ -613,9 +621,11 @@ const SelectInner = <T extends string | number = string>(
         data-inline-size={multiHasSelection ? "content" : "fill"}
         type="search"
         value={searchValue}
-        style={multiHasSelection
-          ? { width: `${Math.min(Math.max(searchDisplayWidth + 1, 2), 32)}ch` }
-          : undefined}
+        style={responsiveTags
+          ? { width: responsiveLayout.inputWidth }
+          : multiHasSelection
+            ? { width: `${Math.min(Math.max(searchDisplayWidth + 1, 2), 32)}ch` }
+            : undefined}
         placeholder={isMulti ? (multiValue.length === 0 ? placeholder : undefined) : "搜索..."}
         disabled={disabled}
         autoComplete="off"
@@ -638,21 +648,27 @@ const SelectInner = <T extends string | number = string>(
     );
   };
 
+  /** 渲染已选摘要；自适应模式仅挂载一份标签，隐藏项保持可测量但不可交互。 */
   const renderTrigger = () => {
     if (isMulti) {
       const selected = selectedOptions;
-      const max = maxTagCount;
+      const max = typeof maxTagCount === "number" ? maxTagCount : undefined;
       const shown = max != null ? selected.slice(0, max) : selected;
-      const overflow = selected.length - shown.length;
-      if (selected.length === 0 && !hasInlineSearch) {
+      const overflow = selected.length - (responsiveTags ? responsiveLayout.count : shown.length);
+      if (selected.length === 0 && !hasInlineSearch && !responsiveTags) {
         return <span className="placeholder">{placeholder}</span>;
       }
       return (
         <InternalComponentThemePart components="Tag">
-          <span className="select-tags">
-            {shown.map((o) => (
+          <span className="select-tags" ref={responsiveLayout.tagsRef}>
+            {selected.length === 0 && !hasInlineSearch && <span className="placeholder">{placeholder}</span>}
+            {shown.map((o, index) => (
               <Tag
                 key={String(o.value)}
+                data-select-tag={responsiveTags ? "" : undefined}
+                data-collapsed={responsiveTags && index >= responsiveLayout.count ? "true" : undefined}
+                aria-hidden={responsiveTags && index >= responsiveLayout.count ? true : undefined}
+                {...(responsiveTags && index >= responsiveLayout.count ? { inert: "" } : {})}
                 tone="accent"
                 removable={!disabled}
                 onRemove={() => removeMultiValue(o.value)}
@@ -669,6 +685,14 @@ const SelectInner = <T extends string | number = string>(
             ))}
             {overflow > 0 && <Tag className="select-tag-overflow" tone="neutral">+{overflow}</Tag>}
             {renderInlineSearchInput()}
+            {responsiveTags && (
+              <span className="select-tag-measurements" aria-hidden="true" {...{ inert: "" }}>
+                {selected.map((option, index) => (
+                  <Tag key={String(option.value)} tone="neutral" data-select-overflow="">+{index + 1}</Tag>
+                ))}
+                {hasInlineSearch && <span className="select-search-measure">{searchValue || "\u200b"}</span>}
+              </span>
+            )}
           </span>
         </InternalComponentThemePart>
       );
@@ -693,6 +717,26 @@ const SelectInner = <T extends string | number = string>(
 
   const hasSelection = isMulti ? multiValue.length > 0 : singleValue != null;
   const showClear = mergedClearable && hasSelection && !disabled;
+
+  /** 渲染独立清除按钮，自适应模式将其纳入触发器的正常布局以预留实际宽度。 */
+  const renderClearButton = () => showClear && (
+    <button
+      type="button"
+      className="select-clear"
+      aria-label="Clear"
+      onPointerDown={(event) => event.stopPropagation()}
+      onMouseDown={(event) => {
+        if (hasInlineSearch) event.preventDefault();
+        event.stopPropagation();
+      }}
+      onClick={(event) => {
+        event.stopPropagation();
+        clearAll();
+      }}
+    >
+      {mergedClearIcon ?? <Icon name="x" size={12} />}
+    </button>
+  );
 
   // Render an option button
   let renderIdx = -1;
@@ -797,7 +841,7 @@ const SelectInner = <T extends string | number = string>(
     <div
       ref={setTriggerRef}
       {...rest}
-      className={`select ${size} ${isMulti ? "multi" : ""} ${hasInlineSearch ? "searchable" : ""} ${open ? "open" : ""} ${disabled ? "disabled" : ""} ${invalid ? "invalid" : ""} ${className}`}
+      className={`select ${size} ${isMulti ? "multi" : ""} ${responsiveTags ? "responsive" : ""} ${hasInlineSearch ? "searchable" : ""} ${open ? "open" : ""} ${disabled ? "disabled" : ""} ${invalid ? "invalid" : ""} ${className}`}
       onKeyDown={(e) => {
         onRootKeyDown?.(e);
         const target = e.target as HTMLElement;
@@ -845,26 +889,10 @@ const SelectInner = <T extends string | number = string>(
         aria-activedescendant={showsInlineSearchInput ? undefined : open && activeIdx >= 0 ? `${listboxId}-option-${activeIdx}` : undefined}
       >
         {renderTrigger()}
+        {responsiveTags && renderClearButton()}
         <Icon name="chevDown" size={14} className="select-caret" />
       </div>
-      {showClear && (
-        <button
-          type="button"
-          className="select-clear"
-          aria-label="Clear"
-          onPointerDown={(event) => event.stopPropagation()}
-          onMouseDown={(event) => {
-            if (hasInlineSearch) event.preventDefault();
-            event.stopPropagation();
-          }}
-          onClick={(event) => {
-            event.stopPropagation();
-            clearAll();
-          }}
-        >
-          {mergedClearIcon ?? <Icon name="x" size={12} />}
-        </button>
-      )}
+      {!responsiveTags && renderClearButton()}
       {open && portalContainer &&
         createPortal(
           <div

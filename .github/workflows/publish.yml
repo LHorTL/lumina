@@ -5,6 +5,12 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      validation_scope:
+        description: '验证范围；select 仅用于明确要求定向验证的 Select 发布'
+        type: choice
+        default: full
+        options: [full, select]
 
 permissions:
   id-token: write
@@ -21,18 +27,49 @@ jobs:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Resolve validation scope
+        id: validation
+        run: node scripts/resolve-validation-scope.mjs
+        env:
+          REQUESTED_VALIDATION_SCOPE: ${{ inputs.validation_scope }}
+
       - run: npm ci
 
-      - run: npm run typecheck
+      - if: steps.validation.outputs.scope != 'select'
+        run: npm run typecheck
 
-      - run: npm run test:unit
+      - if: steps.validation.outputs.scope != 'select'
+        run: npm run test:unit
+
+      - if: steps.validation.outputs.scope == 'select'
+        run: npx tsc --noEmit -p tsconfig.select.json
+
+      - if: steps.validation.outputs.scope == 'select'
+        run: npx vitest run --root . --environment jsdom tests/select-responsive.test.tsx tests/select-remote-search.test.tsx
+
+      - if: steps.validation.outputs.scope == 'select'
+        run: npx vitest run --root . --environment jsdom tests/form-controls-regressions.test.tsx tests/picker-regressions.test.tsx -t Select
 
       - run: npm run gen:docs
 
+      - name: Verify generated documentation is current
+        run: git diff --exit-code -- docs/llms.md docs/llms llms.txt
+
       - run: npm run build:lib
 
-      - run: npm run verify:public-api
+      - if: steps.validation.outputs.scope != 'select'
+        run: npm run verify:public-api
 
-      - run: npm publish --provenance --access public
+      - if: steps.validation.outputs.scope == 'select'
+        run: node scripts/check-select-package.mjs
+
+      # 将已经逐项验证的产物打包；发布 tarball 不会再次隐式运行目录的 prepublishOnly。
+      - name: Pack validated package
+        run: npm pack --pack-destination "$RUNNER_TEMP"
+
+      - name: Publish validated tarball
+        run: |
+          version=$(node -p "require('./package.json').version")
+          npm publish "$RUNNER_TEMP/fangxinyan-lumina-$version.tgz" --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

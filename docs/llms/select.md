@@ -27,6 +27,20 @@ multiple + Tag 形式呈现已选项。
 <Select multiple clearable value={tags} onChange={setTags} options={...} />
 ```
 
+### 单行自适应标签折叠
+
+maxTagCount="responsive" 按标签、+N、输入框和按钮的实际占位自动增减展示数量，始终单行。长搜索词在原输入框内横向编辑；折叠不改变完整选值。仅多选启用，数字值与未设置时仍保留原来的数量折叠和换行行为。
+
+```tsx
+<Select
+  multiple searchable allowClear
+  maxTagCount="responsive"
+  style={{ width: 218 }}
+  value={values} onChange={setValues}
+  options={options}
+/>
+```
+
 ### 远程搜索多选
 
 searchable 在单选和多选中都复用选择框本体作为输入；多选 Tag 后的空输入会收缩，不单独占行。选中后保持展开和关键词，业务层负责防抖与迟到结果保护。
@@ -181,7 +195,7 @@ loading 时显示 spinner,emptyContent 自定义空态。
 | onChange | `(value) => void` | — | 变更 |
 | placeholder | `string` | `"请选择…"` | 空选择时的提示文本 |
 | multiple | `boolean` | `false` | 多选 |
-| maxTagCount | `number` | — | 多选时显示的标签数(超出折叠 +N) |
+| maxTagCount | `number | "responsive"` | — | 多选标签展示上限；responsive 按可用宽度动态折叠为 +N 并保持单行，搜索词可横向编辑；不改变选值。数字和未设置时保留既有换行行为 |
 | maxCount | `number` | — | 多选允许的最大选择数；达到上限后禁用未选项 |
 | getOptionDisabled | `(option, selectedValues) => boolean` | — | 基于候选项和当前选择动态判断禁用状态 |
 | searchable | `boolean` | `false` | 在选择框本体内启用搜索，单选和多选共用同一交互形态 |
