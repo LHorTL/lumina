@@ -12,6 +12,8 @@ import { TimePicker } from "@fangxinyan/lumina";
 
 ### 基础用法
 
+确认或 Esc 关闭后焦点回到输入框并保持关闭；再次点击、Enter / ↓ 或 Tab 重新进入可展开。
+
 ```tsx
 <TimePicker defaultValue="09:30" />
 ```
@@ -72,7 +74,7 @@ const [time, setTime] = useState<string | null>("09:30");
 | disabledTime | `(time: TimePickerValue) => boolean` | — | 自定义禁用时间 |
 | size | `"sm" | "md" | "lg"` | `"md"` | 输入框尺寸 |
 | allowClear | `boolean` | `false` | 允许清空 |
-| open / defaultOpen / onOpenChange | `—` | — | 受控浮层显隐 |
+| open / defaultOpen / onOpenChange | `—` | — | 受控/初始显隐及变化回调；关闭后的焦点归还不会再次请求打开 |
 | popupClassName / dropdownClassName | `string` | — | 浮层 className |
 | disabled / readOnly / invalid / placeholder | `—` | — | 常规输入状态 |
 

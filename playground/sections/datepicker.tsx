@@ -1,9 +1,10 @@
 import * as React from "react";
-import { DatePicker } from "lumina";
+import { Button, DatePicker, Input, Modal } from "lumina";
 import { DocPage } from "../docs";
 import { Field, Row } from "./_shared";
 import { defineSection, type SectionCtx } from "./_types";
 
+/** 将当前日期转换为演示用的本地日期文本。 */
 const formatLocalDate = (date: Date | null) => {
   if (!date) return "未选择";
   const year = date.getFullYear();
@@ -24,9 +25,13 @@ const parseDotDate = (input: string): Date | null => {
   return Number.isNaN(date.getTime()) ? null : date;
 };
 
+/** 展示日期选择器的值、显隐状态与关闭后的键盘交互。 */
 const SectionDatePicker: React.FC<SectionCtx> = () => {
   const [date, setDate] = React.useState<Date | null>(new Date(2026, 4, 25));
   const [workday, setWorkday] = React.useState<Date | null>(new Date(2026, 4, 26));
+  const [standaloneOpen, setStandaloneOpen] = React.useState(false);
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [controlledPickerOpen, setControlledPickerOpen] = React.useState(false);
 
   return (
     <DocPage
@@ -50,6 +55,65 @@ const SectionDatePicker: React.FC<SectionCtx> = () => {
             <Field label="发布日期">
               <DatePicker defaultValue={new Date(2026, 4, 25)} />
             </Field>
+          ),
+        },
+        {
+          id: "focus-restoration",
+          title: "关闭与焦点归还",
+          description: "确定、选中日期、今天、清空或 Esc 关闭后，焦点回到输入框并保持关闭。可重复点击、按 Enter / ↓ 或通过 Tab 重新进入；点击外部控件后焦点留在该控件。",
+          span: 2,
+          code: `<DatePicker defaultValue={new Date(2027, 6, 7)} allowClear />`,
+          render: () => (
+            <Row>
+              <DatePicker
+                aria-label="独立日期"
+                defaultValue={new Date(2027, 6, 7)}
+                allowClear
+                onOpenChange={setStandaloneOpen}
+              />
+              <span role="status" aria-label="独立浮层状态">{standaloneOpen ? "浮层已打开" : "浮层已关闭"}</span>
+              <Input aria-label="下一个字段" placeholder="点击此处验证焦点" />
+            </Row>
+          ),
+        },
+        {
+          id: "modal-controlled",
+          title: "弹窗内受控日期与显隐",
+          description: "value 与 open 分别受控。关闭日期浮层后可继续键盘操作，再按 Esc 关闭父弹窗。",
+          span: 2,
+          code: `const [date, setDate] = useState<Date | null>(new Date());
+const [modalOpen, setModalOpen] = useState(false);
+const [open, setOpen] = useState(false);
+<>
+  <Button onClick={() => setModalOpen(true)}>打开日期表单</Button>
+  <Modal open={modalOpen} title="日期表单" footer={null}
+    onCancel={() => { setModalOpen(false); setOpen(false); }}>
+    <DatePicker value={date} onChange={setDate} open={open} onOpenChange={setOpen} allowClear />
+  </Modal>
+</>`,
+          render: () => (
+            <>
+              <Button onClick={() => setModalOpen(true)}>打开日期表单</Button>
+              <Modal
+                open={modalOpen}
+                title="日期表单"
+                footer={null}
+                onCancel={() => { setModalOpen(false); setControlledPickerOpen(false); }}
+              >
+                <Field label="计划日期">
+                  <DatePicker
+                    aria-label="弹窗日期"
+                    value={date}
+                    onChange={setDate}
+                    open={controlledPickerOpen}
+                    onOpenChange={setControlledPickerOpen}
+                    allowClear
+                  />
+                  <span role="status" aria-label="受控日期状态">{formatLocalDate(date)} · {controlledPickerOpen ? "浮层已打开" : "浮层已关闭"}</span>
+                  <Input aria-label="弹窗备注" placeholder="关闭日历后可继续填写" />
+                </Field>
+              </Modal>
+            </>
           ),
         },
         {
@@ -139,7 +203,7 @@ const SectionDatePicker: React.FC<SectionCtx> = () => {
             { prop: "disabledDate", description: "自定义禁用日期", type: "(date: Date) => boolean" },
             { prop: "size", description: "输入框尺寸", type: `"sm" | "md" | "lg"`, default: `"md"` },
             { prop: "allowClear", description: "允许清空", type: "boolean", default: "false" },
-            { prop: "open / defaultOpen / onOpenChange", description: "受控浮层显隐", type: "—" },
+            { prop: "open / defaultOpen / onOpenChange", description: "受控/初始显隐及变化回调；关闭后的焦点归还不会再次请求打开", type: "—" },
             { prop: "popupClassName / dropdownClassName", description: "浮层 className", type: "string" },
             { prop: "disabled / readOnly / invalid / placeholder", description: "常规输入状态", type: "—" },
           ],

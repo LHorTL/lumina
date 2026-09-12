@@ -16,6 +16,31 @@ import { DatePicker } from "@fangxinyan/lumina";
 <DatePicker defaultValue={new Date(2026, 4, 25)} />
 ```
 
+### 关闭与焦点归还
+
+确定、选中日期、今天、清空或 Esc 关闭后，焦点回到输入框并保持关闭。可重复点击、按 Enter / ↓ 或通过 Tab 重新进入；点击外部控件后焦点留在该控件。
+
+```tsx
+<DatePicker defaultValue={new Date(2027, 6, 7)} allowClear />
+```
+
+### 弹窗内受控日期与显隐
+
+value 与 open 分别受控。关闭日期浮层后可继续键盘操作，再按 Esc 关闭父弹窗。
+
+```tsx
+const [date, setDate] = useState<Date | null>(new Date());
+const [modalOpen, setModalOpen] = useState(false);
+const [open, setOpen] = useState(false);
+<>
+  <Button onClick={() => setModalOpen(true)}>打开日期表单</Button>
+  <Modal open={modalOpen} title="日期表单" footer={null}
+    onCancel={() => { setModalOpen(false); setOpen(false); }}>
+    <DatePicker value={date} onChange={setDate} open={open} onOpenChange={setOpen} allowClear />
+  </Modal>
+</>
+```
+
 ### 受控
 
 value 使用 Date | null,onChange 同时返回 Date 和格式化字符串。
@@ -67,7 +92,7 @@ min / max 与 disabledDate 会同步作用于 Calendar 单元格和手动输入�
 | disabledDate | `(date: Date) => boolean` | — | 自定义禁用日期 |
 | size | `"sm" | "md" | "lg"` | `"md"` | 输入框尺寸 |
 | allowClear | `boolean` | `false` | 允许清空 |
-| open / defaultOpen / onOpenChange | `—` | — | 受控浮层显隐 |
+| open / defaultOpen / onOpenChange | `—` | — | 受控/初始显隐及变化回调；关闭后的焦点归还不会再次请求打开 |
 | popupClassName / dropdownClassName | `string` | — | 浮层 className |
 | disabled / readOnly / invalid / placeholder | `—` | — | 常规输入状态 |
 

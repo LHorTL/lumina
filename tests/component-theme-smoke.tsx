@@ -1,3 +1,5 @@
+import * as React from "react";
+import { DatePicker, DateTimePicker, TimePicker } from "../src";
 import type {
   AlertProps,
   AppShellProps,
@@ -222,3 +224,21 @@ type RequestedComponentCapabilityCoverage = AssertThemeCoverage<[
 /** 防止新增公共能力在后续重构中静默丢失。 */
 export type RequestedComponentCapabilitySmokeResult =
   RequestedComponentCapabilityCoverage;
+
+/** 日期时间触发器修复后继续保留 ref、原生属性、主题和双模式显隐契约。 */
+export function pickerFocusContractSmoke(): React.ReactElement {
+  /** 接收显隐请求的类型烟雾回调。 */
+  const onOpenChange = (open: boolean): void => { void open; };
+  return <>
+    <DatePicker ref={React.createRef<HTMLDivElement>()} className="date-field"
+      style={{ width: 240 }} data-testid="date-field" aria-label="日期" theme="sky"
+      value={null} open={false} onOpenChange={onOpenChange} allowClear />
+    <DatePicker defaultValue={new Date(2027, 6, 7)} defaultOpen />
+    <TimePicker ref={React.createRef<HTMLDivElement>()} className="time-field"
+      style={{ width: 240 }} data-testid="time-field" aria-label="时间" theme="sky"
+      defaultValue="09:30" defaultOpen onOpenChange={onOpenChange} />
+    <DateTimePicker ref={React.createRef<HTMLDivElement>()} className="datetime-field"
+      style={{ width: 240 }} data-testid="datetime-field" aria-label="日期时间" theme="sky"
+      value={null} open={false} onOpenChange={onOpenChange} />
+  </>;
+}

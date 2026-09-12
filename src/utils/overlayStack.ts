@@ -56,8 +56,25 @@ export interface UseOverlayLayerOptions {
 const layers: OverlayLayerEntry[] = [];
 const listeningDocuments = new Map<Document, number>();
 const scrollLocks = new Map<Document, ScrollLockState>();
+/** 仅在同步 focus 事件分发期间标记归还目标，不影响之后主动聚焦。 */
+const restoringFocusTargets = new WeakSet<HTMLElement>();
 let nextOverlayZIndex = 1000;
 let nextLayerOrder = 0;
+
+/** 判断当前聚焦是否由浮层关闭后的焦点归还触发。 */
+export function isRestoringOverlayFocus(target: HTMLElement): boolean {
+  return restoringFocusTargets.has(target);
+}
+
+/** 归还焦点时让输入触发器识别来源，同时保留正常的 focus 事件。 */
+function restoreOverlayFocus(target: HTMLElement): void {
+  restoringFocusTargets.add(target);
+  try {
+    target.focus();
+  } finally {
+    restoringFocusTargets.delete(target);
+  }
+}
 
 /** 将父浮层层级传递给其 React 子树（Portal 不会截断 Context）。 */
 const OverlayZIndexContext = React.createContext<number | undefined>(undefined);
@@ -415,7 +432,7 @@ export function useOverlayLayer({
             !active.isConnected ||
             closingContainer?.contains(active);
           const target = ownerTarget?.isConnected ? ownerTarget : previous;
-          if (target?.isConnected && focusWasReleased) target.focus();
+          if (target?.isConnected && focusWasReleased) restoreOverlayFocus(target);
         });
       }
     };

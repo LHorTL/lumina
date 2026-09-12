@@ -50,6 +50,7 @@ const SectionDateTimePicker: React.FC<SectionCtx> = () => {
         {
           id: "basic",
           title: "基础用法",
+          description: "确认或 Esc 关闭后焦点回到输入框并保持关闭；再次点击、Enter / ↓ 或 Tab 重新进入可展开。",
           code: `<DateTimePicker defaultValue={new Date(2026, 4, 25, 9, 30)} />`,
           render: () => (
             <Field label="开始时间">
@@ -182,7 +183,7 @@ const SectionDateTimePicker: React.FC<SectionCtx> = () => {
             { prop: "disabledTime", description: "按当前日期禁用具体时间", type: "(time: TimePickerValue, date: Date) => boolean" },
             { prop: "size", description: "输入框尺寸", type: `"sm" | "md" | "lg"`, default: `"md"` },
             { prop: "allowClear", description: "允许清空", type: "boolean", default: "false" },
-            { prop: "open / defaultOpen / onOpenChange", description: "受控浮层显隐", type: "—" },
+            { prop: "open / defaultOpen / onOpenChange", description: "受控/初始显隐及变化回调；关闭后的焦点归还不会再次请求打开", type: "—" },
             { prop: "popupClassName / dropdownClassName", description: "浮层 className", type: "string" },
             { prop: "disabled / readOnly / invalid / placeholder", description: "常规输入状态", type: "—" },
           ],
